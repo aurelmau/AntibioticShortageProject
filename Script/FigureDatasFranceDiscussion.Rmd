@@ -1,0 +1,84 @@
+---
+title: "FigureDatasFranceDiscussion"
+output: html_document
+date: "2025-01-02"
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r library}
+library(ggplot2)
+library(tidyr)
+library(dplyr)
+library(reshape2)
+library(ggpubr)
+library(socialmixr)
+data(polymod)
+library("RColorBrewer")
+library(rmarkdown)
+library(plotly)
+library(demodelr)
+library(forcats)
+library(rayshader)
+library(triangle)
+library(lhs)
+library(ggh4x)
+library(lemon)
+library(ggthemes)
+library(khroma)
+library(lhs)
+library(sensitivity)
+library(patchwork)
+library(cowplot)
+library(gridExtra)
+```
+
+
+```{r setup}
+
+gen <- odin::odin("C:\\Users\\Aurélie\\Documents\\AntibioticShortage\\Script\\DeuxAgeHuitResistanceDeuxAntibiosOdin.R")
+
+#Donnes 2021 otites pour penicillines: 
+d2=0.075/0.53; d3=0.075/0.53; d4=0.085/0.53; d5=0.09/0.53; d6=0.12/0.53; d7=0.075/0.53; d8=0.01/0.53 
+Rcr=0.58; Rmacro=0.28; Ramox=0.43; pi=0.52
+ConsoAmox=0.95; ConsoMacro=0.083;Lambda=1/43
+InvasionRate=4.8*10**(-7)
+
+
+```
+
+
+```{r histo figure 3 avec incertitude}
+
+
+dfnew<-read.csv("C:\\Users\\Aurélie\\Documents\\AntibioticShortage\\fichierCombine020125_tri_Icumulee.csv")
+
+df<-dfnew
+df<-subset(df, select = -X)
+df <- subset(df, Reduction %in% c("1","3"))
+
+df <- subset(df, Outcome %in% c("IncidenceInfectionsGravesMDR","IncidenceInfectionsGravesMR","IncidenceInfectionsGravesPNSP","IncidenceInfectionsGravesMDS","IncidenceInfectionsGraves"))
+
+desired_order <- c("IncidenceInfectionsGravesMDR","IncidenceInfectionsGravesMR","IncidenceInfectionsGravesPNSP","IncidenceInfectionsGravesMDS","IncidenceInfectionsGraves")
+df$Outcome <- factor(df$Outcome, levels = (desired_order))
+df$Value <- as.numeric(df$Value)
+
+df <- df %>% filter(!is.na(Value))
+
+baseline <- df %>%
+  filter(Reduction == 1) %>%
+  select(Scenario, Outcome, Lambda,pi, baseline_value = Value)
+
+# # Joindre les valeurs baseline aux données originales
+df <- df %>%
+  left_join(baseline, by = c("Scenario", "Outcome", "Lambda","pi")) %>%
+  mutate(Variation =(Value - baseline_value))
+
+df_summary <- df %>%
+  group_by(Scenario,Reduction, Outcome) %>%
+  summarize(MinVariation = min(Variation),MaxVariation = max(Variation), MedianVariation = median(Variation), SdVariation= sd(Variation) )
+
+df_summary
+
+
+```

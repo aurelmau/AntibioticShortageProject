@@ -1,0 +1,727 @@
+---
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup}
+library(ggplot2)
+library(tidyr)
+library(dplyr)
+library(reshape2)
+library(ggpubr)
+library(socialmixr)
+library("RColorBrewer")
+library(rmarkdown)
+library(plotly)
+library(demodelr)
+library(forcats)
+library(ggh4x)
+library(lemon)
+library(ggthemes)
+library(khroma)
+library(extrafont)
+library(ggpattern)
+
+ComixFrance=matrix(c(1.38862624, 0.8839566, 3.035774, 0.1647373, 0.45351050, 3.8515862, 4.704727, 0.3219808, 0.29411769, 0.8884435, 8.714019, 0.6593619, 0.06124847, 0.2333334, 2.530319, 1.4056732),nrow = 4, ncol = 4,byrow = TRUE)
+
+gen <- odin::odin("C:\\Users\\maurinau\\OneDrive - LECNAM\\Stage\\StagePasteur\\codeRStage\\DeuxAgeDeuxResistanceOdin.R")
+
+```
+
+##ArticleVaron 2000 Groupe Erythromicine
+
+
+```{r setup, include=FALSE}
+
+
+mod <- gen$new(US_0=c(0),
+               UCm1_0=c(0),
+               UCm2_0=c(0),
+               
+               ES_0=c(86*0.53),
+               ECm1_0=c(86*0.47*0.47),
+               ECm2_0=c(86*0.47*0.53),
+               
+               f=0.91095191              ,
+               a1=0,a2=1,
+               
+               V=c(0.05002733),
+               Beta=matrix(c(1),nrow = 1, ncol = 1 ,byrow = TRUE),
+               
+               Phi=c(0),
+               Mu=c(0),  #c((0.76*10**(-3))/365,(0.1*10**(-3))/365,(2.16*10**(-3))/365,(50*10**(-3))/365),
+               mu0=0,
+               Lambda=c(1/43), #décolonisation naturelle 
+               gamma=1/8,
+               dose1= 1.00692834       , #1000mg,q8h MIC<=0.063
+               dose2=0.03449561    , #1000mg,q8h MIC>=0.125
+               pm1m2=0,
+               theta=0.5,
+               N_age=1)
+
+
+
+```
+
+#Choix des paramètres de transmissibilité et coût en fitness
+
+```{r optim global Vi et fi}
+
+OptimVi <- function(x,y) {
+    mod <- gen$new(US_0=c((1000*(1-(0.052)))*0.53),
+               UCm1_0=c((1000*(1-(0.052)))*0.47*0.47),
+               UCm2_0=c((1000*(1-(0.052)))*0.47*0.53),
+               
+               ES_0=c((1000*0.052)*0.53),
+               ECm1_0=c((1000*0.052)*0.47*0.47),
+               ECm2_0=c((1000*0.052)*0.47*0.53),
+               
+               f=x[1],
+               a1=0,a2=1,
+               
+               V=c(x[2]),
+               Beta=matrix(c(1),nrow = 1, ncol = 1 ,byrow = TRUE),
+               #V=c(0.006019609),
+               #Beta=matrix(c(4.704727),nrow = 1, ncol = 1 ,byrow = TRUE), #contact_matrix(polymod, countries = "United Kingdom", age.limits = c(0, 5, 15,65),sample.participants = TRUE)$matrix,
+               Phi=c(0.07/31),
+               Mu=c(0),  #c((0.76*10**(-3))/365,(0.1*10**(-3))/365,(2.16*10**(-3))/365,(50*10**(-3))/365),
+               mu0=0,
+               Lambda=c(1/43),
+               gamma=1/(8),
+               dose1= y[1], #1000mg,q8h MIC=0.06
+               dose2=y[2], #1000mg,q8h MIC=8
+               pm1m2=0,
+               theta=0.5,
+               N_age=1)
+        
+    t <- seq(0, 365*1,0.1)
+    y_odin <- mod$run(t)
+    out_odin <- as.data.frame(y_odin)
+    
+    out_odin=out_odin[c(nrow(out_odin)),]
+    
+    out_odin = out_odin %>%
+  mutate(
+    `t`=`t`,
+    `S[1]`=`US[1]`+`ES[1]`,
+    `Cm1[1]`=`UCm1[1]`+`ECm1[1]`,
+    `Cm2[1]`=`UCm2[1]`+`ECm2[1]`,
+    `Totcarrier[1]`=`UCm1[1]`+`ECm1[1]`+`UCm2[1]`+`ECm2[1]`,
+    `Tot[1]`=`US[1]`+`ES[1]`+`UCm1[1]`+`ECm1[1]`+`UCm2[1]`+`ECm2[1]`,
+    .keep = "none"
+  )
+    out_odin = out_odin %>%
+    mutate(
+    `t`=`t`,
+    `Cm1[1]`=`Cm1[1]`/`Totcarrier[1]`,
+    `Cm2[1]`=`Cm2[1]`/`Totcarrier[1]`,
+    `Totcarrier[1]`=`Totcarrier[1]`/`Tot[1]`,
+    .keep = "none"
+  )
+    
+    
+    f=out_odin
+    p1=as.numeric(f[4])
+    r1=as.numeric(f[3])
+    
+    #cat(x[1]," :",p1,x[2]," :",r1)
+    
+    return(abs(0.48-p1)**2+abs(0.44-r1)**2)
+}
+
+x0=c(0.7,0.011)
+y=c(1.006924   ,0.03449561  )
+
+#optim(par=x0,OptimVi,control = list(maxit = 20000))
+optim(x0,OptimVi,y=y,method="L-BFGS-B",lower=c(0.7,0.01), upper=c(1,0.3))
+
+
+```
+
+#Choix de la dose pour reproduire les observations
+
+
+```{r optim Dose pour obtenir les variations}
+
+OptimDose <- function(x) {
+    mod <- gen$new(US_0=c(0),
+               UCm1_0=c(0),
+               UCm2_0=c(0),
+               
+               ES_0=c(86*0.53),
+               ECm1_0=c(86*0.47*0.47),
+               ECm2_0=c(86*0.47*0.53),
+
+               
+               f=optim(par=c(0.72,0.01),OptimVi,y=c(x[1],x[2]),control = list(maxit = 20000))$par[1],
+               #f=0.82020079,
+               a1=0,a2=1,
+               
+               V=optim(par=c(0.72,0.01),OptimVi,y=c(x[1],x[2]),control = list(maxit = 20000))$par[2],
+               #V=0.01926239,
+               Beta=matrix(c(3),nrow = 1, ncol = 1 ,byrow = TRUE),
+               #V=c(0.006019609),
+               #Beta=matrix(c(4.704727),nrow = 1, ncol = 1 ,byrow = TRUE), #contact_matrix(polymod, countries = "United Kingdom", age.limits = c(0, 5, 15,65),sample.participants = TRUE)$matrix,
+               Phi=c(0),
+               Mu=c(0),  #c((0.76*10**(-3))/365,(0.1*10**(-3))/365,(2.16*10**(-3))/365,(50*10**(-3))/365),
+               mu0=0,
+               Lambda=c(1/43), #décolonisation naturelle 
+               gamma=1/8,
+               dose1= x[1], #1000mg,q8h MIC<=0.063
+               dose2=x[2], #1000mg,q8h MIC>=0.125
+               pm1m2=0,
+               theta=0.5,
+               N_age=1)
+        
+    t <- seq(0,10,1)
+    y_odin <- mod$run(t)
+    out_odin <- as.data.frame(y_odin)
+    
+    out_odin=out_odin[c(nrow(out_odin)),]
+    
+    out_odin = out_odin %>%
+  mutate(
+    `t`=`t`,
+    `S[1]`=`US[1]`+`ES[1]`,
+    `Cm1[1]`=`UCm1[1]`+`ECm1[1]`,
+    `Cm2[1]`=`UCm2[1]`+`ECm2[1]`,
+    `Totcarrier[1]`=`UCm1[1]`+`ECm1[1]`+`UCm2[1]`+`ECm2[1]`,
+    `Tot[1]`=`US[1]`+`ES[1]`+`UCm1[1]`+`ECm1[1]`+`UCm2[1]`+`ECm2[1]`,
+    .keep = "none"
+  )
+    out_odin = out_odin %>%
+    mutate(
+    `t`=`t`,
+    `Cm1[1]`=`Cm1[1]`/`Totcarrier[1]`,
+    `Cm2[1]`=`Cm2[1]`/`Totcarrier[1]`,
+    `Totcarrier[1]`=`Totcarrier[1]`/`Tot[1]`,
+    .keep = "none"
+  )
+  
+    f=out_odin
+    p1=as.numeric(f[4])
+    r1=as.numeric(f[3])
+    
+    cat(x[1],x[2]," :",r1," ",p1,"\n")
+    
+    return(abs(0.91-r1)**2+abs(0.25-p1)**2)
+}
+
+
+x0=c(0.1,0.01)
+
+optim(par=x0,OptimDose,control = list(maxit = 20000))
+optim(x0,OptimDose,method="L-BFGS-B",lower=c(0.2,0), upper=c(1.07,0.5))
+
+#TotCarrier =0.27 Dose1=387.1844039   Dose2=0.2060253
+
+```
+
+
+
+```{r ggplot toutes les courbes}
+t <- seq(0,8,1)
+y_odin <- mod$run(t)
+out_odin <- as.data.frame(y_odin)
+
+out_odin = out_odin %>%
+mutate(
+`t`=`t`,
+`US`=`US[1]`,
+`ES`=`ES[1]`,
+`UCm1`=`UCm1[1]`,
+`ECm1`=`ECm1[1]`,
+`UCm2`=`UCm2[1]`,
+`ECm2`=`ECm2[1]`,
+`Totcarrier`=`UCm1[1]`+`ECm1[1]`+`UCm2[1]`+`ECm2[1]`,
+  .keep = "none"
+)
+
+out_long= out_odin %>% pivot_longer(
+  cols = `US`:`Totcarrier`,
+  names_to = c("Compartment"),
+  values_to = "count"
+)
+ggplot(out_long,aes(x=t))+
+  geom_line(aes(y=count,colour=Compartment),lwd=0.8,lty = 1,show.legend = TRUE)+
+  xlab("Time")+ylab("Proportion")+
+  scale_color_manual(values=c("orange2","yellow3","red","brown","cyan","blue","purple" ))
+  theme_bw()
+
+
+```
+
+```{r ggplot toutes les courbes}
+t <- seq(0,60,1)
+y_odin <- mod$run(t)
+out_odin <- as.data.frame(y_odin)
+
+out_odin = out_odin %>%
+mutate(
+`t`=`t`,
+`Cm1`=`UCm1[1]`+`ECm1[1]`,
+`Cm2`=`UCm2[1]`+`ECm2[1]`,
+`Totcarrier`=`UCm1[1]`+`ECm1[1]`+`UCm2[1]`+`ECm2[1]`,
+  .keep = "none"
+)
+
+out_long= out_odin %>% pivot_longer(
+  cols = `Cm1`:`Totcarrier`,
+  names_to = c("Compartment"),
+  values_to = "count"
+)
+
+ggplot(out_long,aes(x=t,y=count,colour=Compartment))+
+  geom_line(lwd=0.8,lty = 1,show.legend = TRUE)+
+  geom_point()+
+  geom_text(data = dplyr::filter(out_long,t==0|t==10),aes(label = round(count, 1)),vjust = "inward", hjust = "inward",show.legend = FALSE) +
+  xlab("Time")+ylab("Proportion")+
+  scale_color_manual(values=c("orange2","yellow3","red","brown","cyan","blue","purple","red","blue","brown" ))+
+theme_bw()
+
+
+```
+
+
+
+```{r ggplot distribution des CMI}
+t <- seq(0,10,0.1)
+y_odin <- mod$run(t)
+out_odin <- as.data.frame(y_odin)
+out_odin=out_odin[c(1,nrow(out_odin)),]
+
+out_odin = out_odin %>%
+  mutate(
+    `t`=`t`,
+    `Cm1[1]`=`UCm1[1]`+`ECm1[1]`,
+    `Cm2[1]`=`UCm2[1]`+`ECm2[1]`,
+    `Totcarrier[1]`=`UCm1[1]`+`ECm1[1]`+`UCm2[1]`+`ECm2[1]`,
+    `Tot[1]`=`US[1]`+`ES[1]`+`UCm1[1]`+`ECm1[1]`+`UCm2[1]`+`ECm2[1]`,
+    .keep = "none"
+  )
+
+out_odin = out_odin %>%
+  mutate(
+    `t`=`t`,
+    `Cm1_Simulation`=`Cm1[1]`/`Totcarrier[1]`,
+    `Cm2_Simulation`=`Cm2[1]`/`Totcarrier[1]`,
+    `Totcarrier_Simulation`=`Totcarrier[1]`/`Tot[1]`,
+    .keep = "none"
+  )
+out_odin[1,1]=1
+
+df2<-data.frame(`t`=numeric(), `Cm1_Observation`=numeric(), `Cm2_Observation`=numeric(),`Totcarrier_Observation`=numeric() )
+df2[1,]<-c(1,0.47,0.53,0.47)
+df2[2,]<-c(10,0.09,0.91,0.25)
+df_merged=merge(out_odin,df2, by="t")
+
+
+out_long= df_merged %>% pivot_longer(
+  cols = `Cm1_Simulation`:`Totcarrier_Observation`,
+  names_to = c("Compartment","Datas"),
+  names_pattern = "([A-Za-z0-9]+)_(.+)",
+  values_to = "count"
+)
+
+
+# Ouvrir un périphérique graphique pour sauvegarder le plot en tant qu'image PNG
+png("C:\\Users\\maurinau\\Documents\\AntibioticShortage\\Figures\\FigureS7Macrolides.png", width =1000, height = 800)
+
+ggplot(out_long,aes(x=Compartment,y=count, fill=Compartment,alpha = factor(t),pattern = Datas))+
+  geom_col_pattern( position = position_dodge(), color = "black")+
+   scale_fill_manual(
+    name = "Données",
+    values = c("Cm1" = "#32CD32",  
+               "Cm2" = "#FF6347", 
+               "Totcarrier" = "#1E90FF"),
+    guide = guide_legend(override.aes = list(pattern = "none")) 
+  ) +
+  scale_alpha_manual(
+    values = c(0.4, 1),  # Plus clair pour t=0, plus opaque pour t=365
+    name = "Time",
+    labels = c("Baseline", "8-days"),
+    guide = guide_legend(override.aes = list( pattern = c("none", "none")))
+  ) +
+  scale_pattern_manual(
+    values = c("Simulation" = "stripe", "Observation" = "none"),  # Ajustez les motifs selon votre colonne 'Datas'
+    name = "Datas"
+  ) +
+  geom_errorbar(data = dplyr::filter(out_long,t==1& Datas=="Observation"), aes(ymin=count-1.96*sqrt((count*(1-count))/86), ymax=count+1.96*sqrt((count*(1-count))/86)), position=position_nudge(x=-0.33),width = 0.2)+
+   geom_errorbar(data = dplyr::filter(out_long,t==10& Datas=="Observation"), aes(ymin=count-1.96*sqrt((count*(1-count))/86), ymax=count+1.96*sqrt((count*(1-count))/86)), position=position_nudge(x=0.1),width = 0.2)+
+  geom_text(aes(label=round(count,2)),position = position_dodge(0.9),vjust=-2,show.legend = FALSE,size=7,face = "bold")+
+  xlab("Outcome")+ylab("Proportion")+
+  scale_x_discrete(labels = c("MSSP", "MRSP", "TotCarrier"))+
+  theme_clean()+
+  theme(legend.background = element_rect(fill = "white", colour = "black"),legend.key.width =unit(1.4, "cm"),
+        legend.title=element_text(size = 22),legend.text=element_text(size = 20),
+        legend.direction = "vertical",legend.box = "horizontal", legend.box.just = "center",legend.position = "bottom",
+        axis.text = element_text(size =18),axis.title = element_text(size = 20),
+        strip.text = element_text(size = 25, face = "bold",hjust = 0.5),strip.placement = "outside",
+        panel.border = element_blank() ,plot.background = element_blank())
+
+# Fermer le périphérique graphique
+dev.off()
+
+
+
+
+
+```
+
+
+
+##Article Lewnard et al. 2018 Groupe Amoxicilline Clavulanate
+
+
+```{r setup, include=FALSE}
+
+
+mod <- gen$new(US_0=c(0),
+               UCm1_0=c(0),
+               UCm2_0=c(0),
+               
+               ES_0=c(146*0.36),
+               ECm1_0=c(146*0.64*0.81),
+               ECm2_0=c(146*0.64*0.19),
+               
+               f=0.94122146    ,
+               a1=0,a2=1,
+               
+               V=c(0.07562958),
+               Beta=matrix(c(1),nrow = 1, ncol = 1 ,byrow = TRUE),
+               
+               Phi=c(0),
+               Mu=c(0),  #c((0.76*10**(-3))/365,(0.1*10**(-3))/365,(2.16*10**(-3))/365,(50*10**(-3))/365),
+               mu0=0,
+               Lambda=c(1/43), #décolonisation naturelle 
+               gamma=1/7,
+               dose1= 1 , #1000mg,q8h MIC<=0.063
+               dose2=0.09, #1000mg,q8h MIC>=0.125
+               pm1m2=0,
+               theta=0.5,
+               N_age=1)
+
+
+
+```
+
+#Choix des paramètres de transmissibilité et coût en fitness
+
+```{r optim global Vi et fi}
+
+OptimFiVi <- function(x,y) {
+    mod <- gen$new(US_0=c((1000*(1-(0.02258065)))*0.36),
+               UCm1_0=c((1000*(1-(0.02258065)))*0.64*0.81),
+               UCm2_0=c((1000*(1-(0.02258065)))*0.64*0.19),
+               
+               ES_0=c((1000*0.02258065)*0.36),
+               ECm1_0=c((1000*0.02258065)*0.64*0.81),
+               ECm2_0=c((1000*0.02258065)*0.64*0.19),
+               
+               f=x[1],
+               a1=0,a2=1,
+               
+               V=c(x[2]),
+               Beta=matrix(c(1),nrow = 1, ncol = 1 ,byrow = TRUE),
+
+               Phi=c(0.2*0.5/31), #*0.5 car 2 fois moins d'exposition en Finlande que en Franve
+               Mu=c(0),  
+               mu0=0,
+               Lambda=c(1/43),
+               gamma=1/7,
+               dose1= y[1], #1000mg,q8h MIC=0.06
+               dose2=y[2], #1000mg,q8h MIC=8
+               pm1m2=0,
+               theta=0.5,
+               N_age=1)
+        
+    t <- seq(0, 365*1,0.1)
+    y_odin <- mod$run(t)
+    out_odin <- as.data.frame(y_odin)
+    
+    out_odin=out_odin[c(nrow(out_odin)),]
+    
+    out_odin = out_odin %>%
+  mutate(
+    `t`=`t`,
+    `S[1]`=`US[1]`+`ES[1]`,
+    `Cm1[1]`=`UCm1[1]`+`ECm1[1]`,
+    `Cm2[1]`=`UCm2[1]`+`ECm2[1]`,
+    `Totcarrier[1]`=`UCm1[1]`+`ECm1[1]`+`UCm2[1]`+`ECm2[1]`,
+    `Tot[1]`=`US[1]`+`ES[1]`+`UCm1[1]`+`ECm1[1]`+`UCm2[1]`+`ECm2[1]`,
+    .keep = "none"
+  )
+    out_odin = out_odin %>%
+    mutate(
+    `t`=`t`,
+    `Cm1[1]`=`Cm1[1]`/`Totcarrier[1]`,
+    `Cm2[1]`=`Cm2[1]`/`Totcarrier[1]`,
+    `Totcarrier[1]`=`Totcarrier[1]`/`Tot[1]`,
+    .keep = "none"
+  )
+    
+    
+    f=out_odin
+    p1=as.numeric(f[4])
+    r1=as.numeric(f[3])
+    
+    #cat(x[1]," :",p1,x[2]," :",r1)
+    
+    return(abs(0.64-p1)**2+abs(0.19-r1)**2)
+}
+
+x0=c(0.7,0.011)
+y=c(1  ,0.09)
+
+#optim(par=x0,OptimVi,control = list(maxit = 20000))
+optim(x0,OptimFiVi,y=y,method="L-BFGS-B",lower=c(0.7,0.01), upper=c(1,0.3))
+
+
+```
+
+#Choix de la dose pour reproduire les observations
+
+
+```{r optim Dose pour obtenir les variations}
+
+OptimDose <- function(x) {
+  
+    Optim=optim(par=c(0.72,0.01),OptimFiVi,y=c(x[1],x[2]),control = list(maxit = 20000))
+    
+    mod <- gen$new(US_0=c(0),
+               UCm1_0=c(0),
+               UCm2_0=c(0),
+               
+               ES_0=c(146*0.36),
+               ECm1_0=c(146*0.64*0.81),
+               ECm2_0=c(146*0.64*0.19),
+
+               
+               f=Optim$par[1],
+               a1=0,a2=1,
+               
+               V=Optim$par[2],
+               Beta=matrix(c(1),nrow = 1, ncol = 1 ,byrow = TRUE),
+               #V=c(0.006019609),
+               #Beta=matrix(c(4.704727),nrow = 1, ncol = 1 ,byrow = TRUE), #contact_matrix(polymod, countries = "United Kingdom", age.limits = c(0, 5, 15,65),sample.participants = TRUE)$matrix,
+               Phi=c(0),
+               Mu=c(0),  #c((0.76*10**(-3))/365,(0.1*10**(-3))/365,(2.16*10**(-3))/365,(50*10**(-3))/365),
+               mu0=0,
+               Lambda=c(1/43), #décolonisation naturelle 
+               gamma=1/7,
+               dose1= x[1], #1000mg,q8h MIC<=0.063
+               dose2=x[2], #1000mg,q8h MIC>=0.125
+               pm1m2=0,
+               theta=0.5,
+               N_age=1)
+        
+    t <- seq(0,8,1)
+    y_odin <- mod$run(t)
+    out_odin <- as.data.frame(y_odin)
+    
+    out_odin=out_odin[c(nrow(out_odin)),]
+    
+    out_odin = out_odin %>%
+  mutate(
+    `t`=`t`,
+    `S[1]`=`US[1]`+`ES[1]`,
+    `Cm1[1]`=`UCm1[1]`+`ECm1[1]`,
+    `Cm2[1]`=`UCm2[1]`+`ECm2[1]`,
+    `Totcarrier[1]`=`UCm1[1]`+`ECm1[1]`+`UCm2[1]`+`ECm2[1]`,
+    `Tot[1]`=`US[1]`+`ES[1]`+`UCm1[1]`+`ECm1[1]`+`UCm2[1]`+`ECm2[1]`,
+    .keep = "none"
+  )
+    out_odin = out_odin %>%
+    mutate(
+    `t`=`t`,
+    `Cm1[1]`=`Cm1[1]`/`Totcarrier[1]`,
+    `Cm2[1]`=`Cm2[1]`/`Totcarrier[1]`,
+    `Totcarrier[1]`=`Totcarrier[1]`/`Tot[1]`,
+    .keep = "none"
+  )
+  
+    f=out_odin
+    p1=as.numeric(f[4])
+    r1=as.numeric(f[3])
+    
+    cat(x[1],x[2]," :",r1," ",p1,"\n")
+    
+    return(abs(0.67-r1)**2+abs(0.13-p1)**2)
+}
+
+
+x0=c(0.8,0.01)
+
+optim(par=x0,OptimDose,control = list(maxit = 20000))
+optim(x0,OptimDose,method="L-BFGS-B",lower=c(0.2,0), upper=c(1,1))
+
+#TotCarrier =0.27 Dose1=387.1844039   Dose2=0.2060253
+
+```
+
+
+
+```{r ggplot toutes les courbes}
+t <- seq(0,50,1)
+y_odin <- mod$run(t)
+out_odin <- as.data.frame(y_odin)
+
+out_odin = out_odin %>%
+mutate(
+`t`=`t`,
+`US`=`US[1]`,
+`ES`=`ES[1]`,
+`UCm1`=`UCm1[1]`,
+`ECm1`=`ECm1[1]`,
+`UCm2`=`UCm2[1]`,
+`ECm2`=`ECm2[1]`,
+`Totcarrier`=`UCm1[1]`+`ECm1[1]`+`UCm2[1]`+`ECm2[1]`,
+  .keep = "none"
+)
+
+out_long= out_odin %>% pivot_longer(
+  cols = `US`:`Totcarrier`,
+  names_to = c("Compartment"),
+  values_to = "count"
+)
+ggplot(out_long,aes(x=t))+
+  geom_line(aes(y=count,colour=Compartment),lwd=0.8,lty = 1,show.legend = TRUE)+
+  xlab("Time")+ylab("Proportion")+
+  scale_color_manual(values=c("orange2","yellow3","red","brown","cyan","blue","purple" ))
+  theme_bw()
+
+
+```
+
+```{r ggplot toutes les courbes}
+t <- seq(0,60,1)
+y_odin <- mod$run(t)
+out_odin <- as.data.frame(y_odin)
+
+out_odin = out_odin %>%
+  mutate(
+    `t`=`t`,
+    `Cm1[1]`=`UCm1[1]`+`ECm1[1]`,
+    `Cm2[1]`=`UCm2[1]`+`ECm2[1]`,
+    `Totcarrier[1]`=`UCm1[1]`+`ECm1[1]`+`UCm2[1]`+`ECm2[1]`,
+    `Tot[1]`=`US[1]`+`ES[1]`+`UCm1[1]`+`ECm1[1]`+`UCm2[1]`+`ECm2[1]`,
+    .keep = "none"
+  )
+
+out_odin = out_odin %>%
+  mutate(
+    `t`=`t`,
+    `Cm1`=`Cm1[1]`/`Totcarrier[1]`,
+    `Cm2`=`Cm2[1]`/`Totcarrier[1]`,
+    `Totcarrier`=`Totcarrier[1]`/`Tot[1]`,
+    .keep = "none"
+  )
+
+out_long= out_odin %>% pivot_longer(
+  cols = `Cm1`:`Totcarrier`,
+  names_to = c("Compartment"),
+  values_to = "count"
+)
+
+ggplot(out_long,aes(x=t,y=count,colour=Compartment))+
+  geom_line(lwd=0.8,lty = 1,show.legend = TRUE)+
+  #geom_point()+
+  geom_text(data = dplyr::filter(out_long,t==0|t==8|t==15|t==30|t==60),aes(label = round(count, 2)),vjust = "inward", hjust = "inward",show.legend = FALSE) +
+  xlab("Time")+ylab("Proportion")+
+  scale_color_manual(values=c("orange2","red","brown","cyan","blue","purple","red","blue","brown" ))+
+theme_bw()
+
+
+```
+
+```{r ggplot distribution des CMI}
+
+t <- seq(0,8,0.1)
+y_odin <- mod$run(t)
+out_odin <- as.data.frame(y_odin)
+out_odin=out_odin[c(1,nrow(out_odin)),]
+
+out_odin = out_odin %>%
+  mutate(
+    `t`=`t`,
+    `Cm1[1]`=`UCm1[1]`+`ECm1[1]`,
+    `Cm2[1]`=`UCm2[1]`+`ECm2[1]`,
+    `Totcarrier[1]`=`UCm1[1]`+`ECm1[1]`+`UCm2[1]`+`ECm2[1]`,
+    `Tot[1]`=`US[1]`+`ES[1]`+`UCm1[1]`+`ECm1[1]`+`UCm2[1]`+`ECm2[1]`,
+    .keep = "none"
+  )
+
+out_odin = out_odin %>%
+  mutate(
+    `t`=`t`,
+    `Cm1_Simulation`=`Cm1[1]`/`Totcarrier[1]`,
+    `Cm2_Simulation`=`Cm2[1]`/`Totcarrier[1]`,
+    `Totcarrier_Simulation`=`Totcarrier[1]`/`Tot[1]`,
+    .keep = "none"
+  )
+out_odin[1,1]=1
+
+df2<-data.frame(`t`=numeric(), `Cm1_Observation`=numeric(), `Cm2_Observation`=numeric(),`Totcarrier_Observation`=numeric() )
+df2[1,]<-c(1,0.81,0.19,0.64)
+df2[2,]<-c(8,0.33,0.67,0.13)
+df_merged=merge(out_odin,df2, by="t")
+
+
+out_long= df_merged %>% pivot_longer(
+  cols = `Cm1_Simulation`:`Totcarrier_Observation`,
+  names_to = c("Compartment","Datas"),
+  names_pattern = "([A-Za-z0-9]+)_(.+)",
+  values_to = "count"
+)
+
+
+# Ouvrir un périphérique graphique pour sauvegarder le plot en tant qu'image PNG
+png("C:\\Users\\maurinau\\Documents\\AntibioticShortage\\Figures\\FigureS7Amox.png", width =1000, height = 800)
+
+ggplot(out_long,aes(x=Compartment,y=count, fill=Compartment,alpha = factor(t),pattern = Datas))+
+  geom_col_pattern( position = position_dodge(), color = "black")+
+   scale_fill_manual(
+    name = "Données",
+    values = c("Cm1" = "#32CD32",  
+               "Cm2" = "#FF6347", 
+               "Totcarrier" = "#1E90FF"),
+    guide = guide_legend(override.aes = list(pattern = "none")) 
+  ) +
+  scale_alpha_manual(
+    values = c(0.4, 1),  # Plus clair pour t=0, plus opaque pour t=365
+    name = "Time",
+    labels = c("Baseline", "8-days"),
+    guide = guide_legend(override.aes = list( pattern = c("none", "none")))
+  ) +
+  scale_pattern_manual(
+    values = c("Simulation" = "stripe", "Observation" = "none"),  # Ajustez les motifs selon votre colonne 'Datas'
+    name = "Datas"
+  ) +
+  geom_errorbar(data = dplyr::filter(out_long,t==1 & Datas=="Observation" ), aes(ymin=count-1.96*sqrt((count*(1-count))/86), ymax=count+1.96*sqrt((count*(1-count))/86)), position=position_nudge(x=-0.33),width = 0.2)+
+  
+   geom_errorbar(data = dplyr::filter(out_long,t==8 & Datas=="Observation"), aes(ymin=count-1.96*sqrt((count*(1-count))/86), ymax=count+1.96*sqrt((count*(1-count))/86)), position=position_nudge(x=0.1),width = 0.2)+
+  
+  geom_text(aes(label=round(count,2)),position = position_dodge(0.9),vjust=-2,show.legend = FALSE,size=7,face = "bold")+
+  xlab("Outcome")+ylab("Proportion")+
+  scale_x_discrete(labels = c("PSSP", "PNSP", "TotCarrier"))+
+  theme_clean()+
+  theme(legend.background = element_rect(fill = "white", colour = "black"),legend.key.width =unit(1.4, "cm"),
+        legend.title=element_text(size = 22),legend.text=element_text(size = 20),
+        legend.direction = "vertical",legend.box = "horizontal", legend.box.just = "center",legend.position = "bottom",
+        axis.text = element_text(size =18),axis.title = element_text(size = 20),
+        strip.text = element_text(size = 25, face = "bold",hjust = 0.5),strip.placement = "outside",
+        panel.border = element_blank() ,plot.background = element_blank())
+
+# Fermer le périphérique graphique
+dev.off()
+
+
+
+
+
+```
+
+
+
+
