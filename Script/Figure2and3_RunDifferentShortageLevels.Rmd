@@ -34,7 +34,7 @@ library(gridExtra)
 ```
 
 
-```{r plot boxplot penurie proportion 0% à 100%}
+```{r plot figure 2 boxplot penurie proportion 0% à 100%}
 
 dfnew<-read.csv("Files\\fichierCombine070225_0to100.csv")
 
@@ -93,11 +93,13 @@ dev.off()
 ```
 
 
-```{r ggplot evolution Figure 2 valeur d'evolutions observees }
+```{r ggplot evolution Figure 2 boxplot valeur d'evolutions observees }
 
-dfnew<-read.csv("C:\\Users\\maurinau\\Documents\\AntibioticShortage\\fichierCombine0209_tri.csv")
+dfnew<-read.csv("Files\\fichierCombine070225_0to100.csv")
 
 df<-dfnew
+df <- subset(df, Reduction %in% c("1","6","11","16")) #0%, 25%, #50% and 75% of shortage
+
 df$Value <- as.numeric(df$Value)
 df <- df %>% filter(!is.na(Value))
 
@@ -121,7 +123,7 @@ df_summary
 
 
 
-```{r histo figure 3 avec incertitude et points}
+```{r histo figure 3 avec incertitude et points for Lambda}
 
 ##datframe pour barplot
 dfnew<-read.csv("Files\\fichierCombine070225_0to100.csv")
@@ -248,20 +250,52 @@ dev.off()
 ```
 
 
+```{r ggplot evolution Figure 3  valeur d'evolutions observees }
+
+dfnew<-read.csv("Files\\fichierCombine070225_0to100.csv")
+
+df<-dfnew
+df <- subset(df, Reduction %in% c("1","11")) #0%, and 50% of shortage
+
+df$Value <- as.numeric(df$Value)
+df <- df %>% filter(!is.na(Value))
+
+baseline <- df %>%
+  filter(Reduction == 1) %>%
+  select(Scenario, Outcome, Lambda,pi, baseline_value = Value)
+
+# # Joindre les valeurs baseline aux données originales
+# df <- df %>%
+#   left_join(baseline, by = c("Scenario", "Outcome", "Lambda","pi")) %>%
+#   mutate(Variation =(Value - baseline_value)*100/baseline_value)
+
+df <- df %>%
+  left_join(baseline, by = c("Scenario", "Outcome", "Lambda","pi")) %>%
+  mutate(Variation =(Value))
+
+df_summary <- df %>%
+  group_by(Scenario,Reduction, Outcome) %>%
+  summarize(MinValue = min(Variation),MaxValue = max(Variation), MedianValue = median(Variation) )
+
+df_summary
+
+```
+
+
+
+
+
 
 ## Supplementary figure with parameter varying only in 3 points : min, max and mean
 
+```{r histo figure 3 avec incertitude et points for pi}
 
-```{r plot supplmentary, fonctionne}
-
-dfnew<-read.csv("C:\\Users\\Aurélie\\Documents\\AntibioticShortage\\fichierCombine0511MaxMinMean.csv")
-
-## dataframe for proprotion-related outcomes
+##datframe pour barplot
+dfnew<-read.csv("Files\\fichierCombine070225_0to100.csv")
+#Proportion
 df<-dfnew
-#df<-subset(df, select = -X)
-df <- subset(df, pi==0.52)
-#df <- subset(df, Lambda >= 0.02 & Lambda <= 0.025)
-df <- subset(df, Reduction %in% c("1","3"))
+df<-subset(df, select = -X)
+df <- subset(df, Reduction %in% c("1","11")) #0% and #50% of shortage
 df <- subset(df, Outcome %in% c("PropAns","PropMr","PropAnsMr"))
 desired_order <- c("PropAns","PropMr","PropAnsMr")
 df$Outcome <- factor(df$Outcome, levels = (desired_order))
@@ -275,19 +309,14 @@ summary_statsP <- dfP %>%
   filter(Reduction == 1) %>%
   group_by(Outcome, Scenario) %>%
   summarize(
-    mean_value = median(Value),
+    median_value = median(Value),
     q1_value = quantile(Value, 0.25),
     q3_value = quantile(Value, 0.75)
   )
-
-
-## datframe for infections-related outcomes
-
+#Infections
 df<-dfnew
 #df<-subset(df, select = -X)
-df <- subset(df, pi==0.52)
-#df <- subset(df, Lambda >= 0.02 & Lambda <= 0.025)
-df <- subset(df, Reduction %in% c("1","3"))
+df <- subset(df, Reduction %in% c("1","11"))
 df <- subset(df, Outcome %in% c("IncidenceInfectionsGraves","IncidenceInfectionsGravesAns",
                    "IncidenceInfectionsGravesMr","IncidenceInfectionsGravesAnsMr"))
 
@@ -304,54 +333,86 @@ summary_statsI <- dfI %>%
   filter(Reduction == 1) %>%
   group_by(Outcome, Scenario) %>%
   summarize(
-    mean_value = median(Value),
+    median_value = median(Value),
     q1_value = quantile(Value, 0.25),
     q3_value = quantile(Value, 0.75)
   )
 
+##datframe pour points
+dfnew<-read.csv("Files\\fichierCombine070225MaxMinMean.csv")
+## dataframe for proprotion-related outcomes
+df<-dfnew
+#df<-subset(df, select = -X)
+#df <- subset(df, pi==0.52)
+df <- subset(df, Lambda >= 0.02 & Lambda <= 0.025)
+df <- subset(df, Reduction %in% c("1","3"))
+df <- subset(df, Outcome %in% c("PropAns","PropMr","PropAnsMr"))
+desired_order <- c("PropAns","PropMr","PropAnsMr")
+df$Outcome <- factor(df$Outcome, levels = (desired_order))
+df$Value <- as.numeric(df$Value)
+dfP_point<-df
 
-# Ouvrir un périphérique graphique pour sauvegarder le plot en tant qu'image PNG
-png("C:\\Users\\Aurélie\\Documents\\AntibioticShortage\\Figures\\Figure3Supp.png", width = 1400, height = 750)
+df<-dfnew
+#df<-subset(df, select = -X)
+#df <- subset(df, pi==0.52)
+df <- subset(df, Lambda >= 0.02 & Lambda <= 0.025)
+df <- subset(df, Reduction %in% c("1","3"))
+df <- subset(df, Outcome %in% c("IncidenceInfectionsGraves","IncidenceInfectionsGravesAns",
+                   "IncidenceInfectionsGravesMr","IncidenceInfectionsGravesAnsMr"))
 
-pP<-ggplot(data = dfP %>% filter(Reduction == 3),aes(x=as.factor(Scenario),y=Value))+ #il faut utiliser la valeur Mean
-  geom_hline(data = summary_statsP, aes(yintercept = mean_value), color = "#008000", size = 1.5) +
+desired_order <- c("IncidenceInfectionsGraves","IncidenceInfectionsGravesAns",
+                   "IncidenceInfectionsGravesMr","IncidenceInfectionsGravesAnsMr")
+df$Outcome <- factor(df$Outcome, levels = (desired_order))
+df$Value <- as.numeric(df$Value)
+
+dfI_point<-df
+
+
+pP<-ggplot(dfP,aes(x=as.factor(Scenario),y=Value,fill=factor(Reduction)))+ #il faut utiliser la valeur Mean
+  geom_hline(data = summary_statsP, aes(yintercept = median_value), color = "#008000", size = 1.5) +
   geom_hline(data = summary_statsP, aes(yintercept = q1_value), color = "#008000", linetype = "dashed") +
   geom_hline(data = summary_statsP, aes(yintercept = q3_value), color = "#008000", linetype = "dashed") +
-  geom_point(aes(colour = factor(Lambda)),size=5)+
-  scale_colour_manual(values = c( "#FFD700",  "#FFA500", "#FF4500"),name="Lambda",labels = c("Min","Mean","Max"))+
+  geom_boxplot(data = dfP %>% filter(Reduction == 11), position = position_dodge(),show.legend = FALSE)+
+  geom_point(data = dfP_point %>% filter(Reduction == 3),aes(x=as.factor(Scenario),y=Value, colour = factor(pi)),size=5)+
+  scale_colour_manual(values = c( "#FFD700",  "#FFA500", "#FF4500"),name="pi",labels = c("Min","Mean","Max"))+
+  scale_fill_manual(name = "Réduction (%)", labels = c( "50"), values = c("11"="#FFD700"), guide = "none") +
   xlab("")+ylab(expression(atop("Proportion", paste(""))))+
-  facet_wrap(~Outcome,labeller = labeller(Outcome = c("PropAns" = "Penicillin-non-\nsusceptible strains","PropMr"="Macrolide-resistant \nstrains", "PropAnsMr"="Multidrug-resistant \nstrains")),scales = "free_y")+
+  facet_wrap(~Outcome,labeller = labeller(Outcome = c("PropAns" = "Penicillin-non-susceptible\nS. pneumoniae","PropMr"="Macrolide-resistant\nS. pneumoniae", "PropAnsMr"="Multidrug-resistant\nS. pneumoniae")),scales = "free_y")+
   scale_x_discrete(labels = c("S1", "S2", "S3","S4"))+
-  theme_clean()+
-  theme(axis.text = element_text(size = 18),axis.title = element_text(size = 20),
-        legend.title=element_text(size = 18),legend.text=element_text(size = 16),
+   theme_clean()+
+  theme(axis.text = element_text(size = 16),axis.title = element_text(size = 18),
+        legend.title=element_text(size = 16),legend.text=element_text(size = 14),
         legend.key.height = unit(0.8, "cm"),legend.key.width = unit(0.8, "cm"),
-        strip.text = element_text(size = 20, face = "bold",hjust = 0.5),strip.placement = "outside",
+        strip.text = element_text(size = 18, face = "bold",hjust = 0.5),strip.placement = "outside",
         panel.border =element_blank(),plot.background = element_blank())
 
 
-pI<-ggplot(data = dfI %>% filter(Reduction == 3),aes(x=as.factor(Scenario),y=Value))+
-  geom_hline(data = summary_statsI, aes(yintercept = mean_value), color = "#008000", size = 1.5) +
+pI<-ggplot(dfI,aes(x=as.factor(Scenario),y=Value,fill=factor(Reduction)))+
+  geom_hline(data = summary_statsI, aes(yintercept = median_value), color = "#008000", size = 1.5) +
   geom_hline(data = summary_statsI, aes(yintercept = q1_value), color = "#008000", linetype = "dashed") +
   geom_hline(data = summary_statsI, aes(yintercept = q3_value), color = "#008000", linetype = "dashed") +
-  geom_point(aes(colour = factor(Lambda)),size=5)+
-  scale_colour_manual(values = c( "#FFD700",  "#FFA500", "#FF4500"),name="Lambda",labels = c("Min","Mean","Max"))+
+  geom_boxplot(data = dfI %>% filter(Reduction == 11), position = position_dodge(),show.legend = FALSE)+
+  geom_point(data = dfI_point %>% filter(Reduction == 3),aes(x=as.factor(Scenario),y=Value, colour = factor(pi)),size=5)+
+  scale_colour_manual(values = c( "#FFD700",  "#FFA500", "#FF4500"),name="pi",labels = c("Min","Mean","Max"))+
+  scale_fill_manual(name = "Réduction (%)", labels = c("50"),values=c("11"="#FFD700"))+
   xlab("Strategies")+ylab(expression(atop("Annual incidence (per 100,000 children)", paste(""))))+
   #geom_text(aes(label=round(as.double(Value),2),colour=factor(Reduction)),position = position_dodge(0.9),vjust=-0.5,show.legend = FALSE)+
   facet_wrap(~Outcome,labeller =  labeller(Outcome = c("IncidenceInfectionsGraves" = "IPD","IncidenceInfectionsGravesAns"="IPD penicillin-non-\nsusceptible", "IncidenceInfectionsGravesMr"="IPD macrolide-\nresistant ","IncidenceInfectionsGravesAnsMr"="IPD multidrug- \nresistant")),scales = "free_y",ncol=4)+scale_x_discrete(labels = c("S1", "S2", "S3","S4"))+
   theme_clean()+
-  theme(axis.text = element_text(size = 18),axis.title = element_text(size = 20),
-        legend.title=element_text(size = 18),legend.text=element_text(size = 16),
+  theme(axis.text = element_text(size = 16),axis.title = element_text(size = 18),
+        legend.title=element_text(size = 16),legend.text=element_text(size = 14),
         legend.key.height = unit(0.8, "cm"),legend.key.width = unit(0.8, "cm"),
-        strip.text = element_text(size = 20, face = "bold",hjust = 0.5),strip.placement = "outside",
+        strip.text = element_text(size = 18, face = "bold",hjust = 0.5),strip.placement = "outside",
         panel.border =element_blank(),plot.background = element_blank(),legend.position = "none")
 
+
+pdf("Figures\\Figure3pi.pdf", width = 1400/81, height = 750/81)
 grid.arrange(pP,pI,  layout_matrix = rbind(c(1,1,1,1,1,1,1,1,1,1,1,1,1,NA,NA,NA,NA),c(2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2)))
 
 #grid.arrange(pP,pI,  layout_matrix = rbind(c(1,1,1,1,1,1,1,1,1,1,1,1),c(2,2,2,2,2,2,2,2,2,2,NA,NA)))
-
-# Fermer le périphérique graphique
 dev.off()
 
 ```
+
+
 

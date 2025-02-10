@@ -387,6 +387,66 @@ dev.off()
 ```
 
 
+```{r evolution figure 1 observées avec IC }
+
+dfnew<-read.csv("Files\\fichierCombine070225_figure1.csv")
+df<-dfnew
+df<-subset(df, select = -X)
+
+out_long= df %>% pivot_longer(
+  cols = `Pen_S`:`Cross_T`,
+  names_to = c("Antibiotique","Compartment"),
+  names_pattern = "([A-Za-z0-9]+)_(.)",
+  values_to = "count"
+)
+out_long <- subset(out_long, Antibiotique %in% c("Pen","Macro","Multi"))
+
+out_long <- subset(out_long, Reduction %in% c("3"))
+out_long <- subset(out_long, select=-Reduction)
+out_long <- subset(out_long, select=-Rcr)
+
+out_long$Compartment <- factor(out_long$Compartment, levels = c("S", "I", "R"))
+out_long$Antibiotique <- factor(out_long$Antibiotique, levels = c("Pen", "Macro", "Multi"))
+
+out_long<-as.data.frame(out_long)
+out_long$t <- as.factor(out_long$t)
+
+# Calculer les statistiques pour les lignes à 0% de réduction
+out_long <- out_long %>% 
+  group_by(t,Scenario,Antibiotique,Compartment) %>%
+  summarize(
+    median_value = median(count),
+    min=min(count),
+    max=max(count)
+  )
+
+# Séparer les données en deux DataFrames
+df_t0 <- out_long %>% filter(t == 0)
+df_t365 <- out_long %>% filter(t == 365)
+
+# Renommer les colonnes de df_t365 pour pouvoir faire la jointure
+df_t365 <- df_t365 %>%rename(median_value_365 = median_value)
+df_t365 <- df_t365 %>%rename(min_365 = min)
+df_t365 <- df_t365 %>%rename(max_365 = max)
+
+# Faire la jointure sur les colonnes de paramètres
+merged_df <- df_t0 %>%inner_join(df_t365, by = c( "Scenario", "Antibiotique", "Compartment"))
+
+# Calculer la variation
+merged_df <- merged_df %>%
+  mutate(Variation_Median = ((median_value_365 - median_value) * 100) / median_value) %>%
+  mutate(Variation_Min= ((min_365 - min) * 100) / min) %>%
+  mutate(Variation_Max = ((max_365 - max) * 100) / max) %>%
+  select(Scenario, Antibiotique, Compartment, Variation_Median,Variation_Min, Variation_Max)
+
+# Afficher le résultat
+print(merged_df)
+
+```
+
+
+
+
 ```{r ggplot evolution Figure 1 with Rcr=0.58 and 0.28}
 
 

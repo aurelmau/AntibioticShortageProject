@@ -439,8 +439,8 @@ ValeursGammaMacro=c(5,6,7,8)
 dfnew<-data.frame()
 for(j in valeursResistanceAmox){
   for(k in valeursResistanceMacro){
-    for(l in valeursRcr ){
-        parami=c(l,j,k,0.95,0.083,0.52,1/43,7,7) #c(0.58,0.43,0.28,0.95,0.083,0.52,1/43,7,7)
+    for(l in Valeurspi ){
+        parami=c(0.58,j,k,0.95,0.083,l,1/43,7,7) #c(0.58,0.43,0.28,0.95,0.083,0.52,1/43,7,7)
         df_resistance <- RunShortage9param(parami)
         dfnew=rbind(dfnew,df_resistance)
           }
@@ -448,7 +448,7 @@ for(j in valeursResistanceAmox){
       }
 
 
-write.csv(dfnew,"Files\\dataframeVariationPNSP_MR_Rcr.csv")
+write.csv(dfnew,"Files\\dataframeVariationPNSP_MR_pi.csv")
 
 ```
 
@@ -568,18 +568,18 @@ p<-ggplot(data = subset(df, Value == MinValue), aes(x = ResistanceAmox, y = Resi
   geom_point(data=df_filtered, size=5) +
   xlab(expression("Initial proportion of PNSP strains (PNSP"^init*")")) +
   ylab(expression("Initial proportion of MRSP strains (MRSP"^init*")"))+
-  scale_color_manual(name="Strategies",values = c("blue" ,"green", "red","#FDC257"),labels = c("S1","S2","S3","S4")) +  # Définir les couleurs
+  scale_color_manual(name="Strategies",values = c("red" ,"green", "blue","#FDC257"),labels = c("S1","S2","S3","S4")) +  # Définir les couleurs
   facet_grid(Rcr~Outcome,labeller = labeller_function)+
   theme_bw()+
-  theme(axis.text = element_text(size = 24),axis.title = element_text(size = 32),
-        legend.text=element_text(size = 26),legend.title=element_text(size = 32),
+  theme(axis.text = element_text(size = 22),axis.title = element_text(size = 28),
+        legend.text=element_text(size = 26),legend.title=element_text(size = 28),
         legend.key.height = unit(1, "cm"),legend.key.width = unit(1, "cm"),
-        strip.text.x = element_text(size = 28, face = "bold"), # Facettes Outcome
-        strip.text.y = element_text(size = 28, face = "bold"), # Facettes Rcr
+        strip.text.x = element_text(size = 24, face = "bold"), # Facettes Outcome
+        strip.text.y = element_text(size = 24, face = "bold"), # Facettes Rcr
         strip.background = element_rect(fill = "white"),
         panel.border =element_rect(colour = "black", fill = NA, size = 1.5))
   
-pdf("Figures\\FigurePNSP_MR_Rcr.png", width = 2200/81, height = 1200/81)
+pdf("Figures\\FigurePNSP_MR_Rcr.pdf", width = 2200/81, height = 1200/81)
 p
 dev.off()
 
@@ -589,18 +589,13 @@ dev.off()
 
 ```{r plot courbe 2d ggplot couleur selon le meilleur scénario pourinitial Gamma Amox }
 
-dfnew<-read.csv("C:\\Users\\maurinau\\Documents\\AntibioticShortage\\dataframeVariationPNSP_MR_GammaAmox.csv")
+dfnew<-read.csv("Files\\dataframeVariationPNSP_MR_GammaAmox.csv")
 dfnew<-subset(dfnew, select = -X)
 df<-dfnew
 
 # Filtrer les données selon la condition Rcr * Ramox >= Rmacro
 df <- df %>% filter(Rcr * ResistanceAmox <= ResistanceMacro)
 
-df <- subset(df, select= -ConsoAmox )
-df <- subset(df, select= -Rcr )
-df <- subset(df, select= -pi)
-df <- subset(df, select= -Lambda )
-df <- subset(df, select= -Gama_Macro )
 
 df$Value <- as.numeric(df$Value)
 df$ResistanceAmox <- as.numeric(df$ResistanceAmox)
@@ -608,9 +603,14 @@ df$ResistanceMacro <- as.numeric(df$ResistanceMacro)
 
 
 
-desired_order <- c("PropAs","PropAns","PropMs","PropMr","PropAnsMr",
-                   "IncidenceInfectionsGraves","IncidenceInfectionsGravesAns",
-                   "IncidenceInfectionsGravesMr","IncidenceInfectionsGravesAnsMr")
+df <- subset(df, Outcome %in% c("PropMDR","PropMR","PropPNSP",
+                   "IncidenceInfectionsGraves","IncidenceInfectionsGravesPNSP",
+                   "IncidenceInfectionsGravesMR","IncidenceInfectionsGravesMDR","IncidenceInfectionsGravesMDS"))
+
+
+desired_order <- c("PropPNSP","PropMR","PropMDR",
+                   "IncidenceInfectionsGraves","IncidenceInfectionsGravesPNSP",
+                   "IncidenceInfectionsGravesMR","IncidenceInfectionsGravesMDR","IncidenceInfectionsGravesMDS")
 
 df$Outcome <- factor(df$Outcome, levels = (desired_order))
 
@@ -679,13 +679,14 @@ colnames(df)[colnames(df) == "MinValue.x"] <- "MinValue"
 
 labeller_function <- labeller(
   Outcome = c(
-    "PropAns" ="Penicillin-\nnon-susceptible\nS. pneumoniae",
-    "PropMr" = "Macrolide-\nresistant\nS. pneumoniae",
-    "PropAnsMr"="Multidrug-\nresistant\nS. pneumoniae",
+    "PropPNSP" = "Penicillin-\nnon-susceptible\nS. pneumoniae",
+    "PropMR" = "Macrolide-\nresistant\nS. pneumoniae",
+    "PropMDR"="Multidrug-\nresistant\nS. pneumoniae",
     "IncidenceInfectionsGraves" = "IPD",
-    "IncidenceInfectionsGravesAns"="IPD penicillin-non-\nsusceptible ",
-    "IncidenceInfectionsGravesMr"="IPD macrolide-\nresistant",
-    "IncidenceInfectionsGravesAnsMr"="IPD multidrug-\nresistant "
+    "IncidenceInfectionsGravesPNSP"="IPD penicillin- \nnon-susceptible ",
+    "IncidenceInfectionsGravesMR"="IPD macrolide-\nresistant",
+    "IncidenceInfectionsGravesMDR"="IPD multidrug-\nresistant ",
+    "IncidenceInfectionsGravesMDS"="IPD susceptible "
   ),
   Gama_Amox = as_labeller(c(
     "5" = "gamma[Amox]==5",
@@ -697,25 +698,24 @@ labeller_function <- labeller(
 
 
 
-png("C:\\Users\\maurinau\\Documents\\AntibioticShortage\\Figures\\FigurePNSP_MR_GammaAmox.png", width = 1900, height = 1000)
-
-ggplot(data = subset(df, Value == MinValue), aes(x = ResistanceAmox, y = ResistanceMacro,color = factor(Scenario)))+
+p<-ggplot(data = subset(df, Value == MinValue), aes(x = ResistanceAmox, y = ResistanceMacro,color = factor(Scenario)))+
   geom_point(size=3) +
   geom_point(data=df_filtered, size=5) +
   xlab(expression("Initial proportion of PNSP strains (PNSP"^init*")")) +
   ylab(expression("Initial proportion of MRSP strains (MRSP"^init*")"))+
-  scale_color_manual(name="Strategies",values = c("blue" ,"green", "red","#FDC257"),labels = c("S1","S2","S3","S4")) +  # Définir les couleurs
+  scale_color_manual(name="Strategies",values = c("red" ,"green", "blue","#FDC257"),labels = c("S1","S2","S3","S4")) +  # Définir les couleurs
   facet_grid(Gama_Amox~Outcome,labeller = labeller_function)+
   theme_bw()+
-  theme(axis.text = element_text(size = 22),axis.title = element_text(size = 24),
-        legend.text=element_text(size = 22),legend.title=element_text(size = 24),
-        legend.key.height = unit(0.8, "cm"),legend.key.width = unit(0.8, "cm"),
-        strip.text.x = element_text(size = 22, face = "bold"), # Facettes Outcome
-        strip.text.y = element_text(size = 22, face = "bold"), # Facettes Rcr
+  theme(axis.text = element_text(size = 22),axis.title = element_text(size = 28),
+        legend.text=element_text(size = 26),legend.title=element_text(size = 28),
+        legend.key.height = unit(1, "cm"),legend.key.width = unit(1, "cm"),
+        strip.text.x = element_text(size = 24, face = "bold"), # Facettes Outcome
+        strip.text.y = element_text(size = 24, face = "bold"), # Facettes Rcr
         strip.background = element_rect(fill = "white"),
         panel.border =element_rect(colour = "black", fill = NA, size = 1.5))
-  
-  # Fermer le périphérique graphique
+
+pdf("Figures\\FigurePNSP_MR_GammaAmox.pdf", width = 2200/81, height = 1200/81)
+p
 dev.off()
 
 
@@ -725,27 +725,27 @@ dev.off()
 
 ```{r plot courbe 2d ggplot couleur selon le meilleur scénario pourinitial prevelence pi }
 
-dfnew<-read.csv("C:\\Users\\maurinau\\Documents\\AntibioticShortage\\dataframeVariationPNSP_MR_pi.csv")
+dfnew<-read.csv("Files\\dataframeVariationPNSP_MR_pi.csv")
 dfnew<-subset(dfnew, select = -X)
 df<-dfnew
 
 # Filtrer les données selon la condition Rcr * Ramox >= Rmacro
 df <- df %>% filter(Rcr * ResistanceAmox <= ResistanceMacro)
 
-df <- subset(df, select= -ConsoAmox)
-df <- subset(df, select= -Rcr)
-df <- subset(df, select= -Lambda)
-df <- subset(df, select= -Gama_Amox)
-df <- subset(df, select= -Gama_Macro)
-
 df$Value <- as.numeric(df$Value)
 df$ResistanceAmox <- as.numeric(df$ResistanceAmox)
 df$ResistanceMacro <- as.numeric(df$ResistanceMacro)
 
 
-desired_order <- c("PropAs","PropAns","PropMs","PropMr","PropAnsMr",
-                   "IncidenceInfectionsGraves","IncidenceInfectionsGravesAns",
-                   "IncidenceInfectionsGravesMr","IncidenceInfectionsGravesAnsMr")
+
+df <- subset(df, Outcome %in% c("PropMDR","PropMR","PropPNSP",
+                   "IncidenceInfectionsGraves","IncidenceInfectionsGravesPNSP",
+                   "IncidenceInfectionsGravesMR","IncidenceInfectionsGravesMDR","IncidenceInfectionsGravesMDS"))
+
+
+desired_order <- c("PropPNSP","PropMR","PropMDR",
+                   "IncidenceInfectionsGraves","IncidenceInfectionsGravesPNSP",
+                   "IncidenceInfectionsGravesMR","IncidenceInfectionsGravesMDR","IncidenceInfectionsGravesMDS")
 
 df$Outcome <- factor(df$Outcome, levels = (desired_order))
 
@@ -815,13 +815,14 @@ colnames(df)[colnames(df) == "MinValue.x"] <- "MinValue"
 
 labeller_function <- labeller(
   Outcome = c(
-    "PropAns" ="Penicillin-\nnon-susceptible\nS. pneumoniae",
-    "PropMr" = "Macrolide-\nresistant\nS. pneumoniae",
-    "PropAnsMr"="Multidrug-\nresistant\nS. pneumoniae",
+    "PropPNSP" = "Penicillin-\nnon-susceptible\nS. pneumoniae",
+    "PropMR" = "Macrolide-\nresistant\nS. pneumoniae",
+    "PropMDR"="Multidrug-\nresistant\nS. pneumoniae",
     "IncidenceInfectionsGraves" = "IPD",
-    "IncidenceInfectionsGravesAns"="IPD penicillin-non-\nsusceptible ",
-    "IncidenceInfectionsGravesMr"="IPD macrolide-\nresistant",
-    "IncidenceInfectionsGravesAnsMr"="IPD multidrug-\nresistant "
+    "IncidenceInfectionsGravesPNSP"="IPD penicillin- \nnon-susceptible ",
+    "IncidenceInfectionsGravesMR"="IPD macrolide-\nresistant",
+    "IncidenceInfectionsGravesMDR"="IPD multidrug-\nresistant ",
+    "IncidenceInfectionsGravesMDS"="IPD susceptible "
   ),
   pi = as_labeller(c(
     "0.35" = "p^'init'==0.35",
@@ -831,14 +832,12 @@ labeller_function <- labeller(
   ), default = label_parsed)
 )
 
-png("C:\\Users\\maurinau\\Documents\\AntibioticShortage\\Figures\\FigurePNSP_MR_pi.png", width = 1900, height = 1000)
-
-ggplot(data = subset(df, Value == MinValue), aes(x = ResistanceAmox, y = ResistanceMacro,color = factor(Scenario)))+
+p<-ggplot(data = subset(df, Value == MinValue), aes(x = ResistanceAmox, y = ResistanceMacro,color = factor(Scenario)))+
   geom_point(size=3) +
   geom_point(data=df_filtered, size=5) +
   xlab(expression("Initial proportion of PNSP strains (PNSP"^init*")")) +
   ylab(expression("Initial proportion of MRSP strains (MRSP"^init*")"))+
-  scale_color_manual(name="Strategies",values = c("blue" ,"green", "red","#FDC257"),labels = c("S1","S2","S3","S4")) +  # Définir les couleurs
+  scale_color_manual(name="Strategies",values = c("red" ,"green", "blue","#FDC257"),labels = c("S1","S2","S3","S4")) +  # Définir les couleurs
   facet_grid(pi~Outcome,labeller = labeller_function)+
   theme_bw()+
   theme(axis.text = element_text(size = 22),axis.title = element_text(size = 24),
@@ -849,9 +848,9 @@ ggplot(data = subset(df, Value == MinValue), aes(x = ResistanceAmox, y = Resista
         strip.background = element_rect(fill = "white"),
         panel.border =element_rect(colour = "black", fill = NA, size = 1.5))
   
-  # Fermer le périphérique graphique
+pdf("Figures\\FigurePNSP_MR_pi.pdf", width = 2200/81, height = 1200/81)
+p
 dev.off()
-
 
 ```
 
