@@ -399,6 +399,7 @@ simulation <- function(param){
           `Cm6[1]`=`UCm6_S[1]`+`AECm6_S[1]`+`MECm6_S[1]`+`UCm6_R[1]`+`AECm6_R[1]`+`MECm6_R[1]`,
           `Cm7[1]`=`UCm7_S[1]`+`AECm7_S[1]`+`MECm7_S[1]`+`UCm7_R[1]`+`AECm7_R[1]`+`MECm7_R[1]`,
           `Cm8[1]`=`UCm8_S[1]`+`AECm8_S[1]`+`MECm8_S[1]`+`UCm8_R[1]`+`AECm8_R[1]`+`MECm8_R[1]`,
+          `CmMDS[1]`=`UCm1_S[1]`+`AECm1_S[1]`+`MECm1_S[1]`,
           `CmS[1]`=`UCm1_S[1]`+`AECm1_S[1]`+`MECm1_S[1]`+`UCm2_S[1]`+`AECm2_S[1]`+`MECm2_S[1]`+`UCm3_S[1]`+`AECm3_S[1]`+`MECm3_S[1]`+`UCm4_S[1]`+`AECm4_S[1]`+`MECm4_S[1]`+`UCm5_S[1]`+`AECm5_S[1]`+`MECm5_S[1]`+`UCm6_S[1]`+`AECm6_S[1]`+`MECm6_S[1]`+`UCm7_S[1]`+`AECm7_S[1]`+`MECm7_S[1]`+`UCm8_S[1]`+`AECm8_S[1]`+`MECm8_S[1]`,
           `CmR[1]`=`UCm1_R[1]`+`AECm1_R[1]`+`MECm1_R[1]`+`UCm2_R[1]`+`AECm2_R[1]`+`MECm2_R[1]`+`UCm3_R[1]`+`AECm3_R[1]`+`MECm3_R[1]`+`UCm4_R[1]`+`AECm4_R[1]`+`MECm4_R[1]`+`UCm5_R[1]`+`AECm5_R[1]`+`MECm5_R[1]`+`UCm6_R[1]`+`AECm6_R[1]`+`MECm6_R[1]`+`UCm7_R[1]`+`AECm7_R[1]`+`MECm7_R[1]`+`UCm8_R[1]`+`AECm8_R[1]`+`MECm8_R[1]`,
           `CmNsR[1]`=`UCm2_R[1]`+`AECm2_R[1]`+`MECm2_R[1]`+`UCm3_R[1]`+`AECm3_R[1]`+`MECm3_R[1]`+`UCm4_R[1]`+`AECm4_R[1]`+`MECm4_R[1]`+`UCm5_R[1]`+`AECm5_R[1]`+`MECm5_R[1]`+`UCm6_R[1]`+`AECm6_R[1]`+`MECm6_R[1]`+`UCm7_R[1]`+`AECm7_R[1]`+`MECm7_R[1]`+`UCm8_R[1]`+`AECm8_R[1]`+`MECm8_R[1]`,
@@ -412,6 +413,7 @@ simulation <- function(param){
       out_odin = out_odin %>%
         mutate(
           `InfectionsGraves[1]`=InvasionRate*`Totcarrier[1]`,
+          `InfectionsGravesPSSPMS[1]`=InvasionRate*`CmMDS[1]`,
           `InfectionsGravesPNSP[1]`=InvasionRate*(`Cm2[1]`+`Cm3[1]`+`Cm4[1]`+`Cm5[1]`+`Cm6[1]`+`Cm7[1]`+`Cm8[1]`),
           `InfectionsGravesMR[1]`=InvasionRate*`CmR[1]`,
           `InfectionsGravesPNSPMR[1]`=InvasionRate*`CmNsR[1]`,
@@ -420,6 +422,7 @@ simulation <- function(param){
       out_odin = out_odin %>%
         mutate(
           `InfectionsGravesCumulees[1]`=cumsum(`InfectionsGraves[1]`),
+          `InfectionsGravesPSSPMSCumulees[1]`=cumsum(`InfectionsGravesPSSPMS[1]`),
           `InfectionsGravesPNSPCumulees[1]`=cumsum(`InfectionsGravesPNSP[1]`),
           `InfectionsGravesMRCumulees[1]`=cumsum(`InfectionsGravesMR[1]`),
           `InfectionsGravesPNSPMRCumulees[1]`=cumsum(`InfectionsGravesPNSPMR[1]`),
@@ -439,6 +442,8 @@ simulation <- function(param){
       
       I1<-out_odin$`InfectionsGravesCumulees[1]`*100000/(70000000*0.055)
       
+      IMDS<-out_odin$`InfectionsGravesPSSPMSCumulees[1]` *1000000/(70000000*0.055)
+      
       IAns1<-out_odin$`InfectionsGravesPNSPCumulees[1]`*100000/(70000000*0.055)
       
       IMr1<-out_odin$`InfectionsGravesMRCumulees[1]`*100000/(70000000*0.055)
@@ -450,6 +455,7 @@ simulation <- function(param){
       outputAnsMr=AnsMr1
       
       outputIgrave=I1
+      outputIgraveMDS=IMDS
       outputIgraveAns=IAns1
       outputIgraveMr=IMr1
       outputIgraveAnsMr=IAnsMr1
@@ -459,9 +465,10 @@ simulation <- function(param){
       df2[2,]<-c(k,j,Lambda,pi,"PropMr",outputMr)
       df2[3,]<-c(k,j,Lambda,pi,"PropAnsMr",outputAnsMr)
       df2[4,]<-c(k,j,Lambda,pi,"IncidenceInfectionsGraves",outputIgrave)
-      df2[5,]<-c(k,j,Lambda,pi,"IncidenceInfectionsGravesAns",outputIgraveAns)
-      df2[6,]<-c(k,j,Lambda,pi,"IncidenceInfectionsGravesMr",outputIgraveMr)
-      df2[7,]<-c(k,j,Lambda,pi,"IncidenceInfectionsGravesAnsMr",outputIgraveAnsMr)
+      df2[5,]<-c(k,j,Lambda,pi,"IncidenceInfectionsGravesMDS",outputIgraveMDS)
+      df2[6,]<-c(k,j,Lambda,pi,"IncidenceInfectionsGravesAns",outputIgraveAns)
+      df2[7,]<-c(k,j,Lambda,pi,"IncidenceInfectionsGravesMr",outputIgraveMr)
+      df2[8,]<-c(k,j,Lambda,pi,"IncidenceInfectionsGravesAnsMr",outputIgraveAnsMr)
       
       df=rbind(df,df2)
     }
@@ -521,5 +528,5 @@ for (i in 1:nb_lhs_iterations) {
 }
 
 
-write.csv(dfnew,"Files\\fichierCombine070225_0to100.csv")
+write.csv(dfnew,"Files\\fichierCombine130225_0to100.csv")
 
