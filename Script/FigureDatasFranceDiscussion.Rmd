@@ -37,16 +37,17 @@ library(gridExtra)
 ```{r histo figure 3 avec incertitude}
 
 
-dfnew<-read.csv("Files\\fichierCombine070225_0to100.csv")#0% and 50% of shortage
+dfnew<-read.csv("Files\\fichierCombine130225_0to100.csv")#0% and 50% of shortage
 
 df<-dfnew
 df<-subset(df, select = -X)
 df <- subset(df, Reduction %in% c("1","11"))
 
-df <- subset(df, Outcome %in% c("IncidenceInfectionsGraves","IncidenceInfectionsGravesAns",
+df <- subset(df, Outcome %in% c("IncidenceInfectionsGraves","IncidenceInfectionsGravesMDS","IncidenceInfectionsGravesAns",
                    "IncidenceInfectionsGravesMr","IncidenceInfectionsGravesAnsMr"))
 
-desired_order <- c("IncidenceInfectionsGravesMDR","IncidenceInfectionsGravesMR","IncidenceInfectionsGravesPNSP","IncidenceInfectionsGravesMDS","IncidenceInfectionsGraves")
+desired_order <- c("IncidenceInfectionsGraves","IncidenceInfectionsGravesMDS","IncidenceInfectionsGravesAns","IncidenceInfectionsGravesMr","IncidenceInfectionsGravesAnsMr")
+
 df$Outcome <- factor(df$Outcome, levels = (desired_order))
 df$Value <- as.numeric(df$Value)
 
@@ -59,7 +60,7 @@ baseline <- df %>%
 # # Joindre les valeurs baseline aux données originales
 df <- df %>%
   left_join(baseline, by = c("Scenario", "Outcome", "Lambda","pi")) %>%
-  mutate(Variation =(Value - baseline_value))
+  mutate(Variation =(Value - baseline_value)*3.8*10)# en France 2.8 million d'enfant et là données pour 100,000 enfants et on veut pour 1 million
 
 df_summary <- df %>%
   group_by(Scenario,Reduction, Outcome) %>%

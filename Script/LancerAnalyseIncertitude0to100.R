@@ -442,7 +442,7 @@ simulation <- function(param){
       
       I1<-out_odin$`InfectionsGravesCumulees[1]`*100000/(70000000*0.055)
       
-      IMDS<-out_odin$`InfectionsGravesPSSPMSCumulees[1]` *1000000/(70000000*0.055)
+      IMDS<-out_odin$`InfectionsGravesPSSPMSCumulees[1]` *100000/(70000000*0.055)
       
       IAns1<-out_odin$`InfectionsGravesPNSPCumulees[1]`*100000/(70000000*0.055)
       
