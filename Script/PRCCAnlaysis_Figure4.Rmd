@@ -31,7 +31,7 @@ library(sensitivity)
 
 ```{r setup}
 
-gen <- odin::odin("C:\\Users\\Aurélie\\Documents\\AntibioticShortage\\Script\\DeuxAgeHuitResistanceDeuxAntibiosOdin.R")
+gen <- odin::odin("Script\\DeuxAgeHuitResistanceDeuxAntibiosOdin.R")
 
 #Donnes 2021 otites pour penicillines: 
 d2=0.075/0.53; d3=0.075/0.53; d4=0.085/0.53; d5=0.09/0.53; d6=0.12/0.53; d7=0.075/0.53; d8=0.01/0.53 
@@ -178,7 +178,6 @@ OptimVi <- function(x,param) {
 
 ```{r lancement}
 
-
 RunShortage9param<-function(param){
   df<-data.frame(Scenario=numeric(), Reduction=numeric(), Outcome=character(), Value=numeric())
   Rcr=as.numeric(param[1])
@@ -195,40 +194,46 @@ RunShortage9param<-function(param){
   print(Vopti)
   for (k in 1:4){
     #print(k)
-    if(k==1){ ReductionDose=matrix(c(1,0.93,0.47,0.06,0,0,0,0,
-                                     1,0.93,0.06,0,0,0,0,0,
-                                     1,0.47,0,0,0,0,0,0,
-                                     1,0,0,0,0,0,0,0),ncol=4)
+    if(k==1){ReductionDose=matrix(c(1,0.93,0.47,0.06,0,0,0,0,
+          1,0.93,0.47,0.06,0,0,0,0,
+          1,0.93,0.47,0.06,0,0,0,0,
+          1,0.93,0.47,0.06,0,0,0,0),ncol=4)
     ReductionDuree=c(1,1,1,1)
-    ReductionFreq=c(1,1,1,1)
+    ReductionFreq=c(1,0.75,0.5,0.25)
     AugmentationFreq=c(0,0,0,0)
-    }
-    
-    if(k==2){ ReductionDose=matrix(c(1,0.93,0.47,0.06,0,0,0,0,
-                                     1,0.93,0.47,0.06,0,0,0,0,
-                                     1,0.93,0.47,0.06,0,0,0,0,
-                                     1,0.93,0.47,0.06,0,0,0,0),ncol=4)
+    A=matrix(c(0,0,0,1,1,1,1,1,0,0,0,1,1,1,1,1,0,0,0,1,1,1,1,1,0,0,0,1,1,1,1,1),nrow =4 ,ncol=8,byrow = TRUE)
+     }
+     
+     if(k==2){ ReductionDose=matrix(c(1,0.93,0.47,0.06,0,0,0,0,
+          1,0.93,0.47,0.06,0,0,0,0,
+          1,0.93,0.47,0.06,0,0,0,0,
+          1,0.93,0.47,0.06,0,0,0,0),ncol=4)
     ReductionDuree=c(1,0.75,0.5,0.25)
     ReductionFreq=c(1,1,1,1)
     AugmentationFreq=c(0,0,0,0)
+    A=matrix(c(0,0,0,1,1,1,1,1,0,0,0,1,1,1,1,1,0,0,0,1,1,1,1,1,0,0,0,1,1,1,1,1),nrow =4 ,ncol=8,byrow = TRUE)
+     }
+     
+    if(k==3){ ReductionDose=matrix(c(1,0.93,0.47,0.06,0,0,0,0,
+          1,0.93,0.06,0,0,0,0,0,
+          1,0.47,0,0,0,0,0,0,
+          1,0.06,0,0,0,0,0,0),ncol=4)
+    ReductionDuree=c(1,1,1,1)
+    ReductionFreq=c(1,1,1,1)
+    AugmentationFreq=c(0,0,0,0)
+     A=matrix(c(0,0,0,1,1,1,1,1,
+               0,0,1,1,1,1,1,1,
+               0,0,1,1,1,1,1,1,
+               0,1,1,1,1,1,1,1),nrow =4 ,ncol=8,byrow = TRUE)
     }
-    
-    if(k==3){ReductionDose=matrix(c(1,0.93,0.47,0.06,0,0,0,0,
-                                    1,0.93,0.47,0.06,0,0,0,0,
-                                    1,0.93,0.47,0.06,0,0,0,0,
-                                    1,0.93,0.47,0.06,0,0,0,0),ncol=4)
-      ReductionDuree=c(1,1,1,1)
-      ReductionFreq=c(1,0.75,0.5,0.25)
-      AugmentationFreq=c(0,0,0,0)
-    }
-    
     if(k==4){ReductionDose=matrix(c(1,0.93,0.47,0.06,0,0,0,0,
-                                    1,0.93,0.47,0.06,0,0,0,0,
-                                    1,0.93,0.47,0.06,0,0,0,0,
-                                    1,0.93,0.47,0.06,0,0,0,0),ncol=4)
-      ReductionDuree=c(1,1,1,1)
-      ReductionFreq=c(1,0.75,0.5,0.25)
-      AugmentationFreq=c(0,0.25,0.5,0.75)}
+          1,0.93,0.47,0.06,0,0,0,0,
+          1,0.93,0.47,0.06,0,0,0,0,
+          1,0.93,0.47,0.06,0,0,0,0),ncol=4)
+    ReductionDuree=c(1,1,1,1)
+    ReductionFreq=c(1,0.75,0.5,0.25)
+    AugmentationFreq=c(0,0.25,0.5,0.75)
+    A=matrix(c(0,0,0,1,1,1,1,1,0,0,0,1,1,1,1,1,0,0,0,1,1,1,1,1,0,0,0,1,1,1,1,1),nrow =4 ,ncol=8,byrow = TRUE)}
     
     for(j in 1:4){
       #print(j)
@@ -288,7 +293,7 @@ RunShortage9param<-function(param){
                       
                    fA1=1, fA2=0.9999748 , fA3=0.9916096 , fA4=0.9420954 , fA5=0.9192299 , fA6=0.9192278 , fA7=0.9192375 , fA8=0.9194097 ,
                   fMS=1,fMR=0.9938509 ,
-                  a1=0,a2=0,a3=0,a4=1,a5=1,a6=1,a7=1,a8=1,
+                  a1=A[j,1],a2=A[j,2],a3=A[j,3],a4=A[j,4],a5=A[j,5],a6=A[j,6],a7=A[j,7],a8=A[j,8],
                   V=c(Vopti),
                       
                   Beta=matrix(c(1),nrow = 1, ncol = 1,byrow = TRUE),
@@ -407,7 +412,7 @@ RunShortage9param<-function(param){
     summary_stats <- df %>% 
     group_by(Outcome, Scenario) %>%
     summarize(
-      Variation = ((Value[Reduction == 3] - Value[Reduction == 1])*100) / Value[Reduction == 1])
+      Variation = (abs(Value[Reduction == 3] - Value[Reduction == 1])*100) / Value[Reduction == 1])
     
     df=as.data.frame(summary_stats)
     #print(df)
@@ -487,12 +492,12 @@ resultats_lhs=as.data.frame(resultats_lhs)
 
 resultats <- t(apply(resultats_lhs, 1, RunShortage9param)) #dataframe de nb_lhs_iterations lignes et de 16 colonnes respectivement : outIgS1,outIgS2,outIgS3,outIgS4,outPropAnsS1,outPropAnsS2,outPropAnsS3,outPropAnsS4,outPropMRS1,outPropMRS2,outPropMRS3,outPropMRS4,outPropRcrS1,outPropRcrS, outPropRcrS3,outPropRcrS4
 
-write.csv(resultats,"C:\\Users\\maurinau\\Documents\\AntibioticShortage\\Sensitivity_Analysis\\ResultsRCCN500_noabs.csv")
+write.csv(resultats,"Files\\ResultsRCCN500_abs.csv")
 
 
 
 #Ouvrir fichier Resultats
-resultats<-read.csv("C:\\Users\\maurinau\\Documents\\AntibioticShortage\\Sensitivity_Analysis\\ResultsRCCN500_noabs.csv")
+resultats<-read.csv("Files\\ResultsRCCN500_abs.csv")
 resultats<-subset(resultats, select = -X)
 
 outIgS1<-as.numeric(resultats[,1])
@@ -525,23 +530,8 @@ colnames(resultats_lhs) <- param_names
 
 #Creer dataframe avec outcomes
 
-creerDatframeSPRCC<-function(outcome,scenario){
-  dataframe_name <- sprintf("out%sS%d", outcome, scenario)
-  res<-pcc(X = resultats_lhs,rank = TRUE,semi=TRUE,y = get(dataframe_name), nboot=20)
-  data1<-data.frame(Scenario=numeric(),Outcome=character(),Variable=character(),Moyenne=numeric(), Ecart_type=numeric() )
-  data1[1,]<-c(scenario,outcome,"Rcr",res$SPRCC$original[1],res$SPRCC$`std. error`[1])
-  data1[2,]<-c(scenario,outcome,"Ramox",res$SPRCC$original[2],res$SPRCC$`std. error`[2])
-  data1[3,]<-c(scenario,outcome,"Rmacro",res$SPRCC$original[3],res$SPRCC$`std. error`[3])
-  data1[4,]<-c(scenario,outcome,"ConsoAmox",res$SPRCC$original[4],res$SPRCC$`std. error`[4])
-  data1[5,]<-c(scenario,outcome,"ConsoMacro",res$SPRCC$original[5],res$SPRCC$`std. error`[5])
-  data1[6,]<-c(scenario,outcome,"pi",res$SPRCC$original[6],res$SPRCC$`std. error`[6])
-  data1[7,]<-c(scenario,outcome,"LambdaAge",res$SPRCC$original[7],res$SPRCC$`std. error`[7])
-  data1[8,]<-c(scenario,outcome,"TreatmentDuration_Amox",res$SPRCC$original[8],res$SPRCC$`std. error`[8])
-  data1[9,]<-c(scenario,outcome,"TreatmentDuration_Macro",res$SPRCC$original[9],res$SPRCC$`std. error`[9])
-  return(data1)
-}
 
-creerDatframePRCC<-function(outcome,scenario){
+creerDataframePRCC<-function(outcome,scenario){
   dataframe_name <- sprintf("out%sS%d", outcome, scenario)
   res<-pcc(X = resultats_lhs,rank = TRUE,semi=FALSE,y = get(dataframe_name), nboot=20)
   data1<-data.frame(Scenario=numeric(),Outcome=character(),Variable=character(),Moyenne=numeric(), Ecart_type=numeric() )
@@ -562,12 +552,12 @@ dfRCC<-data.frame(Scenario=numeric(),Outcome=character(),Variable=character(),Mo
 
 for(i in ListeOutcome<-c("Ig","PropAns","PropMr","PropAnsMr")){
   for(j in 1:4){
-    dfout<-creerDatframePRCC(i,j)
+    dfout<-creerDataframePRCC(i,j)
     dfRCC<-rbind(dfRCC,dfout)
   }
 }
 
-write.csv(dfRCC,"C:\\Users\\maurinau\\Documents\\AntibioticShortage\\Sensitivity_Analysis\\DataframeSPRCCN500_noabs.csv")
+write.csv(dfRCC,"Files\\DataframePRCCN500_abs.csv")
 
 
 
@@ -579,10 +569,7 @@ write.csv(dfRCC,"C:\\Users\\maurinau\\Documents\\AntibioticShortage\\Sensitivity
 
 #Ouvrir fichier Resultats
 
-resultats_PartialRankCorrelationCoefficients<-read.csv("C:\\Users\\Aurélie\\Documents\\AntibioticShortage\\Sensitivity_Analysis\\DataframePRCCN500.csv")
-
-#resultats_SemiPartialRankCorrelationCoefficients<-read.csv("C:\\Users\\maurinau\\Documents\\AntibioticShortage\\Sensitivity_Analysis\\DataframeSPRCCN500.csv")
-
+resultats_PartialRankCorrelationCoefficients<-read.csv("Files\\DataframePRCCN500_abs.csv")
 
 df<-subset(resultats_PartialRankCorrelationCoefficients, select = -X)
 df$Moyenne <- as.numeric(df$Moyenne)
@@ -604,11 +591,7 @@ df <- df[order(df$Scenario), ]
 
 variableOutcome_name<-c("PropAns"="Penicillin-non-susceptible strains","PropMr"="Macrolide-resistant strains","PropAnsMr"="Multidrug-resistant strains","Ig"="Invasive pneumococcal disease")
 
-# Ouvrir un périphérique graphique pour sauvegarder le plot en tant qu'image PNG
-png("C:\\Users\\Aurélie\\Documents\\AntibioticShortage\\Figures\\Figure4_HeatMapPRCC.png", width = 1000, height = 600)
-
-
-ggplot(df, aes(x = Variable, y = Scenario, fill = Moyenne)) +
+ggAbs<-ggplot(df, aes(x = Variable, y = Scenario, fill = Moyenne)) +
   geom_tile() +
   geom_text(aes(label = sprintf("%.2f", round(Moyenne,digits=2))),show.legend = TRUE) +
   scale_fill_gradient2(low = "#075AFF",mid="white", high = "#FF6347",name = "PRCC") +  # Choix des couleurs
@@ -623,9 +606,64 @@ ggplot(df, aes(x = Variable, y = Scenario, fill = Moyenne)) +
         strip.background = element_rect(fill = "white"), panel.border =element_rect(colour = "black", fill = NA, size = 1.5),
         plot.background = element_blank())
 
+
+```
+
+```{r lire et combiner RDS files plot heatmap}
+
+#Ouvrir fichier Resultats
+
+resultats_PartialRankCorrelationCoefficients<-read.csv("Files\\DataframePRCCN500_noabs.csv")
+
+df<-subset(resultats_PartialRankCorrelationCoefficients, select = -X)
+df$Moyenne <- as.numeric(df$Moyenne)
+df$Ecart_type <- as.numeric(df$Ecart_type)
+
+
+df$Variable <- factor(df$Variable, levels = c( "Rcr","Ramox", "Rmacro", "ConsoAmox", "ConsoMacro", "pi", "LambdaAge", "TreatmentDuration_Amox", "TreatmentDuration_Macro"))
+df <- df[order(df$Variable), ]
+
+df$Outcome <- factor(df$Outcome, levels = c("PropAns","PropMr","PropAnsMr","Ig"))
+df <- df[order(df$Outcome), ]
+
+df$Scenario <- factor(df$Scenario, levels = c(4, 3, 2, 1))
+df <- df[order(df$Scenario), ]
+
+# df <- subset(df, Outcome %in% c("PropAns"))
+# df <- subset(df, Scenario %in% c("1"))
+
+
+variableOutcome_name<-c("PropAns"="Penicillin-non-susceptible strains","PropMr"="Macrolide-resistant strains","PropAnsMr"="Multidrug-resistant strains","Ig"="Invasive pneumococcal disease")
+
+ggNoAbs<-ggplot(df, aes(x = Variable, y = Scenario, fill = Moyenne)) +
+  geom_tile() +
+  geom_text(aes(label = sprintf("%.2f", round(Moyenne,digits=2))),show.legend = TRUE) +
+  scale_fill_gradient2(low = "#075AFF",mid="white", high = "#FF6347",name = "PRCC") +  # Choix des couleurs
+  facet_wrap(~Outcome,labeller = labeller(Outcome=variableOutcome_name))+
+  scale_y_discrete(labels = c("S4", "S3", "S2","S1"))+
+  scale_x_discrete(labels = c(bquote(~Rcr^'init'), bquote(~PNSP^'init'),bquote(~MR^'init'), expression(Phi[Amox]), expression(Phi[Macro]),bquote(~'pi'^'init'), expression(lambda), expression(gamma[Amox]), expression(gamma[Macro])))+
+  theme_bw()+labs(x = NULL, y = NULL)+
+  theme(axis.text = element_text(size = 14),axis.title = element_text(size = 12),
+        legend.title=element_text(size = 12),legend.text=element_text(size = 12),
+        legend.key.height = unit(0.7, "cm"),legend.key.width = unit(0.7, "cm"),
+        strip.text = element_text(size = 16, face = "bold",hjust = 0.5),
+        strip.background = element_rect(fill = "white"), panel.border =element_rect(colour = "black", fill = NA, size = 1.5),
+        plot.background = element_blank())
+
+
+
+```
+
+
+```{r grid arrange}
+
+pdf("Figures\\FigureSupplementary4_PRCC.pdf", width = 1600/81, height = 2200/81)
+
+#grid.arrange(gproportion,gIPD,ncol=1)
+plot_grid(ggNoAbs,ggAbs,labels=c("a","b"),ncol=1,label_size = 30,rel_heights = c(1, 1.4))
+
  # Fermer le périphérique graphique
 dev.off()
-
 
 ```
 

@@ -451,7 +451,7 @@ for(i in 1:nrow(df)){
 
 ## Figure 5
 
-```{r test statistique dataframe pour proportion}
+```{r figure 5 heatmpa pour proportion}
 
 df<-dfnew
 df <- subset(df, Reduction %in% c("1","3"))
@@ -554,7 +554,7 @@ theme_bw()+
 ```
 
 
-```{r test statistique dataframe pour infections unique}
+```{r figure 5 heatmap pour pour infections }
 df<-dfnew
 df <- subset(df, Reduction %in% c("1","3"))
 #df <- subset(df, Country %in%c("Belgium","Croatia","Denmark","France","Ireland","Italy","Lithuania","Poland","Portugal","Spain"))
@@ -686,12 +686,13 @@ theme_bw()+
 
 ```
 
+
 ```{r grid arrange}
 
 pdf("Figures\\Figure6_HeatMapPaysAllcountries.pdf", width = 1600/81, height = 2200/81)
 
 #grid.arrange(gproportion,gIPD,ncol=1)
-plot_grid(gproportion,gIPD,labels=c("a","b"),ncol=1,label_size = 30,rel_heights = c(1, 1.4))
+plot_grid(gproportion,gIPD,labels=c("a","b"),ncol=1,label_size = 30,rel_heights = c(1, 1))
 
  # Fermer le périphérique graphique
 dev.off()
@@ -703,7 +704,7 @@ dev.off()
 
 ```{r Matrice de correlation}
 
-png("Figures\\FigureS5point1Correlations.png", width = 1600, height = 1600)
+pdf("Figures\\FigureSupplementary5Correlations.pdf", width = 1600/81, height = 1600/81)
 
 # Configuration de l'espace graphique en 2x2
 par(mfrow = c(2, 2))  # Ajustez les marges pour éviter les chevauchements
@@ -770,11 +771,11 @@ corrplot(cor_matrix, method = "circle", type = "upper",
 mtext(plot_title, side = 1, line = 4, adj = 0.2, cex = 3, font = 2)
 
 # Ajouter les expressions mathématiques manuellement
-text(x = 12.1, y = 13.9 , labels =  expression(Phi[Amox]), xpd = TRUE, srt = 45, cex = 2.5)
+text(x = 12.2, y = 14.2 , labels =  expression(Phi[Amox]), xpd = TRUE, srt = 45, cex = 2.5)
 
-text(x = 13.1, y = 13.9, labels =expression(Phi[Macro]),xpd = TRUE, srt = 45, cex = 2.5)
+text(x = 13.2, y = 14.2, labels =expression(Phi[Macro]),xpd = TRUE, srt = 45, cex = 2.5)
 
-text(x = 12, y = 2, labels = expression(Phi[Amox]), cex = 2.5, xpd = TRUE)
+text(x = 11.8, y = 2.1, labels = expression(Phi[Amox]), cex = 2.5, xpd = TRUE)
 
 }
 
@@ -805,41 +806,48 @@ RunShortageCountry <- function(param,country){
     print(Vopti)
   
    for (k in 1:4){
-     print(k)
-    if(k==1){ ReductionDose=matrix(c(1,0.93,0.47,0.06,0,0,0,0,
-          1,0.93,0.06,0,0,0,0,0,
-          1,0.47,0,0,0,0,0,0,
-          1,0.06,0,0,0,0,0,0),ncol=4)
-    ReductionDuree=c(1,1,1,1)
-    ReductionFreq=c(1,1,1,1)
-    AugmentationFreq=c(0,0,0,0)
-    }
+     #print(k)
      
-    if(k==2){ ReductionDose=matrix(c(1,0.93,0.47,0.06,0,0,0,0,
+     if(k==1){ReductionDose=matrix(c(1,0.93,0.47,0.06,0,0,0,0,
+          1,0.93,0.47,0.06,0,0,0,0,
+          1,0.93,0.47,0.06,0,0,0,0,
+          1,0.93,0.47,0.06,0,0,0,0),ncol=4)
+    ReductionDuree=c(1,1,1,1)
+    ReductionFreq=c(1,0.75,0.5,0.25)
+    AugmentationFreq=c(0,0,0,0)
+    A=matrix(c(0,0,0,1,1,1,1,1,0,0,0,1,1,1,1,1,0,0,0,1,1,1,1,1,0,0,0,1,1,1,1,1),nrow =4 ,ncol=8,byrow = TRUE)
+     }
+     
+     if(k==2){ ReductionDose=matrix(c(1,0.93,0.47,0.06,0,0,0,0,
           1,0.93,0.47,0.06,0,0,0,0,
           1,0.93,0.47,0.06,0,0,0,0,
           1,0.93,0.47,0.06,0,0,0,0),ncol=4)
     ReductionDuree=c(1,0.75,0.5,0.25)
     ReductionFreq=c(1,1,1,1)
     AugmentationFreq=c(0,0,0,0)
-    }
-    
-    if(k==3){ReductionDose=matrix(c(1,0.93,0.47,0.06,0,0,0,0,
-          1,0.93,0.47,0.06,0,0,0,0,
-          1,0.93,0.47,0.06,0,0,0,0,
-          1,0.93,0.47,0.06,0,0,0,0),ncol=4)
+    A=matrix(c(0,0,0,1,1,1,1,1,0,0,0,1,1,1,1,1,0,0,0,1,1,1,1,1,0,0,0,1,1,1,1,1),nrow =4 ,ncol=8,byrow = TRUE)
+     }
+     
+    if(k==3){ ReductionDose=matrix(c(1,0.93,0.47,0.06,0,0,0,0,
+          1,0.93,0.06,0,0,0,0,0,
+          1,0.47,0,0,0,0,0,0,
+          1,0.06,0,0,0,0,0,0),ncol=4)
     ReductionDuree=c(1,1,1,1)
-    ReductionFreq=c(1,0.75,0.5,0.25)
+    ReductionFreq=c(1,1,1,1)
     AugmentationFreq=c(0,0,0,0)
+     A=matrix(c(0,0,0,1,1,1,1,1,
+               0,0,1,1,1,1,1,1,
+               0,0,1,1,1,1,1,1,
+               0,1,1,1,1,1,1,1),nrow =4 ,ncol=8,byrow = TRUE)
     }
-    
     if(k==4){ReductionDose=matrix(c(1,0.93,0.47,0.06,0,0,0,0,
           1,0.93,0.47,0.06,0,0,0,0,
           1,0.93,0.47,0.06,0,0,0,0,
           1,0.93,0.47,0.06,0,0,0,0),ncol=4)
     ReductionDuree=c(1,1,1,1)
     ReductionFreq=c(1,0.75,0.5,0.25)
-    AugmentationFreq=c(0,0.25,0.5,0.75)}
+    AugmentationFreq=c(0,0.25,0.5,0.75)
+    A=matrix(c(0,0,0,1,1,1,1,1,0,0,0,1,1,1,1,1,0,0,0,1,1,1,1,1,0,0,0,1,1,1,1,1),nrow =4 ,ncol=8,byrow = TRUE)}
     for(j in 1:4){
       print(j)
       mod <- gen$new( US_0=c((70000000*(1-(0.0163+0.0016)))*(1-pi)*0.055),
@@ -898,7 +906,7 @@ RunShortageCountry <- function(param,country){
                       
                   fA1=1, fA2=0.9999748 , fA3=0.9916096 , fA4=0.9420954 , fA5=0.9192299 , fA6=0.9192278 , fA7=0.9192375 , fA8=0.9194097 ,
                   fMS=1,fMR=0.9938509 ,
-                  a1=0,a2=0,a3=0,a4=1,a5=1,a6=1,a7=1,a8=1,
+                  a1=A[j,1],a2=A[j,2],a3=A[j,3],a4=A[j,4],a5=A[j,5],a6=A[j,6],a7=A[j,7],a8=A[j,8],
                   V=c(Vopti),
                
                   Beta=matrix(c(1),nrow = 1, ncol = 1,byrow = TRUE),
@@ -1029,7 +1037,7 @@ RunShortageCountry <- function(param,country){
 ```{r Lancement penurie sur tous les Pays}
 
 #Dataframe with adult datas
-df<-read_excel("C:\\Users\\maurinau\\Documents\\AntibioticShortage\\DataframeParametresPays.xlsx")
+df<-read_excel("Files\\DataframeParametresPays.xlsx")
 
 dfnew<-data.frame(Scenario=numeric(), Reduction=numeric(),Country=character(), Outcome=character(), Value=numeric() )
 
@@ -1059,19 +1067,6 @@ variation_df <- df %>%
 df<-merge(df,variation_df, by = c("Scenario", "Country", "Outcome"))
 df <- subset(df, Reduction %in% c("3"))
 df<-subset(df, select=-Reduction)
-
-#df <- df %>%mutate(Variation =round(Variation))
-
-#Faire les bons arrondis
-# df_modifie <- df %>%
-#   group_by(Scenario, Country) %>%  # Regrouper par scénario et pays pour des opérations groupées
-#   mutate(
-#     diff_pns_s = sum(Variation[Outcome == "IncidenceInfectionsGraves"] -Variation[Outcome == "IncidenceInfectionsGravesPSSP"]),
-#     Variation = if_else(Outcome == "IncidenceInfectionsGravesPNSP" & Variation != diff_pns_s,diff_pns_s,Variation)
-#   ) %>%
-#   ungroup() %>%
-#   select(-diff_pns_s)  # Supprimer la colonne temporaire
-# df<-df_modifie
 
 min_values <- df %>%
   group_by(Country, Outcome) %>%
@@ -1132,8 +1127,8 @@ labels_y <- c(
 df=as.data.frame(df)
 df_filtered=as.data.frame(df_filtered)
 
-png("C:\\Users\\maurinau\\Documents\\AntibioticShortage\\Figures\\Figure6_HeatMapPaysInfectionsAllcountriesAllDetails.png", width = 1600, height = 1600)
-ggplot(df, aes(x = as.factor(Scenario), y = Outcome, fill = Variation)) +
+
+p<-ggplot(df, aes(x = as.factor(Scenario), y = Outcome, fill = Variation)) +
   geom_tile() +
   geom_text(aes(label = sprintf("%.1f", Variation)),show.legend = TRUE, size=5) +
   scale_color_manual(name=" Value",labels=c("lowest value",""), guide=guide_legend()) +
@@ -1150,22 +1145,11 @@ theme_bw()+
         legend.key.height = unit(0.8, "cm"),legend.key.width = unit(0.8, "cm"),
         strip.text = element_text(size = 20,face="bold"),strip.background = element_rect(fill = "white"),
         panel.border =element_rect(colour = "black", fill = NA, size = 1.5))
- # Fermer le périphérique graphique
+
+pdf("Figures\\FigureSupplementray6_IncidenceBothAntibiotics.pdf", width = 1600/81, height = 1600/81)
+p
 dev.off()
 
-
-
-```
-
-```{r grid arrange}
-
-png("C:\\Users\\Aurélie\\Documents\\AntibioticShortage\\Figures\\Figure6_HeatMapPaysAllcountriesPlus.png", width = 1600, height = 2200)
-
-#grid.arrange(gproportion,gIPD,ncol=1)
-plot_grid(gproportion,gIPD,labels=c("a","b"),ncol=1,label_size = 30)
-
- # Fermer le périphérique graphique
-dev.off()
 
 
 ```
