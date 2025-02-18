@@ -1,0 +1,530 @@
+---
+title: "AnalyseSensibiliteTheta"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r library}
+
+
+library(ggplot2)
+library(tidyr)
+library(dplyr)
+library(reshape2)
+library(ggpubr)
+library(socialmixr)
+library("RColorBrewer")
+library(rmarkdown)
+library(plotly)
+library(demodelr)
+library(forcats)
+library(ggh4x)
+library(lemon)
+library(ggthemes)
+library(khroma)
+
+```
+
+```{r setup}
+
+gen <- odin::odin("Script\\DeuxAgeHuitResistanceDeuxAntibiosOdin.R")
+
+#Donnes 2021 otites pour penicillines: 
+d2=0.075/0.53; d3=0.075/0.53; d4=0.085/0.53; d5=0.09/0.53; d6=0.12/0.53; d7=0.075/0.53; d8=0.01/0.53 
+Rcr=0.58; Rmacro=0.28; Ramox=0.43; pi=0.52
+ConsoAmox=0.95; ConsoMacro=0.083;Lambda=1/43
+InvasionRate=4.8*10**(-7)
+
+
+```
+
+
+```{r optim sur le Ratio de R/R+I+S}
+
+OptimViFi<- function(x,y) {
+    mod <- gen$new(  US_0=c((70000000*(1-(0.0163+0.0016)))*(1-pi)*0.055),
+                  UCm1_S_0=c((70000000*(1-(0.0163+0.0016)))*pi*((1-Rmacro)-(1-Rcr)*Ramox)*0.055),
+                  UCm1_R_0=c((70000000*(1-(0.0163+0.0016)))*pi*(Rmacro-Rcr*Ramox)*0.055),
+                  UCm2_S_0=c((70000000*(1-(0.0163+0.0016)))*pi*(1-Rcr)*Ramox*d2*0.055),
+                  UCm2_R_0=c((70000000*(1-(0.0163+0.0016)))*pi*Rcr*Ramox*d2*0.055),
+                  UCm3_S_0=c((70000000*(1-(0.0163+0.0016)))*pi*(1-Rcr)*Ramox*d3*0.055),
+                  UCm3_R_0=c((70000000*(1-(0.0163+0.0016)))*pi*Rcr*Ramox*d3*0.055),
+                  UCm4_S_0=c((70000000*(1-(0.0163+0.0016)))*pi*(1-Rcr)*Ramox*d4*0.055),
+                  UCm4_R_0=c((70000000*(1-(0.0163+0.0016)))*pi*Rcr*Ramox*d4*0.055),
+                  UCm5_S_0=c((70000000*(1-(0.0163+0.0016)))*pi*(1-Rcr)*Ramox*d5*0.055),
+                  UCm5_R_0=c((70000000*(1-(0.0163+0.0016)))*pi*Rcr*Ramox*d5*0.055),
+                  UCm6_S_0=c((70000000*(1-(0.0163+0.0016)))*pi*(1-Rcr)*Ramox*d6*0.055),
+                  UCm6_R_0=c((70000000*(1-(0.0163+0.0016)))*pi*Rcr*Ramox*d6*0.055),
+                  UCm7_S_0=c((70000000*(1-(0.0163+0.0016)))*pi*(1-Rcr)*Ramox*d7*0.055),
+                  UCm7_R_0=c((70000000*(1-(0.0163+0.0016)))*pi*Rcr*Ramox*d7*0.055),
+                  UCm8_S_0=c((70000000*(1-(0.0163+0.0016)))*pi*(1-Rcr)*Ramox*d8*0.055),
+                  UCm8_R_0=c((70000000*(1-(0.0163+0.0016)))*pi*Rcr*Ramox*d8*0.055),
+                  
+                  AES_0=c((70000000*0.0163)*(1-pi)*0.055),
+                  AECm1_S_0=c((70000000*0.0163)*pi*((1-Rmacro)-(1-Rcr)*Ramox)*0.055),
+                  AECm1_R_0=c((70000000*0.0163)*pi*(Rmacro-Rcr*Ramox)*0.055),
+                  AECm2_S_0=c((70000000*0.0163)*pi*(1-Rcr)*Ramox*d2*0.055),
+                  AECm2_R_0=c((70000000*0.0163)*pi*Rcr*Ramox*d2*0.055),
+                  AECm3_S_0=c((70000000*0.0163)*pi*(1-Rcr)*Ramox*d3*0.055),
+                  AECm3_R_0=c((70000000*0.0163)*pi*Rcr*Ramox*d3*0.055),
+                  AECm4_S_0=c((70000000*0.0163)*pi*(1-Rcr)*Ramox*d4*0.055),
+                  AECm4_R_0=c((70000000*0.0163)*pi*Rcr*Ramox*d4*0.055),
+                  AECm5_S_0=c((70000000*0.0163)*pi*(1-Rcr)*Ramox*d5*0.055),
+                  AECm5_R_0=c((70000000*0.0163)*pi*Rcr*Ramox*d5*0.055),
+                  AECm6_S_0=c((70000000*0.0163)*pi*(1-Rcr)*Ramox*d6*0.055),
+                  AECm6_R_0=c((70000000*0.0163)*pi*Rcr*Ramox*d6*0.055),
+                  AECm7_S_0=c((70000000*0.0163)*pi*(1-Rcr)*Ramox*d7*0.055),
+                  AECm7_R_0=c((70000000*0.0163)*pi*Rcr*Ramox*d7*0.055),
+                  AECm8_S_0=c((70000000*0.0163)*pi*(1-Rcr)*Ramox*d8*0.055),
+                  AECm8_R_0=c((70000000*0.0163)*pi*Rcr*Ramox*d8*0.055),
+                  
+                  MES_0=c((70000000*0.0016)*(1-pi)*0.055),
+                  MECm1_S_0=c((70000000*0.0016)*pi*((1-Rmacro)-(1-Rcr)*Ramox)*0.055),
+                  MECm1_R_0=c((70000000*0.0016)*pi*(Rmacro-Rcr*Ramox)*0.055),
+                  MECm2_S_0=c((70000000*0.0016)*pi*(1-Rcr)*Ramox*d2*0.055),
+                  MECm2_R_0=c((70000000*0.0016)*pi*Rcr*Ramox*d2*0.055),
+                  MECm3_S_0=c((70000000*0.0016)*pi*(1-Rcr)*Ramox*d3*0.055),
+                  MECm3_R_0=c((70000000*0.0016)*pi*Rcr*Ramox*d3*0.055),
+                  MECm4_S_0=c((70000000*0.0016)*pi*(1-Rcr)*Ramox*d4*0.055),
+                  MECm4_R_0=c((70000000*0.0016)*pi*Rcr*Ramox*d4*0.055),
+                  MECm5_S_0=c((70000000*0.0016)*pi*(1-Rcr)*Ramox*d5*0.055),
+                  MECm5_R_0=c((70000000*0.0016)*pi*Rcr*Ramox*d5*0.055),
+                  MECm6_S_0=c((70000000*0.0016)*pi*(1-Rcr)*Ramox*d6*0.055),
+                  MECm6_R_0=c((70000000*0.0016)*pi*Rcr*Ramox*d6*0.055),
+                  MECm7_S_0=c((70000000*0.0016)*pi*(1-Rcr)*Ramox*d7*0.055),
+                  MECm7_R_0=c((70000000*0.0016)*pi*Rcr*Ramox*d7*0.055),
+                  MECm8_S_0=c((70000000*0.0016)*pi*(1-Rcr)*Ramox*d8*0.055),
+                  MECm8_R_0=c((70000000*0.0016)*pi*Rcr*Ramox*d8*0.055),
+               # Dose1=1 sigmoid 0.08
+               fA1=1 ,fA2=x[1] ,fA3=x[2] ,fA4=x[3] ,fA5=x[4],fA6=x[5],fA7=x[6],fA8=x[7],
+               fMS=1 ,fMR=x[8],
+               
+               a1=0,a2=0,a3=0,a4=1,a5=1,a6=1,a7=1,a8=1,
+               V=c(x[9]),
+               Beta=matrix(c(1),nrow = 1, ncol = 1,byrow = TRUE),
+               Phi_A=c(ConsoAmox/365),
+               Phi_M=c(ConsoMacro/365),
+
+               Mu=c(0),
+               mu0=0,
+               Lambda=c(Lambda),
+               gamma_A=1/7,
+               gamma_M=1/7,
+               
+               #Dose calculées sur les articles
+               dose1_A=1, # MIC=0.06
+               dose2_A=0.93,# MIC=0.125
+               dose3_A=0.47,#MIC=0.25
+               dose4_A=0.06,#MIC=0.5
+               dose5_A=0,#MIC=1
+               dose6_A=0,# MIC=2
+               dose7_A=0, #MIC=4
+               dose8_A=0, #MIC=8
+               dose1_M= 1.006924, #MIC=0.06
+               dose2_M=0.03449561,#MIC=0.125
+               
+               theta=y,
+               N_age=1)
+    t <- seq(0, 365*1,0.1)
+    y_odin <- mod$run(t)
+    out_odin <- as.data.frame(y_odin)
+    
+    out_odin=out_odin[c(nrow(out_odin)),]
+    
+    out_odin = out_odin %>%
+  mutate(
+    `t`=`t`,
+    `Cm1S[1]`=`UCm1_S[1]`+`AECm1_S[1]`+`MECm1_S[1]`,
+    `Cm1R[1]`=`UCm1_R[1]`+`AECm1_R[1]`+`MECm1_R[1]`,
+    `Cm2S[1]`=`UCm2_S[1]`+`AECm2_S[1]`+`MECm2_S[1]`,
+    `Cm2R[1]`=`UCm2_R[1]`+`AECm2_R[1]`+`MECm2_R[1]`,
+    `Cm3S[1]`=`UCm3_S[1]`+`AECm3_S[1]`+`MECm3_S[1]`,
+    `Cm3R[1]`=`UCm3_R[1]`+`AECm3_R[1]`+`MECm3_R[1]`,
+    `Cm4S[1]`=`UCm4_S[1]`+`AECm4_S[1]`+`MECm4_S[1]`,
+    `Cm4R[1]`=`UCm4_R[1]`+`AECm4_R[1]`+`MECm4_R[1]`,
+    `Cm5S[1]`=`UCm5_S[1]`+`AECm5_S[1]`+`MECm5_S[1]`,
+    `Cm5R[1]`=`UCm5_R[1]`+`AECm5_R[1]`+`MECm5_R[1]`,
+    `Cm6S[1]`=`UCm6_S[1]`+`AECm6_S[1]`+`MECm6_S[1]`,
+    `Cm6R[1]`=`UCm6_R[1]`+`AECm6_R[1]`+`MECm6_R[1]`,
+    `Cm7S[1]`=`UCm7_S[1]`+`AECm7_S[1]`+`MECm7_S[1]`,
+    `Cm7R[1]`=`UCm7_R[1]`+`AECm7_R[1]`+`MECm7_R[1]`,
+    `Cm8S[1]`=`UCm8_S[1]`+`AECm8_S[1]`+`MECm8_S[1]`,
+    `Cm8R[1]`=`UCm8_R[1]`+`AECm8_R[1]`+`MECm8_R[1]`,
+
+    `Totcarrier[1]`=`UCm1_S[1]`+`AECm1_S[1]`+`MECm1_S[1]`+`UCm1_R[1]`+`AECm1_R[1]`+`MECm1_R[1]`+`UCm2_S[1]`+`AECm2_S[1]`+`MECm2_S[1]`+`UCm2_R[1]`+`AECm2_R[1]`+`MECm2_R[1]`+`UCm3_S[1]`+`AECm3_S[1]`+`MECm3_S[1]`+`UCm3_R[1]`+`AECm3_R[1]`+`MECm3_R[1]`+`UCm4_S[1]`+`AECm4_S[1]`+`MECm4_S[1]`+`UCm4_R[1]`+`AECm4_R[1]`+`MECm4_R[1]`+`UCm5_S[1]`+`AECm5_S[1]`+`MECm5_S[1]`+`UCm5_R[1]`+`AECm5_R[1]`+`MECm5_R[1]`+`UCm6_S[1]`+`AECm6_S[1]`+`MECm6_S[1]`+`UCm6_R[1]`+`AECm6_R[1]`+`MECm6_R[1]`+`UCm7_S[1]`+`AECm7_S[1]`+`MECm7_S[1]`+`UCm7_R[1]`+`AECm7_R[1]`+`MECm7_R[1]`+`UCm8_S[1]`+`AECm8_S[1]`+`MECm8_S[1]`+`UCm8_R[1]`+`AECm8_R[1]`+`MECm8_R[1]`,
+    
+    `Tot[1]`=`US[1]`+`AES[1]`+`MES[1]`+`UCm1_S[1]`+`AECm1_S[1]`+`MECm1_S[1]`+`UCm1_R[1]`+`AECm1_R[1]`+`MECm1_R[1]`+`UCm2_S[1]`+`AECm2_S[1]`+`MECm2_S[1]`+`UCm2_R[1]`+`AECm2_R[1]`+`MECm2_R[1]`+`UCm3_S[1]`+`AECm3_S[1]`+`MECm3_S[1]`+`UCm3_R[1]`+`AECm3_R[1]`+`MECm3_R[1]`+`UCm4_S[1]`+`AECm4_S[1]`+`MECm4_S[1]`+`UCm4_R[1]`+`AECm4_R[1]`+`MECm4_R[1]`+`UCm5_S[1]`+`AECm5_S[1]`+`MECm5_S[1]`+`UCm5_R[1]`+`AECm5_R[1]`+`MECm5_R[1]`+`UCm6_S[1]`+`AECm6_S[1]`+`MECm6_S[1]`+`UCm6_R[1]`+`AECm6_R[1]`+`MECm6_R[1]`+`UCm7_S[1]`+`AECm7_S[1]`+`MECm7_S[1]`+`UCm7_R[1]`+`AECm7_R[1]`+`MECm7_R[1]`+`UCm8_S[1]`+`AECm8_S[1]`+`MECm8_S[1]`+`UCm8_R[1]`+`AECm8_R[1]`+`MECm8_R[1]`,
+    
+    .keep = "none"
+  )
+out_odin = out_odin %>%
+  mutate(
+    `t`=`t`,
+    `Cm1S[1]`=`Cm1S[1]`/`Totcarrier[1]`,
+    `Cm1R[1]`=`Cm1R[1]`/`Totcarrier[1]`,
+    `Cm2S[1]`=`Cm2S[1]`/`Totcarrier[1]`,
+    `Cm2R[1]`=`Cm2R[1]`/`Totcarrier[1]`,
+    `Cm3S[1]`=`Cm3S[1]`/`Totcarrier[1]`,
+    `Cm3R[1]`=`Cm3R[1]`/`Totcarrier[1]`,
+    `Cm4S[1]`=`Cm4S[1]`/`Totcarrier[1]`,
+    `Cm4R[1]`=`Cm4R[1]`/`Totcarrier[1]`,
+    `Cm5S[1]`=`Cm5S[1]`/`Totcarrier[1]`,
+    `Cm5R[1]`=`Cm5R[1]`/`Totcarrier[1]`,
+    `Cm6S[1]`=`Cm6S[1]`/`Totcarrier[1]`,
+    `Cm6R[1]`=`Cm6R[1]`/`Totcarrier[1]`,
+    `Cm7S[1]`=`Cm7S[1]`/`Totcarrier[1]`,
+    `Cm7R[1]`=`Cm7R[1]`/`Totcarrier[1]`,
+    `Cm8S[1]`=`Cm8S[1]`/`Totcarrier[1]`,
+    `Cm8R[1]`=`Cm8R[1]`/`Totcarrier[1]`,
+    `Totcarrier[1]`=`Totcarrier[1]`/`Tot[1]`,
+    .keep = "none"
+  )
+    
+    f=out_odin
+    
+    p11S=as.numeric(f[2]) #Cm2S de l'âge 1
+   
+    p11R=as.numeric(f[3]) #Cm2S de l'âge 1
+   
+    p12S=as.numeric(f[4]) #Cm2S de l'âge 1
+   
+    p12R=as.numeric(f[5]) #Cm2R de l'âge 1
+    
+    p13S=as.numeric(f[6]) #Cm3S de l'âge 1
+    
+    p13R=as.numeric(f[7]) #Cm3R de l'âge 1
+    
+    p14S=as.numeric(f[8]) #Cm4S de l'âge 1
+    
+    p14R=as.numeric(f[9]) #Cm4R de l'âge 1
+   
+    p15S=as.numeric(f[10]) #Cm5S de l'âge 1
+   
+    p15R=as.numeric(f[11]) #Cm5R de l'âge 1
+    
+    p16S=as.numeric(f[12]) #Cm6S de l'âge 1
+   
+    p16R=as.numeric(f[13]) #Cm6R de l'âge 1
+    
+    p17S=as.numeric(f[14]) #Cm7S de l'âge 1
+   
+    p17R=as.numeric(f[15]) #Cm7R de l'âge 1
+   
+    p18S=as.numeric(f[16]) #Cm8 de l'âge 1
+   
+    p18R=as.numeric(f[17]) #Cm8 de l'âge 1
+    
+    p1=as.numeric(f[18]) #carriage prevalence 
+   
+    #cat(x[1],"",x[2], "",x[3], "",x[4],"",x[5],"",x[6],"",x[7], " : ", p11R,"", p12S,"", p12R, "",p13S,"", p13R,"",p14S, "",p14R,"",p15S,"", p15R,"",p16S,"",p16R,"", p17S,"",p17R,"",p18S,"", p18R,"\n")
+    
+    return(abs((Rmacro-Rcr*Ramox)-p11R)**2+
+             
+             abs((1-Rcr)*Ramox*d2-p12S)**2+
+             abs(Rcr*Ramox*d2-p12R)**2+
+             
+             abs((1-Rcr)*Ramox*d3-p13S)**2+
+             abs(Rcr*Ramox*d3-p13R)**2+
+             
+             abs((1-Rcr)*Ramox*d4-p14S)**2+
+             abs(Rcr*Ramox*d4-p14R)**2+
+             
+             abs((1-Rcr)*Ramox*d5-p15S)**2+
+             abs(Rcr*Ramox*d5-p15R)**2+
+             
+             abs((1-Rcr)*Ramox*d6-p16S)**2+
+             abs(Rcr*Ramox*d6-p16R)**2+
+             
+             abs((1-Rcr)*Ramox*d7-p17S)**2+
+             abs(Rcr*Ramox*d7-p17R)**2+
+             
+             abs((1-Rcr)*Ramox*d8-p18S)**2+
+             abs(Rcr*Ramox*d8-p18R)**2+
+             abs(pi-p1)**2
+           )
+}
+
+
+theta=0.5
+x0=c(0.99,0.98,0.93,0.9,0.9,0.8,0.8,0.95,0.01)
+o<-as.numeric(optim(x0,y=theta,OptimViFi,method="L-BFGS-B",lower=c(0.99,0.98,0.93,0.9,0.9,0.8,0.8,0.95,0.001), upper=c(1,1,1,1,1,1,1,1,0.1))$par)
+
+print(o)
+
+```
+
+
+##Suplementary Sensibility analysis of theta parameter
+
+```{r lancement et reduction pour la figure 1}
+
+LancementReduction <- function(z,thetai){
+    Rcr=z[1]
+    Ramox=z[2]
+    Rmacro=z[3]
+    ConsoAmox=z[4]
+    ConsoMacro=z[5]
+    opti=as.numeric(optim(c(0.99,0.98,0.93,0.9,0.9,0.8,0.8,0.95,0.01),y=thetai,OptimViFi,method="L-BFGS-B",lower=c(0.99,0.8,0.8,0.8,0.8,0.8,0.8,0.95,0.001), upper=c(1,1,1,1,1,1,1,1,0.1))$par)
+    cat(opti[1], " ", opti[2]," ",opti[3], " ",opti[4]," ",opti[5]," " ,opti[6]," ",opti[7]," ",opti[8]," " ,opti[9],"\n")
+    df<-data_frame()
+   for (k in 1:4){
+     #print(k)
+     if(k==1){ReductionDose=matrix(c(1,0.93,0.47,0.06,0,0,0,0,
+          1,0.93,0.47,0.06,0,0,0,0,
+          1,0.93,0.47,0.06,0,0,0,0,
+          1,0.93,0.47,0.06,0,0,0,0),ncol=4)
+    ReductionDuree=c(7,7,7,7)
+    ReductionFreq=c(1,0.75,0.5,0.25)
+    AugmentationFreq=c(0,0,0,0)
+    A=matrix(c(0,0,0,1,1,1,1,1,0,0,0,1,1,1,1,1,0,0,0,1,1,1,1,1,0,0,0,1,1,1,1,1),nrow =4 ,ncol=8,byrow = TRUE)
+    }
+     if(k==2){ ReductionDose=matrix(c(1,0.93,0.47,0.06,0,0,0,0,
+          1,0.93,0.47,0.06,0,0,0,0,
+          1,0.93,0.47,0.06,0,0,0,0,
+          1,0.93,0.47,0.06,0,0,0,0),ncol=4)
+    ReductionDuree=c(7,5.25,3.5,1.75)
+    ReductionFreq=c(1,1,1,1)
+    AugmentationFreq=c(0,0,0,0)
+    A=matrix(c(0,0,0,1,1,1,1,1,0,0,0,1,1,1,1,1,0,0,0,1,1,1,1,1,0,0,0,1,1,1,1,1),nrow =4 ,ncol=8,byrow = TRUE)
+    }
+    if(k==3){ ReductionDose=matrix(c(1,0.93,0.47,0.06,0,0,0,0,
+          1,0.93,0.06,0,0,0,0,0,
+          1,0.47,0,0,0,0,0,0,
+          1,0.06,0,0,0,0,0,0),ncol=4)
+    ReductionDuree=c(7,7,7,7)
+    ReductionFreq=c(1,1,1,1)
+    AugmentationFreq=c(0,0,0,0)
+    A=matrix(c(0,0,0,1,1,1,1,1,
+               0,0,1,1,1,1,1,1,
+               0,0,1,1,1,1,1,1,
+               0,1,1,1,1,1,1,1),nrow =4 ,ncol=8,byrow = TRUE)
+    }
+    if(k==4){ReductionDose=matrix(c(1,0.93,0.47,0.06,0,0,0,0,
+          1,0.93,0.47,0.06,0,0,0,0,
+          1,0.93,0.47,0.06,0,0,0,0,
+          1,0.93,0.47,0.06,0,0,0,0),ncol=4)
+    ReductionDuree=c(7,7,7,7)
+    ReductionFreq=c(1,0.75,0.5,0.25)
+    AugmentationFreq=c(0,0.25,0.5,0.75)
+    A=matrix(c(0,0,0,1,1,1,1,1,0,0,0,1,1,1,1,1,0,0,0,1,1,1,1,1,0,0,0,1,1,1,1,1),nrow =4 ,ncol=8,byrow = TRUE)}
+    for(j in 1:4){
+      #print(j)
+      mod <- gen$new( US_0=c((70000000*(1-(0.0163+0.0016)))*(1-pi)*0.055),
+                  UCm1_S_0=c((70000000*(1-(0.0163+0.0016)))*pi*((1-Rmacro)-(1-Rcr)*Ramox)*0.055),
+                  UCm1_R_0=c((70000000*(1-(0.0163+0.0016)))*pi*(Rmacro-Rcr*Ramox)*0.055),
+                  UCm2_S_0=c((70000000*(1-(0.0163+0.0016)))*pi*(1-Rcr)*Ramox*d2*0.055),
+                  UCm2_R_0=c((70000000*(1-(0.0163+0.0016)))*pi*Rcr*Ramox*d2*0.055),
+                  UCm3_S_0=c((70000000*(1-(0.0163+0.0016)))*pi*(1-Rcr)*Ramox*d3*0.055),
+                  UCm3_R_0=c((70000000*(1-(0.0163+0.0016)))*pi*Rcr*Ramox*d3*0.055),
+                  UCm4_S_0=c((70000000*(1-(0.0163+0.0016)))*pi*(1-Rcr)*Ramox*d4*0.055),
+                  UCm4_R_0=c((70000000*(1-(0.0163+0.0016)))*pi*Rcr*Ramox*d4*0.055),
+                  UCm5_S_0=c((70000000*(1-(0.0163+0.0016)))*pi*(1-Rcr)*Ramox*d5*0.055),
+                  UCm5_R_0=c((70000000*(1-(0.0163+0.0016)))*pi*Rcr*Ramox*d5*0.055),
+                  UCm6_S_0=c((70000000*(1-(0.0163+0.0016)))*pi*(1-Rcr)*Ramox*d6*0.055),
+                  UCm6_R_0=c((70000000*(1-(0.0163+0.0016)))*pi*Rcr*Ramox*d6*0.055),
+                  UCm7_S_0=c((70000000*(1-(0.0163+0.0016)))*pi*(1-Rcr)*Ramox*d7*0.055),
+                  UCm7_R_0=c((70000000*(1-(0.0163+0.0016)))*pi*Rcr*Ramox*d7*0.055),
+                  UCm8_S_0=c((70000000*(1-(0.0163+0.0016)))*pi*(1-Rcr)*Ramox*d8*0.055),
+                  UCm8_R_0=c((70000000*(1-(0.0163+0.0016)))*pi*Rcr*Ramox*d8*0.055),
+                  
+                  AES_0=c((70000000*0.0163)*(1-pi)*0.055),
+                  AECm1_S_0=c((70000000*0.0163)*pi*((1-Rmacro)-(1-Rcr)*Ramox)*0.055),
+                  AECm1_R_0=c((70000000*0.0163)*pi*(Rmacro-Rcr*Ramox)*0.055),
+                  AECm2_S_0=c((70000000*0.0163)*pi*(1-Rcr)*Ramox*d2*0.055),
+                  AECm2_R_0=c((70000000*0.0163)*pi*Rcr*Ramox*d2*0.055),
+                  AECm3_S_0=c((70000000*0.0163)*pi*(1-Rcr)*Ramox*d3*0.055),
+                  AECm3_R_0=c((70000000*0.0163)*pi*Rcr*Ramox*d3*0.055),
+                  AECm4_S_0=c((70000000*0.0163)*pi*(1-Rcr)*Ramox*d4*0.055),
+                  AECm4_R_0=c((70000000*0.0163)*pi*Rcr*Ramox*d4*0.055),
+                  AECm5_S_0=c((70000000*0.0163)*pi*(1-Rcr)*Ramox*d5*0.055),
+                  AECm5_R_0=c((70000000*0.0163)*pi*Rcr*Ramox*d5*0.055),
+                  AECm6_S_0=c((70000000*0.0163)*pi*(1-Rcr)*Ramox*d6*0.055),
+                  AECm6_R_0=c((70000000*0.0163)*pi*Rcr*Ramox*d6*0.055),
+                  AECm7_S_0=c((70000000*0.0163)*pi*(1-Rcr)*Ramox*d7*0.055),
+                  AECm7_R_0=c((70000000*0.0163)*pi*Rcr*Ramox*d7*0.055),
+                  AECm8_S_0=c((70000000*0.0163)*pi*(1-Rcr)*Ramox*d8*0.055),
+                  AECm8_R_0=c((70000000*0.0163)*pi*Rcr*Ramox*d8*0.055),
+                  
+                  MES_0=c((70000000*0.0016)*(1-pi)*0.055),
+                  MECm1_S_0=c((70000000*0.0016)*pi*((1-Rmacro)-(1-Rcr)*Ramox)*0.055),
+                  MECm1_R_0=c((70000000*0.0016)*pi*(Rmacro-Rcr*Ramox)*0.055),
+                  MECm2_S_0=c((70000000*0.0016)*pi*(1-Rcr)*Ramox*d2*0.055),
+                  MECm2_R_0=c((70000000*0.0016)*pi*Rcr*Ramox*d2*0.055),
+                  MECm3_S_0=c((70000000*0.0016)*pi*(1-Rcr)*Ramox*d3*0.055),
+                  MECm3_R_0=c((70000000*0.0016)*pi*Rcr*Ramox*d3*0.055),
+                  MECm4_S_0=c((70000000*0.0016)*pi*(1-Rcr)*Ramox*d4*0.055),
+                  MECm4_R_0=c((70000000*0.0016)*pi*Rcr*Ramox*d4*0.055),
+                  MECm5_S_0=c((70000000*0.0016)*pi*(1-Rcr)*Ramox*d5*0.055),
+                  MECm5_R_0=c((70000000*0.0016)*pi*Rcr*Ramox*d5*0.055),
+                  MECm6_S_0=c((70000000*0.0016)*pi*(1-Rcr)*Ramox*d6*0.055),
+                  MECm6_R_0=c((70000000*0.0016)*pi*Rcr*Ramox*d6*0.055),
+                  MECm7_S_0=c((70000000*0.0016)*pi*(1-Rcr)*Ramox*d7*0.055),
+                  MECm7_R_0=c((70000000*0.0016)*pi*Rcr*Ramox*d7*0.055),
+                  MECm8_S_0=c((70000000*0.0016)*pi*(1-Rcr)*Ramox*d8*0.055),
+                  MECm8_R_0=c((70000000*0.0016)*pi*Rcr*Ramox*d8*0.055),
+                      
+                  # Dose1=1 sigmoid 0.08 calibrés pr equilibre Rcr=0.58 Rmacro=0.28 Ramox=0.43
+                  fA1=1, fA2=opti[1] , fA3=opti[2] , fA4=opti[3] , fA5=opti[4] , fA6=opti[5] , fA7=opti[6] , fA8=opti[7] ,
+                  fMS=1,fMR=opti[8] ,
+                  a1=A[j,1],a2=A[j,2],a3=A[j,3],a4=A[j,4],a5=A[j,5],a6=A[j,6],a7=A[j,7],a8=A[j,8],
+                  V=c(opti[9]),
+                      
+                  Beta=matrix(c(1),nrow = 1, ncol = 1,byrow = TRUE),
+                  
+                  #Consommation normale observée adultes 
+                  Phi_A=c(ConsoAmox*ReductionFreq[j]/(365)),
+                  Phi_M=c((ConsoMacro*(1+((ConsoAmox)/(ConsoMacro))*AugmentationFreq[j]))/365),
+                      
+                  Mu=c(0),
+                  mu0=0,
+                  Lambda=c(Lambda),
+                  gamma_A=1/ReductionDuree[j],
+                  gamma_M=1/7,
+                      
+                  #Dose 500mg, q8h
+                  dose1_A=ReductionDose[1,j],
+                  dose2_A=ReductionDose[2,j],
+                  dose3_A=ReductionDose[3,j],
+                  dose4_A=ReductionDose[4,j],
+                  dose5_A=ReductionDose[5,j],
+                  dose6_A=ReductionDose[6,j],
+                  dose7_A=ReductionDose[7,j],
+                  dose8_A=ReductionDose[8,j],
+                  dose1_M= 1.006924, #500mg,q12h MIC=0.06
+                  dose2_M=0.03449561,#500mg,q12h MIC=0.125
+                  
+                  theta=thetai,
+                  N_age=1)
+      
+      t <- seq(0, 365,1)
+      y_odin <- mod$run(t)
+      out_odin <- as.data.frame(y_odin)
+      out_odin=out_odin[c(nrow(out_odin)),] #que la dernière ligne
+      out_odin = out_odin %>%
+        mutate(
+          `t`=`t`,
+          `S[1]`=`US[1]`+`AES[1]`+`MES[1]`,
+          `Pen_S[1]`=`UCm1_S[1]`+`AECm1_S[1]`+`MECm1_S[1]`+`UCm1_R[1]`+`AECm1_R[1]`+`MECm1_R[1]`,
+          `Pen_I[1]`=`UCm2_S[1]`+`AECm2_S[1]`+`MECm2_S[1]`+`UCm2_R[1]`+`AECm2_R[1]`+`MECm2_R[1]`+`UCm3_S[1]`+`AECm3_S[1]`+`MECm3_S[1]`+`UCm3_R[1]`+`AECm3_R[1]`+`MECm3_R[1]`+`UCm4_S[1]`+`AECm4_S[1]`+`MECm4_S[1]`+`UCm4_R[1]`+`AECm4_R[1]`+`MECm4_R[1]`+`UCm5_S[1]`+`AECm5_S[1]`+`MECm5_S[1]`+`UCm5_R[1]`+`AECm5_R[1]`+`MECm5_R[1]`+`UCm6_S[1]`+`AECm6_S[1]`+`MECm6_S[1]`+`UCm6_R[1]`+`AECm6_R[1]`+`MECm6_R[1]`,
+          `Pen_R[1]`=`UCm7_S[1]`+`AECm7_S[1]`+`MECm7_S[1]`+`UCm7_R[1]`+`AECm7_R[1]`+`MECm7_R[1]`+`UCm8_S[1]`+`AECm8_S[1]`+`MECm8_S[1]`+`UCm8_R[1]`+`AECm8_R[1]`+`MECm8_R[1]`,
+          `Macro_S[1]`=`UCm1_S[1]`+`AECm1_S[1]`+`MECm1_S[1]`+`UCm2_S[1]`+`AECm2_S[1]`+`MECm2_S[1]`+`UCm3_S[1]`+`AECm3_S[1]`+`MECm3_S[1]`+`UCm4_S[1]`+`AECm4_S[1]`+`MECm4_S[1]`+`UCm5_S[1]`+`AECm5_S[1]`+`MECm5_S[1]`+`UCm6_S[1]`+`AECm6_S[1]`+`MECm6_S[1]`+`UCm7_S[1]`+`AECm7_S[1]`+`MECm7_S[1]`+`UCm8_S[1]`+`AECm8_S[1]`+`MECm8_S[1]`,
+          `Macro_R[1]`=`UCm1_R[1]`+`AECm1_R[1]`+`MECm1_R[1]`+`UCm2_R[1]`+`AECm2_R[1]`+`MECm2_R[1]`+`UCm3_R[1]`+`AECm3_R[1]`+`MECm3_R[1]`+`UCm4_R[1]`+`AECm4_R[1]`+`MECm4_R[1]`+`UCm5_R[1]`+`AECm5_R[1]`+`MECm5_R[1]`+`UCm6_R[1]`+`AECm6_R[1]`+`MECm6_R[1]`+`UCm7_R[1]`+`AECm7_R[1]`+`MECm7_R[1]`+`UCm8_R[1]`+`AECm8_R[1]`+`MECm8_R[1]`,
+         
+          `CmNsR[1]`=`UCm2_R[1]`+`AECm2_R[1]`+`MECm2_R[1]`+`UCm3_R[1]`+`AECm3_R[1]`+`MECm3_R[1]`+`UCm4_R[1]`+`AECm4_R[1]`+`MECm4_R[1]`+`UCm5_R[1]`+`AECm5_R[1]`+`MECm5_R[1]`+`UCm6_R[1]`+`AECm6_R[1]`+`MECm6_R[1]`+`UCm7_R[1]`+`AECm7_R[1]`+`MECm7_R[1]`+`UCm8_R[1]`+`AECm8_R[1]`+`MECm8_R[1]`,
+          
+          `Totcarrier[1]`=`UCm1_S[1]`+`AECm1_S[1]`+`MECm1_S[1]`+`UCm1_R[1]`+`AECm1_R[1]`+`MECm1_R[1]`+`UCm2_S[1]`+`AECm2_S[1]`+`MECm2_S[1]`+`UCm2_R[1]`+`AECm2_R[1]`+`MECm2_R[1]`+`UCm3_S[1]`+`AECm3_S[1]`+`MECm3_S[1]`+`UCm3_R[1]`+`AECm3_R[1]`+`MECm3_R[1]`+`UCm4_S[1]`+`AECm4_S[1]`+`MECm4_S[1]`+`UCm4_R[1]`+`AECm4_R[1]`+`MECm4_R[1]`+`UCm5_S[1]`+`AECm5_S[1]`+`MECm5_S[1]`+`UCm5_R[1]`+`AECm5_R[1]`+`MECm5_R[1]`+`UCm6_S[1]`+`AECm6_S[1]`+`MECm6_S[1]`+`UCm6_R[1]`+`AECm6_R[1]`+`MECm6_R[1]`+`UCm7_S[1]`+`AECm7_S[1]`+`MECm7_S[1]`+`UCm7_R[1]`+`AECm7_R[1]`+`MECm7_R[1]`+`UCm8_S[1]`+`AECm8_S[1]`+`MECm8_S[1]`+`UCm8_R[1]`+`AECm8_R[1]`+`MECm8_R[1]`,
+          
+          `Tot[1]`=`US[1]`+`AES[1]`+`MES[1]`+`UCm1_S[1]`+`AECm1_S[1]`+`MECm1_S[1]`+`UCm1_R[1]`+`AECm1_R[1]`+`MECm1_R[1]`+`UCm2_S[1]`+`AECm2_S[1]`+`MECm2_S[1]`+`UCm2_R[1]`+`AECm2_R[1]`+`MECm2_R[1]`+`UCm3_S[1]`+`AECm3_S[1]`+`MECm3_S[1]`+`UCm3_R[1]`+`AECm3_R[1]`+`MECm3_R[1]`+`UCm4_S[1]`+`AECm4_S[1]`+`MECm4_S[1]`+`UCm4_R[1]`+`AECm4_R[1]`+`MECm4_R[1]`+`UCm5_S[1]`+`AECm5_S[1]`+`MECm5_S[1]`+`UCm5_R[1]`+`AECm5_R[1]`+`MECm5_R[1]`+`UCm6_S[1]`+`AECm6_S[1]`+`MECm6_S[1]`+`UCm6_R[1]`+`AECm6_R[1]`+`MECm6_R[1]`+`UCm7_S[1]`+`AECm7_S[1]`+`MECm7_S[1]`+`UCm7_R[1]`+`AECm7_R[1]`+`MECm7_R[1]`+`UCm8_S[1]`+`AECm8_S[1]`+`MECm8_S[1]`+`UCm8_R[1]`+`AECm8_R[1]`+`MECm8_R[1]`,
+          `Rcr`=`Rcr`,
+          .keep = "none"
+        )
+      out_odin = out_odin %>%
+        mutate(
+          `t`=`t`,
+          `Pen_S`=`Pen_S[1]`/`Totcarrier[1]`,
+          `Pen_I`=`Pen_I[1]`/`Totcarrier[1]`,
+          `Pen_R`=`Pen_R[1]`/`Totcarrier[1]`,
+          `Pen_NS`=(`Pen_I[1]`+`Pen_R[1]`)/`Totcarrier[1]`,
+          `Macro_S`=`Macro_S[1]`/`Totcarrier[1]`,
+          `Macro_R`=`Macro_R[1]`/`Totcarrier[1]`,
+          `Multi_R`=`CmNsR[1]`/`Totcarrier[1]`,
+          `Totcarrier_T`=`Totcarrier[1]`/`Tot[1]`,
+          .keep = "none"
+        )
+      out_odin$Reduction<-j
+      out_odin$Scenario<-k
+      out_odin$Theta<-thetai
+      df<-rbind(df,out_odin)
+      }
+   }
+  return(df)
+  
+}
+
+```
+
+
+
+
+```{r datframe delay, before and during shortages }
+
+#Donnes 2021 otites pour penicillines: 
+d2=0.075/0.53; d3=0.075/0.53; d4=0.085/0.53; d5=0.09/0.53; d6=0.12/0.53; d7=0.075/0.53; d8=0.01/0.53 
+Rcr=0.58; Rmacro=0.28; Ramox=0.43; pi=0.52
+ConsoAmox=0.95; ConsoMacro=0.083;Lambda=1/43
+InvasionRate=4.8*10**(-7)
+
+
+dfTheta<-data.frame()
+listetheta=c(0,0.25,0.5,0.75,1)
+for(i in listetheta){
+  print(i)
+  dfi<-LancementReduction(c(Rcr,Ramox,Rmacro,ConsoAmox,ConsoMacro),i)
+  dfTheta<-rbind(dfTheta,dfi)
+}
+
+write.csv(dfTheta,"Files\\dfTheta.csv")
+
+```
+
+
+
+```{r ggplot evolution Figure 1 with Rcr=0.58 and 0.28}
+
+resultats<-read.csv("Files\\dfTheta.csv")
+resultats<-subset(resultats, select = -X)
+resultats<-subset(resultats, select = -t)
+
+
+out_long= resultats %>% pivot_longer(
+  cols = `Pen_S`:`Multi_R`,
+  names_to = c("Antibiotique","Compartment"),
+  names_pattern = "([A-Za-z0-9]+)_([A-Za-z0-9]+)",
+  values_to = "count"
+)
+
+out_long <- subset(out_long, Compartment %in% c("S","I","R"))
+
+out_long <- subset(out_long, Reduction %in% c("3"))
+out_long <- subset(out_long, select=-Reduction)
+
+out_long$Compartment <- factor(out_long$Compartment, levels = c("S", "I", "R"))
+out_long$Antibiotique <- factor(out_long$Antibiotique, levels = c("Pen", "Macro", "Multi"))
+
+labeller_fig1=labeller(Scenario=c("1"="S1","2"="S2","3"="S3","4"="S4"), Antibiotique=c("Pen"="Penicillin ","Macro"="Macrolide ","Multi"="Multidrug"))
+
+
+p<-ggplot(out_long, aes(x = Compartment, y = count, fill = Compartment, alpha = factor(Theta))) +
+  geom_col(position = position_dodge(), color = "black") +
+  scale_fill_manual(
+    name = "Antibiotic sensitivity level",
+    values = c("S" = "#32CD32",  # Vert pour S
+               "I" = "#FFD700",  # Jaune pour I
+               "R" = "#FF6347"),  # Rouge pour R
+    labels = c("S", "I","R")
+  ) +
+  scale_alpha_discrete(name = expression(theta))+
+  coord_cartesian(ylim = c(0, 0.85)) +
+  xlab("Sensitivity level in colonized")+ylab("Proportion")+
+  facet_rep_grid(Scenario~Antibiotique, labeller = labeller_fig1,scales="free")+
+  theme_clean()+
+  theme(legend.background = element_rect(fill = "white", colour = "black"),legend.key.width =unit(1.4, "cm"),
+        legend.title=element_text(size = 12),legend.text=element_text(size = 10),
+        legend.direction = "horizontal",legend.box = "vertical", legend.box.just = "center",legend.position = "bottom",
+        axis.text = element_text(size =14),axis.title = element_text(size = 16),
+        strip.text = element_text(size = 16, face = "bold",hjust = 0.5),strip.placement = "outside",
+        panel.border = element_blank() ,plot.background = element_blank())
+
+
+
+pdf("Figures\\FigureSupplementary_VariationTheta.pdf", width = 800/81, height = 600/81)
+p
+dev.off()
+
+```
+
+
+
+
+

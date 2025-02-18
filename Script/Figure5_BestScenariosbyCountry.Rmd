@@ -146,7 +146,7 @@ OptimVi <- function(x,param) {
                   theta=0.5,
                   N_age=1)
   
-  t <- seq(0, 365*1,0.1)
+  t <- seq(0, 365*1,1)
   y_odin <- mod$run(t)
   out_odin <- as.data.frame(y_odin)
   
