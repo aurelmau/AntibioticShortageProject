@@ -30,6 +30,7 @@ library(grid)
 library(patchwork)
 library(refset)
 library("cowplot")
+library(lhs)
 
 ```
 
@@ -497,7 +498,7 @@ resultats_lhs=as.data.frame(resultats_lhs)
 
 resultats <- t(apply(resultats_lhs, 1, RunShortage9param)) #dataframe de nb_lhs_iterations lignes et de 16 colonnes respectivement : outIgS1,outIgS2,outIgS3,outIgS4,outPropAnsS1,outPropAnsS2,outPropAnsS3,outPropAnsS4,outPropMRS1,outPropMRS2,outPropMRS3,outPropMRS4,outPropRcrS1,outPropRcrS, outPropRcrS3,outPropRcrS4
 
-write.csv(resultats,"Files\\ResultsRCCN500_abs.csv")
+#write.csv(resultats,"Files\\ResultsRCCN500_abs.csv")
 
 
 
@@ -537,7 +538,7 @@ colnames(resultats_lhs) <- param_names
 
 
 creerDataframePRCC<-function(outcome,scenario){
-  dataframe_name <- sprintf("out%sS%d", outcome, scenario)
+  dataframe_name <- sprintf("out%sS%d", outcome, scenario) #récupère le nom de l'outcome et du scénario, et prend la valeur du vecteur défini plus haut ( ex : outPropAnsMrS1)
   res<-pcc(X = resultats_lhs,rank = TRUE,semi=FALSE,y = get(dataframe_name), nboot=20)
   data1<-data.frame(Scenario=numeric(),Outcome=character(),Variable=character(),Moyenne=numeric(), Ecart_type=numeric() )
   data1[1,]<-c(scenario,outcome,"Rcr",res$PRCC$original[1],res$PRCC$`std. error`[1])
