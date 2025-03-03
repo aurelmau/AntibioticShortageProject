@@ -211,7 +211,7 @@ pP<-ggplot(dfP,aes(x=as.factor(Scenario),y=Value,fill=factor(Reduction)))+ #il f
   geom_hline(data = summary_statsP, aes(yintercept = q3_value), color = "#008000", linetype = "dashed") +
   geom_boxplot(data = dfP %>% filter(Reduction == 11), position = position_dodge(),show.legend = FALSE)+
   geom_point(data = dfP_point %>% filter(Reduction == 3),aes(x=as.factor(Scenario),y=Value, colour = factor(Lambda)),size=5)+
-  scale_colour_manual(values = c( "#FFD700",  "#FFA500", "#FF4500"),name="Lambda",labels = c("Min","Mean","Max"))+
+  scale_colour_manual(values = c( "#FFD700",  "#FFA500", "#FF4500"),name=expression("Duration of colonization (" * lambda * ")"),labels = c("Min","Mean","Max"))+
   scale_fill_manual(name = "Réduction (%)", labels = c( "50"), values = c("11"="#FFD700"), guide = "none") +
   xlab("")+ylab(expression(atop("Proportion", paste(""))))+
   facet_wrap(~Outcome,labeller = labeller(Outcome = c("PropAns" = "Penicillin-non-susceptible\nS. pneumoniae","PropMr"="Macrolide-resistant\nS. pneumoniae", "PropAnsMr"="Multidrug-resistant\nS. pneumoniae")),scales = "free_y")+
@@ -244,7 +244,7 @@ pI<-ggplot(dfI,aes(x=as.factor(Scenario),y=Value,fill=factor(Reduction)))+
 
 
 pdf("Figures\\Figure3Lambda.pdf", width = 1400/81, height = 750/81)
-grid.arrange(pP,pI,  layout_matrix = rbind(c(1,1,1,1,1,1,1,1,1,1,1,1,1,NA,NA,NA,NA),c(2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2)))
+grid.arrange(pP,pI,  layout_matrix = rbind(c(1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,NA),c(2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2)))
 
 #grid.arrange(pP,pI,  layout_matrix = rbind(c(1,1,1,1,1,1,1,1,1,1,1,1),c(2,2,2,2,2,2,2,2,2,2,NA,NA)))
 dev.off()
