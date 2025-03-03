@@ -564,7 +564,7 @@ labeller_function <- labeller(
 
 
 p<-ggplot(data = subset(df, Value == MinValue), aes(x = ResistanceAmox, y = ResistanceMacro,color = factor(Scenario)))+
-  geom_point(size=3) +
+  geom_point(size=2) +
   geom_point(data=df_filtered, size=5) +
   xlab(expression("Initial proportion of PNSP strains (PNSP"^init*")")) +
   ylab(expression("Initial proportion of MRSP strains (MRSP"^init*")"))+
