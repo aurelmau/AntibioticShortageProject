@@ -563,22 +563,23 @@ labeller_function <- labeller(
 )
 
 
-p<-ggplot(data = subset(df, Value == MinValue), aes(x = ResistanceAmox, y = ResistanceMacro,color = factor(Scenario)))+
-  geom_point(size=2) +
-  geom_point(data=df_filtered, size=5) +
+p <- ggplot(data = subset(df, Value == MinValue), aes(x = ResistanceAmox, y = ResistanceMacro, color = factor(Scenario))) +
+  geom_point(data = df_filtered, aes(size = "Significant")) +  # Ajouter une taille 5 pour les points du deuxième dataset
+  geom_point(aes(size = "Non-significant")) +  # Ajouter une taille 2 pour les points du premier dataset
   xlab(expression("Initial proportion of PNSP strains (PNSP"^init*")")) +
-  ylab(expression("Initial proportion of MRSP strains (MRSP"^init*")"))+
-  scale_color_manual(name="Strategies",values = c("red" ,"green", "blue","#FDC257"),labels = c("S1","S2","S3","S4")) +  # Définir les couleurs
-  facet_grid(Rcr~Outcome,labeller = labeller_function)+
-  theme_bw()+
-  theme(axis.text = element_text(size = 22),axis.title = element_text(size = 28),
-        legend.text=element_text(size = 26),legend.title=element_text(size = 28),
-        legend.key.height = unit(1, "cm"),legend.key.width = unit(1, "cm"),
-        strip.text.x = element_text(size = 24, face = "bold"), # Facettes Outcome
-        strip.text.y = element_text(size = 24, face = "bold"), # Facettes Rcr
+  ylab(expression("Initial proportion of MRSP strains (MRSP"^init*")")) +
+  scale_color_manual(name = "Strategies", values = c("red", "green", "blue", "#FDC257"), labels = c("S1", "S2", "S3", "S4")) +  # Définir les couleurs
+  facet_grid(Rcr ~ Outcome, labeller = labeller_function) +
+  theme_bw() +
+  theme(axis.text = element_text(size = 22), axis.title = element_text(size = 28),
+        legend.text = element_text(size = 26), legend.title = element_text(size = 28),
+        legend.key.height = unit(1, "cm"), legend.key.width = unit(1, "cm"),
+        strip.text.x = element_text(size = 24, face = "bold"),  # Facettes Outcome
+        strip.text.y = element_text(size = 24, face = "bold"),  # Facettes Rcr
         strip.background = element_rect(fill = "white"),
-        panel.border =element_rect(colour = "black", fill = NA, size = 1.5))
-  
+        panel.border = element_rect(colour = "black", fill = NA, size = 1.5)) +
+  scale_size_manual(name = "Significance", values = c( "Significant" = 5,"Non-significant" = 2))+  # Ajouter la légende pour la taille des points
+  guides(color = guide_legend(override.aes = list(size = 5) ) )
 pdf("Figures\\FigurePNSP_MR_Rcr.pdf", width = 2200/81, height = 1200/81)
 p
 dev.off()
