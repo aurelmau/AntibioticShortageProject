@@ -286,11 +286,11 @@ p<-ggplot(out_long,aes(x=t,y=count,colour=Antibiotique,linetype=as.factor(Compar
   #geom_text(data = dplyr::filter(out_long,t==0|t==465),aes(label = round(count, 2)),vjust = -0.5, hjust = 0.5,show.legend = FALSE) +
   geom_line(linewidth=1.5)+
   scale_linetype_manual(name = "Outcome",values = c( "Phi" = "solid", "DDJ" = "dotted","Inst" = "dashed"),labels = c("Phi"="Exposed prevalence/1,000 children","DDJ"= "DDD/1,000 children/d","Inst"="Exposed incidence/1,000 children/d")) +
-  scale_color_manual(values=c(Amoxicilline="orange",Macrolide="purple" ),name = "Antibiotic", labels = c("Amoxicillin", "Macrolide"))+
+  scale_color_manual(values=c(Amoxicilline="orange",Macrolide="purple" ),name = "Antibiotic", labels = c("Beta-lactam", "Macrolide"))+
   xlab("Time (days)")+ggtitle("Antibiotic exposure")+
   scale_y_continuous(
-    name = "per 1,000 children per day",
-    sec.axis = sec_axis(~ . / 1, name = "per 1,000 children")  # Divise par 10000 pour revenir à l'échelle originale de prop_am
+    name = "",
+    #sec.axis = sec_axis(~ . / 1, name = "")  # Divise par 10000 pour revenir à l'échelle originale de prop_am
   ) +
   facet_wrap(~Scenario, ncol=1,labeller =labeller_fig1,scales = "free" )+
   theme_clean()+
@@ -305,7 +305,7 @@ p<-ggplot(out_long,aes(x=t,y=count,colour=Antibiotique,linetype=as.factor(Compar
     linetype = guide_legend(order = 2)
   )
 
-png("Figures\\FigureLegende1a.png", width = 500, height = 1200)
+png("Figures\\FigureLegende1a.png", width = 700, height = 1200)
 p
 dev.off()
 
