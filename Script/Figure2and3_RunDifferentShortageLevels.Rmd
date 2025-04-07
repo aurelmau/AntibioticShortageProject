@@ -70,8 +70,8 @@ df<-df %>%left_join(df_summary, by = c("Scenario","Reduction", "Outcome"))
 p<-ggplot(subset(df))+ #il faut utiliser la valeur Mean
   geom_line(aes(x=as.numeric(Reduction),y=MedianValue, color=as.factor(Scenario)),linetype = "longdash",linewidth=1)+
   geom_boxplot(aes(x=as.factor(Reduction),y=Value, fill=as.factor(Scenario)), position = position_dodge(),outlier.shape = NA)+
-  scale_color_manual(name = "Strategies", labels = c("Prescription frequency reduction (S1)","Treatment duration reduction (S2)","Dose/day reduction (S3)","Alternative treatment (S4)"),values=c("red" ,"green", "blue","#FDC257"))+
-  scale_fill_manual(name = "Strategies", labels = c("Prescription frequency reduction (S1)","Treatment duration reduction (S2)","Dose/day reduction (S3)","Alternative treatment (S4)"),values=c("red" ,"green", "blue","#FDC257"))+
+  scale_color_manual(name = "Strategies", labels = c("Frequency use reduction (S1)","Treatment duration reduction (S2)","Dose/day reduction (S3)","Alternative treatment (S4)"),values=c("red" ,"green", "blue","#FDC257"))+
+  scale_fill_manual(name = "Strategies", labels = c("Frequency use reduction (S1)","Treatment duration reduction (S2)","Dose/day reduction (S3)","Alternative treatment (S4)"),values=c("red" ,"green", "blue","#FDC257"))+
     xlab("Different level of shortage (%)")+
   #ylab(expression(atop("Proportion", paste(""))))+
   ylab(expression(atop("Relative variation (%)", paste(""))))+
