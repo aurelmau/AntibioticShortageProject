@@ -741,7 +741,8 @@ pivot_wider(
   names_from = Outcome,  # Les noms des colonnes proviendront de Outcome
   values_from = Variation  # Les valeurs des cellules proviendront de Variation
 )
-df<-read_excel("C:\\Users\\maurinau\\Documents\\AntibioticShortage\\DataframeParametresPays.xlsx")
+
+df<-read_excel("Files\\DataframeParametresPays.xlsx")
 
 merged_data <- left_join(out_wide, df, by = c("Country" = "Pays"))
 
