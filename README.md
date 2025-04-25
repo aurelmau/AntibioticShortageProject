@@ -55,18 +55,18 @@ which will install in about 2 minutes on a machine with the recommended specs.
 ## Script description
 
 - [DeuxAgeHuitResistanceDeuxAntibiosOdin.R](./Script/DeuxAgeHuitResistanceDeuxAntibiosOdin.R): Odin equations to generate all the simulations
-- [EstimationOfAntibioticEfficacy.Rmd](./Script/EstimationOfAntibioticEfficacy.Rmd): R code to estimate decolonisation rates (Figure S8 and S9)
-- [Figure1_ScenariosPresentation.Rmd](./Script/Figure1_ScenariosPresentation.Rmd):
-- [Figure2and3_RunDifferentShortageLevels.Rmd](./Script/Figure2and3_RunDifferentShortageLevels.Rmd):
-- [Figure4_BestScenarioAccordingMainParameters.Rmd](./Script/Figure4_BestScenarioAccordingMainParameters.Rmd):
-- [Figure5_BestScenariosbyCountry.Rmd](./Script/Figure5_BestScenariosbyCountry.Rmd):
-- [ParametersEstimation.Rmd](./Script/ParametersEstimation.Rmd):
-- [SensitivityAnalysis_Theta.Rmd](./Script/SensitivityAnalysis_Theta.Rmd):
-- [SensitivityAnlaysis_PRCC.Rmd](./Script/SensitivityAnlaysis_PRCC.Rmd):
-- [SigmoidReductionFunction.R](./Script/SigmoidReductionFunction.R):
-- [UncertaintyAnalysis0to100LevelsOfShortage.R](./Script/UncertaintyAnalysis0to100LevelsOfShortage.R):
-- [UncertaintyAnalysisFigure1.R](./Script/UncertaintyAnalysisFigure1.R):
-- [UncertaintyAnalysisMinMaxMean.R](./Script/UncertaintyAnalysisMinMaxMean.R):
+- [EstimationOfAntibioticEfficacy.Rmd](./Script/EstimationOfAntibioticEfficacy.Rmd): R code to calibrate antibiotic-induced decolonization rates (Figure S8 and S9)
+- [Figure1_ScenariosPresentation.Rmd](./Script/Figure1_ScenariosPresentation.Rmd): R code to simulate the impact of different shortage management strategies on the evolution of antibiotic exposure and pneumococcal resistance (Figure 1 and Figure S1)
+- [Figure2and3_RunDifferentShortageLevels.Rmd](./Script/Figure2and3_RunDifferentShortageLevels.Rmd): R code to simulate the relative variation of different shortage levels (Figure 2) and a 1-year impact of a 50% beta-lactam shortage (Figure 3 and Figure S2)
+- [Figure4_BestScenarioAccordingMainParameters.Rmd](./Script/Figure4_BestScenarioAccordingMainParameters.Rmd): R code to simulate the recommended antibiotic shortage management strategy depending on the initial conditions (Figure 5 and Figure S4)
+- [Figure5_BestScenariosbyCountry.Rmd](./Script/Figure5_BestScenariosbyCountry.Rmd): R code to simulate shortage in 20 European countries (Figure 6, Figure S7) and to construct the correlation matrix between initial conditions on country-specific pharmaco-epidemiological context (Figure S6)
+- [ParametersEstimation.Rmd](./Script/ParametersEstimation.Rmd): R code to calibrate transmission parameters 
+- [SensitivityAnalysis_Theta.Rmd](./Script/SensitivityAnalysis_Theta.Rmd): R code to simulate a sensitivity analysis of competition parameter (Figure S5)
+- [SensitivityAnlaysis_PRCC.Rmd](./Script/SensitivityAnlaysis_PRCC.Rmd): R code to simulate multivariate sensitivity analysis (Figure S3)
+- [SigmoidReductionFunction.R](./Script/SigmoidReductionFunction.R): R code to plot amoxicillin treatment induced decolonization rate for different shortage level (Figure S10)
+- [UncertaintyAnalysis0to100LevelsOfShortage.R](./Script/UncertaintyAnalysis0to100LevelsOfShortage.R): R code to generete fichierCombine070225_0to100.csv
+- [UncertaintyAnalysisFigure1.R](./Script/UncertaintyAnalysisFigure1.R): R code to generete fichierCombine070225_figure1.csv
+- [UncertaintyAnalysisMinMaxMean.R](./Script/UncertaintyAnalysisMinMaxMean.R): R code to generete fichierCombine070225MaxMinMean.csv
 
 
 # Instruction for use
