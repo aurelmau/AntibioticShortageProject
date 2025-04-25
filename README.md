@@ -55,15 +55,18 @@ which will install in about 2 minutes on a machine with the recommended specs.
 ## Script description
 
 - [DeuxAgeHuitResistanceDeuxAntibiosOdin.R](./Script/DeuxAgeHuitResistanceDeuxAntibiosOdin.R): Odin equations to generate all the simulations
-- [EstimationOfAntibioticEfficacy.Rmd](./Script/EstimationOfAntibioticEfficacy.Rmd): Odin equations to generate all the simulations
-- [](./Script/):
-- [](./Script/):
-- [](./Script/):
-- [](./Script/):
-- [](./Script/):
-- [](./Script/):
-- [](./Script/): 
-- [EstimationOfAntibioticEfficacy.Rmd](./Script): Odin equations to generate all the simulations 
+- [EstimationOfAntibioticEfficacy.Rmd](./Script/EstimationOfAntibioticEfficacy.Rmd): R code to estimate decolonisation rates (Figure S8 and S9)
+- [Figure1_ScenariosPresentation.Rmd](./Script/Figure1_ScenariosPresentation.Rmd):
+- [Figure2and3_RunDifferentShortageLevels.Rmd](./Script/Figure2and3_RunDifferentShortageLevels.Rmd):
+- [Figure4_BestScenarioAccordingMainParameters.Rmd](./Script/Figure4_BestScenarioAccordingMainParameters.Rmd):
+- [Figure5_BestScenariosbyCountry.Rmd](./Script/Figure5_BestScenariosbyCountry.Rmd):
+- [ParametersEstimation.Rmd](./Script/ParametersEstimation.Rmd):
+- [SensitivityAnalysis_Theta.Rmd](./Script/SensitivityAnalysis_Theta.Rmd):
+- [SensitivityAnlaysis_PRCC.Rmd](./Script/SensitivityAnlaysis_PRCC.Rmd):
+- [SigmoidReductionFunction.R](./Script/SigmoidReductionFunction.R):
+- [UncertaintyAnalysis0to100LevelsOfShortage.R](./Script/UncertaintyAnalysis0to100LevelsOfShortage.R):
+- [UncertaintyAnalysisFigure1.R](./Script/UncertaintyAnalysisFigure1.R):
+- [UncertaintyAnalysisMinMaxMean.R](./Script/UncertaintyAnalysisMinMaxMean.R):
 
 
 # Instruction for use
