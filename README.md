@@ -7,6 +7,7 @@
 - [System Requirements](#system-requirements)
 - [Installation Guide](#installation-guide)
 - [Demo](#demo)
+- [Instruction for use](#instruction-for-use)
 
 
 # Overview
@@ -72,5 +73,6 @@ which will install in about 30 seconds on a machine with the recommended specs.
 
 # Demo
 
+# Instruction for use
 
 # Instruction for use
