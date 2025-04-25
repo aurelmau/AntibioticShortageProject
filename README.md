@@ -37,7 +37,7 @@ The code has been tested on the following systems:
 
 Windows 11 Professionnel
 
-#### Installing R version 3.4.2 on Ubuntu 16.04
+#### Installing R version 4.3.3 
 
 # Installation Guide
 
@@ -45,8 +45,7 @@ Windows 11 Professionnel
 Users should install the following packages, from an `R` terminal:
 
 ```
-install.packages(c("ggplot2", "readxl", "tidyr", "dplyr", "reshape2", "ggpubr","socialmixr", "RColorBrewer", "rmarkdown", "plotly", "demodelr","forcats", "sf", "rnaturalearth", "rnaturalearthdata", "corrplot","gridExtra", "gridGraphics", "patchwork", "refset", "cowplot"
-))
+install.packages(c("ggplot2", "readxl", "tidyr", "dplyr", "reshape2", "ggpubr","socialmixr", "RColorBrewer", "rmarkdown", "plotly", "demodelr","forcats", "sf", "rnaturalearth", "rnaturalearthdata", "corrplot","gridExtra", "gridGraphics", "patchwork", "refset", "cowplot","odin"))
 ```
 
 which will install in about 2 minutes on a machine with the recommended specs.
