@@ -26,8 +26,8 @@ Antibiotic shortages have become frequent worldwide, with potential consequences
 
 The code has been tested with a computer with the following specs:
 
-RAM: 16+ GB  
-CPU: 4+ cores, 3.3+ GHz/core
+RAM: 64 GB  
+CPU: 12-cores, 4.10 GHz
 
 ## Software Requirements
 
@@ -35,7 +35,7 @@ CPU: 4+ cores, 3.3+ GHz/core
 
 The code has been tested on the following systems:
 
-Windows:  
+Windows 11 Professionnel
 
 #### Installing R version 3.4.2 on Ubuntu 16.04
 
