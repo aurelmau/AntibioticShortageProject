@@ -45,7 +45,8 @@ Windows 11 Professionnel
 Users should install the following packages, from an `R` terminal:
 
 ```
-install.packages(c('ggplot2', 'abind', 'irlba', 'knitr', 'rmarkdown', 'latex2exp', 'MASS', 'randomForest'))
+install.packages(c("ggplot2", "readxl", "tidyr", "dplyr", "reshape2", "ggpubr","socialmixr", "RColorBrewer", "rmarkdown", "plotly", "demodelr","forcats", "sf", "rnaturalearth", "rnaturalearthdata", "corrplot","gridExtra", "gridGraphics", "patchwork", "refset", "cowplot"
+))
 ```
 
 which will install in about 2 minutes on a machine with the recommended specs.
