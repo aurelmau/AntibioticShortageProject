@@ -53,5 +53,3 @@ which will install in about 2 minutes on a machine with the recommended specs.
 # Demo
 
 # Instruction for use
-
-# Instruction for use
