@@ -68,5 +68,6 @@ which will install in about 2 minutes on a machine with the recommended specs.
 - [UncertaintyAnalysisFigure1.R](./Script/UncertaintyAnalysisFigure1.R): R code to generete fichierCombine070225_figure1.csv
 - [UncertaintyAnalysisMinMaxMean.R](./Script/UncertaintyAnalysisMinMaxMean.R): R code to generete fichierCombine070225MaxMinMean.csv
 
+A few minutes to run the code with the recommended specs
 
 # Instruction for use
