@@ -477,6 +477,12 @@ min_values <- df %>%
 
 df <- merge(df, min_values, by = c("Country", "Outcome"))
 
+country_levels <- c("France","Italy","Spain","Ireland","Belgium","Croatia","Poland", "Denmark", "Portugal", "Lithuania", "Czechia", "Hungary", "Slovenia", "Norway","Estonia","Austria","Sweden","Germany","Netherlands","Finland")
+
+df <- df %>%
+  mutate(Country = factor(Country, levels = country_levels)) %>%
+  arrange(Country)
+
 
 calculate_Diff <- function(p1, p2) {
   if(abs(p1-p2)/p2>0.05){return(TRUE)} 
@@ -583,6 +589,12 @@ df<-subset(df, select=-Reduction)
 df <- df %>%
   mutate(Variation = round(Variation)) %>%
   mutate(Variation = ifelse(Variation == 0, 0, Variation))
+
+country_levels <- c("France","Italy","Spain","Ireland","Belgium","Croatia","Poland", "Denmark", "Portugal", "Lithuania", "Czechia", "Hungary", "Slovenia", "Norway","Estonia","Austria","Sweden","Germany","Netherlands","Finland")
+
+df <- df %>%
+  mutate(Country = factor(Country, levels = country_levels)) %>%
+  arrange(Country)
 
 #Faire les bons arrondis
 df_modifie <- df %>%
