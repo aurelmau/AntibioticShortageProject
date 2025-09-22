@@ -285,7 +285,7 @@ p<-ggplot(out_long,aes(x=t,y=count,colour=Antibiotique,linetype=as.factor(Compar
   geom_rect(aes(xmin =100, xmax = Inf, ymin = -Inf, ymax = Inf),fill = "#FFE4E1", alpha = 0.04,inherit.aes = FALSE)+
   #geom_text(data = dplyr::filter(out_long,t==0|t==465),aes(label = round(count, 2)),vjust = -0.5, hjust = 0.5,show.legend = FALSE) +
   geom_line(linewidth=1.5)+
-  scale_linetype_manual(name = "Outcome",values = c( "Phi" = "solid", "DDJ" = "dotted","Inst" = "dashed"),labels = c("Phi"="Exposed prevalence/1,000 children","DDJ"= "DDD/1,000 children/d","Inst"="Exposed incidence/1,000 children/d")) +
+  scale_linetype_manual(name = "Outcome",values = c( "Phi" = "solid", "DDJ" = "dotted","Inst" = "dashed"),labels = c("Phi"="Exposed prevalence/1,000 children","DDJ"= "Number of DDD/1,000 children/d","Inst"="Exposed incidence/1,000 children/d")) +
   scale_color_manual(values=c(Amoxicilline="orange",Macrolide="purple" ),name = "Antibiotic", labels = c("Beta-lactam", "Macrolide"))+
   xlab("Time (days)")+ggtitle("Antibiotic exposure")+
   scale_y_continuous(
