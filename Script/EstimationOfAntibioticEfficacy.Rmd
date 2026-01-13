@@ -23,52 +23,19 @@ library(khroma)
 library(extrafont)
 library(ggpattern)
 
-ComixFrance=matrix(c(1.38862624, 0.8839566, 3.035774, 0.1647373, 0.45351050, 3.8515862, 4.704727, 0.3219808, 0.29411769, 0.8884435, 8.714019, 0.6593619, 0.06124847, 0.2333334, 2.530319, 1.4056732),nrow = 4, ncol = 4,byrow = TRUE)
 
-gen <- odin::odin("C:\\Users\\maurinau\\OneDrive - LECNAM\\Stage\\StagePasteur\\codeRStage\\DeuxAgeDeuxResistanceOdin.R")
+gen <- odin::odin("Script\\DeuxAgeDeuxResistanceOdin.R")
 
 ```
+
 
 ##ArticleVaron 2000 Groupe Erythromicine
-
-
-```{r setup, include=FALSE}
-
-
-mod <- gen$new(US_0=c(0),
-               UCm1_0=c(0),
-               UCm2_0=c(0),
-               
-               ES_0=c(86*0.53),
-               ECm1_0=c(86*0.47*0.47),
-               ECm2_0=c(86*0.47*0.53),
-               
-               f=0.91095191              ,
-               a1=0,a2=1,
-               
-               V=c(0.05002733),
-               Beta=matrix(c(1),nrow = 1, ncol = 1 ,byrow = TRUE),
-               
-               Phi=c(0),
-               Mu=c(0),  #c((0.76*10**(-3))/365,(0.1*10**(-3))/365,(2.16*10**(-3))/365,(50*10**(-3))/365),
-               mu0=0,
-               Lambda=c(1/43), #décolonisation naturelle 
-               gamma=1/8,
-               dose1= 1.00692834       , #1000mg,q8h MIC<=0.063
-               dose2=0.03449561    , #1000mg,q8h MIC>=0.125
-               pm1m2=0,
-               theta=0.5,
-               N_age=1)
-
-
-
-```
 
 #Choix des paramètres de transmissibilité et coût en fitness
 
 ```{r optim global Vi et fi}
 
-OptimVi <- function(x,y) {
+OptimViFi <- function(x,y) {
     mod <- gen$new(US_0=c((1000*(1-(0.052)))*0.53),
                UCm1_0=c((1000*(1-(0.052)))*0.47*0.47),
                UCm2_0=c((1000*(1-(0.052)))*0.47*0.53),
@@ -131,20 +98,22 @@ OptimVi <- function(x,y) {
 }
 
 x0=c(0.7,0.011)
-y=c(1.006924   ,0.03449561  )
+y=c(1  ,0.1868004    )
 
 #optim(par=x0,OptimVi,control = list(maxit = 20000))
-optim(x0,OptimVi,y=y,method="L-BFGS-B",lower=c(0.7,0.01), upper=c(1,0.3))
+optim(x0,OptimViFi,y=y,method="L-BFGS-B",lower=c(0.7,0.01), upper=c(1,0.3))
 
 
 ```
 
 #Choix de la dose pour reproduire les observations
 
-
 ```{r optim Dose pour obtenir les variations}
 
 OptimDose <- function(x) {
+  fi<-optim(par=c(0.72,0.01),OptimViFi,y=c(x[1],x[2]),control = list(maxit = 20000))$par[1]
+  Vi=optim(par=c(0.72,0.01),OptimViFi,y=c(x[1],x[2]),control = list(maxit = 20000))$par[2]
+  
     mod <- gen$new(US_0=c(0),
                UCm1_0=c(0),
                UCm2_0=c(0),
@@ -154,13 +123,13 @@ OptimDose <- function(x) {
                ECm2_0=c(86*0.47*0.53),
 
                
-               f=optim(par=c(0.72,0.01),OptimVi,y=c(x[1],x[2]),control = list(maxit = 20000))$par[1],
+               f=fi,
                #f=0.82020079,
                a1=0,a2=1,
                
-               V=optim(par=c(0.72,0.01),OptimVi,y=c(x[1],x[2]),control = list(maxit = 20000))$par[2],
+               V=Vi,
                #V=0.01926239,
-               Beta=matrix(c(3),nrow = 1, ncol = 1 ,byrow = TRUE),
+               Beta=matrix(c(1),nrow = 1, ncol = 1 ,byrow = TRUE),
                #V=c(0.006019609),
                #Beta=matrix(c(4.704727),nrow = 1, ncol = 1 ,byrow = TRUE), #contact_matrix(polymod, countries = "United Kingdom", age.limits = c(0, 5, 15,65),sample.participants = TRUE)$matrix,
                Phi=c(0),
@@ -203,22 +172,98 @@ OptimDose <- function(x) {
     p1=as.numeric(f[4])
     r1=as.numeric(f[3])
     
-    cat(x[1],x[2]," :",r1," ",p1,"\n")
+    #cat(x[1]," ",x[2]," ",fi," ",Vi," :",r1," ",p1,"\n")
     
     return(abs(0.91-r1)**2+abs(0.25-p1)**2)
 }
 
+res_AntibioEffect <- data.frame()
 
-x0=c(0.1,0.01)
+set.seed(123)
+for (i in 1:1) {
+  set.seed(i)
 
-optim(par=x0,OptimDose,control = list(maxit = 20000))
-optim(x0,OptimDose,method="L-BFGS-B",lower=c(0.2,0), upper=c(1.07,0.5))
+  x0 <- c(
+    runif(1, min = 0.5,  max = 1.0),   # f
+    runif(1, min = 0.01, max = 0.08)   # Beta (2e param)
+  )
 
-#TotCarrier =0.27 Dose1=387.1844039   Dose2=0.2060253
+  fit <- optim(
+    par = x0, fn = OptimDose, method = "L-BFGS-B",
+    lower = c(0, 0), upper = c(1, 1)
+  )
+
+  DoseEffectS <- fit$par[1]
+  DoseEffectR <- fit$par[2]
+
+  res_AntibioEffect <- rbind(
+    res_AntibioEffect,
+    data.frame(
+      seed = i,
+      DoseEffectS = DoseEffectS,
+      DoseEffectR = DoseEffectR
+    )
+  )
+}
+
+res_AntibioEffect
+  
+mean_DoseEffectS <- mean(res_AntibioEffect$DoseEffectS, na.rm = TRUE)
+mean_DoseEffectR <- mean(res_AntibioEffect$DoseEffectR, na.rm = TRUE)
+
+cat(mean_DoseEffectS," ",mean_DoseEffectR)
+
+
+
+# x0=c(0.1,0.01)
+# 
+# #optim(par=x0,OptimDose,control = list(maxit = 20000))
+# optim(x0,OptimDose,method="L-BFGS-B",lower=c(0,0), upper=c(1,1))
+
 
 ```
 
 
+```{r setup, include=FALSE}
+
+mean_DoseEffectS<-1
+mean_DoseEffectR<-0.03543902
+
+Optim=optim(par=c(0.72,0.01),OptimViFi,y=c(mean_DoseEffectS,mean_DoseEffectR),control = list(maxit = 20000))
+f_f<-Optim$par[1] #0.9345706
+V_f<-Optim$par[2] #0.07551792
+cat(f_f," ",V_f )
+# 5ans 0.9352253   0.07550239
+
+
+mod <- gen$new(US_0=c(0),
+               UCm1_0=c(0),
+               UCm2_0=c(0),
+               
+               ES_0=c(86*0.53),
+               ECm1_0=c(86*0.47*0.47),
+               ECm2_0=c(86*0.47*0.53),
+               
+               f=f_f              ,
+               a1=0,a2=1,
+               
+               V=c(V_f),
+               Beta=matrix(c(1),nrow = 1, ncol = 1 ,byrow = TRUE),
+               
+               Phi=c(0),
+               Mu=c(0),  #c((0.76*10**(-3))/365,(0.1*10**(-3))/365,(2.16*10**(-3))/365,(50*10**(-3))/365),
+               mu0=0,
+               Lambda=c(1/43), #décolonisation naturelle 
+               gamma=1/8,
+               dose1= mean_DoseEffectS       , #1000mg,q8h MIC<=0.063
+               dose2=mean_DoseEffectR    , #1000mg,q8h MIC>=0.125
+               pm1m2=0,
+               theta=0.5,
+               N_age=1)
+
+
+
+```
 
 ```{r ggplot toutes les courbes}
 t <- seq(0,8,1)
@@ -284,7 +329,6 @@ theme_bw()
 ```
 
 
-
 ```{r ggplot distribution des CMI}
 t <- seq(0,10,0.1)
 y_odin <- mod$run(t)
@@ -326,7 +370,7 @@ out_long= df_merged %>% pivot_longer(
 
 
 # Ouvrir un périphérique graphique pour sauvegarder le plot en tant qu'image PNG
-png("C:\\Users\\maurinau\\Documents\\AntibioticShortage\\Figures\\FigureS7Macrolides.png", width =1000, height = 800)
+#png("C:\\Users\\maurinau\\Documents\\AntibioticShortage\\Figures\\FigureS7Macrolides.png", width =1000, height = 800)
 
 ggplot(out_long,aes(x=Compartment,y=count, fill=Compartment,alpha = factor(t),pattern = Datas))+
   geom_col_pattern( position = position_dodge(), color = "black")+
@@ -361,7 +405,7 @@ ggplot(out_long,aes(x=Compartment,y=count, fill=Compartment,alpha = factor(t),pa
         panel.border = element_blank() ,plot.background = element_blank())
 
 # Fermer le périphérique graphique
-dev.off()
+#dev.off()
 
 
 
@@ -372,39 +416,6 @@ dev.off()
 
 
 ##Article Lewnard et al. 2018 Groupe Amoxicilline Clavulanate
-
-
-```{r setup, include=FALSE}
-
-
-mod <- gen$new(US_0=c(0),
-               UCm1_0=c(0),
-               UCm2_0=c(0),
-               
-               ES_0=c(146*0.36),
-               ECm1_0=c(146*0.64*0.81),
-               ECm2_0=c(146*0.64*0.19),
-               
-               f=0.94122146    ,
-               a1=0,a2=1,
-               
-               V=c(0.07562958),
-               Beta=matrix(c(1),nrow = 1, ncol = 1 ,byrow = TRUE),
-               
-               Phi=c(0),
-               Mu=c(0),  #c((0.76*10**(-3))/365,(0.1*10**(-3))/365,(2.16*10**(-3))/365,(50*10**(-3))/365),
-               mu0=0,
-               Lambda=c(1/43), #décolonisation naturelle 
-               gamma=1/7,
-               dose1= 1 , #1000mg,q8h MIC<=0.063
-               dose2=0.09, #1000mg,q8h MIC>=0.125
-               pm1m2=0,
-               theta=0.5,
-               N_age=1)
-
-
-
-```
 
 #Choix des paramètres de transmissibilité et coût en fitness
 
@@ -436,7 +447,7 @@ OptimFiVi <- function(x,y) {
                theta=0.5,
                N_age=1)
         
-    t <- seq(0, 365*1,0.1)
+    t <- seq(0, 365*5,0.1)
     y_odin <- mod$run(t)
     out_odin <- as.data.frame(y_odin)
     
@@ -472,7 +483,7 @@ OptimFiVi <- function(x,y) {
 }
 
 x0=c(0.7,0.011)
-y=c(1  ,0.09)
+y=c(1  ,0.06587986)
 
 #optim(par=x0,OptimVi,control = list(maxit = 20000))
 optim(x0,OptimFiVi,y=y,method="L-BFGS-B",lower=c(0.7,0.01), upper=c(1,0.3))
@@ -481,7 +492,6 @@ optim(x0,OptimFiVi,y=y,method="L-BFGS-B",lower=c(0.7,0.01), upper=c(1,0.3))
 ```
 
 #Choix de la dose pour reproduire les observations
-
 
 ```{r optim Dose pour obtenir les variations}
 
@@ -551,12 +561,92 @@ OptimDose <- function(x) {
 }
 
 
-x0=c(0.8,0.01)
+res_AntibioEffect <- data.frame()
 
-optim(par=x0,OptimDose,control = list(maxit = 20000))
-optim(x0,OptimDose,method="L-BFGS-B",lower=c(0.2,0), upper=c(1,1))
+set.seed(123)
+for (i in 1:1) {
+  set.seed(i)
 
-#TotCarrier =0.27 Dose1=387.1844039   Dose2=0.2060253
+  x0 <- c(
+    runif(1, min = 0.5,  max = 1.0),   # f
+    runif(1, min = 0.01, max = 0.08)   # Beta (2e param)
+  )
+
+  fit <- optim(
+    par = x0, fn = OptimDose, method = "L-BFGS-B",
+    lower = c(0, 0), upper = c(1, 1)
+  )
+
+  DoseEffectS <- fit$par[1]
+  DoseEffectR <- fit$par[2]
+
+  res_AntibioEffect <- rbind(
+    res_AntibioEffect,
+    data.frame(
+      seed = i,
+      DoseEffectS = DoseEffectS,
+      DoseEffectR = DoseEffectR
+    )
+  )
+}
+
+res_AntibioEffect
+  
+mean_DoseEffectS <- mean(res_AntibioEffect$DoseEffectS, na.rm = TRUE)
+mean_DoseEffectR <- mean(res_AntibioEffect$DoseEffectR, na.rm = TRUE)
+
+cat(mean_DoseEffectS," ",mean_DoseEffectR)
+
+# 
+# x0=c(0.8,0.01)
+# 
+# optim(par=x0,OptimDose,control = list(maxit = 20000))
+# optim(x0,OptimDose,method="L-BFGS-B",lower=c(0.2,0), upper=c(1,1))
+# 
+
+
+
+```
+
+
+```{r run the model with fitted parameters}
+
+mean_DoseEffectS<-1
+mean_DoseEffectR<-0.06599847
+
+Optim=optim(par=c(0.72,0.01),OptimFiVi,y=c(mean_DoseEffectS,mean_DoseEffectR),control = list(maxit = 20000))
+f_f<-Optim$par[1] #0.9345706
+V_f<-Optim$par[2] #0.07551792
+cat(f_f," ",V_f )
+# 5ans 0.9352253   0.07550239
+
+
+mod <- gen$new(US_0=c(0),
+               UCm1_0=c(0),
+               UCm2_0=c(0),
+               
+               ES_0=c(146*0.36),
+               ECm1_0=c(146*0.64*0.81),
+               ECm2_0=c(146*0.64*0.19),
+               
+               f=f_f     ,
+               a1=0,a2=1,
+               
+               V=c(V_f),
+               Beta=matrix(c(1),nrow = 1, ncol = 1 ,byrow = TRUE),
+               
+               Phi=c(0),
+               Mu=c(0),  #c((0.76*10**(-3))/365,(0.1*10**(-3))/365,(2.16*10**(-3))/365,(50*10**(-3))/365),
+               mu0=0,
+               Lambda=c(1/43), #décolonisation naturelle 
+               gamma=1/7,
+               dose1= mean_DoseEffectS , #1000mg,q8h MIC<=0.063
+               dose2=mean_DoseEffectR, #1000mg,q8h MIC>=0.125
+               pm1m2=0,
+               theta=0.5,
+               N_age=1)
+
+
 
 ```
 
@@ -593,6 +683,7 @@ ggplot(out_long,aes(x=t))+
 
 
 ```
+
 
 ```{r ggplot toutes les courbes}
 t <- seq(0,60,1)
@@ -677,7 +768,7 @@ out_long= df_merged %>% pivot_longer(
 
 
 # Ouvrir un périphérique graphique pour sauvegarder le plot en tant qu'image PNG
-png("C:\\Users\\maurinau\\Documents\\AntibioticShortage\\Figures\\FigureS7Amox.png", width =1000, height = 800)
+#png("C:\\Users\\maurinau\\Documents\\AntibioticShortage\\Figures\\FigureS7Amox.png", width =1000, height = 800)
 
 ggplot(out_long,aes(x=Compartment,y=count, fill=Compartment,alpha = factor(t),pattern = Datas))+
   geom_col_pattern( position = position_dodge(), color = "black")+
@@ -714,7 +805,7 @@ ggplot(out_long,aes(x=Compartment,y=count, fill=Compartment,alpha = factor(t),pa
         panel.border = element_blank() ,plot.background = element_blank())
 
 # Fermer le périphérique graphique
-dev.off()
+#dev.off()
 
 
 

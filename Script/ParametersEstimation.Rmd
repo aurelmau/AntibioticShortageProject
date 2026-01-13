@@ -198,7 +198,6 @@ out_odin = out_odin %>%
 }
 
 
-
 datasDistributions2021<-c((1-Rmacro)-(1-Rcr)*Ramox,Rmacro-Rcr*Ramox,(1-Rcr)*Ramox*d2,Rcr*Ramox*d2,(1-Rcr)*Ramox*d3,Rcr*Ramox*d3,(1-Rcr)*Ramox*d4,
                           Rcr*Ramox*d4,(1-Rcr)*Ramox*d5,Rcr*Ramox*d5,(1-Rcr)*Ramox*d6,Rcr*Ramox*d6,(1-Rcr)*Ramox*d7,
                           Rcr*Ramox*d7,(1-Rcr)*Ramox*d8,Rcr*Ramox*d8,pi)
@@ -236,8 +235,6 @@ mLL_gauss <- function(param, obs_df=datasDistributions) {
 }
 
 mLL_gauss(x0)
-
-x0=c(0.99,0.98,0.93,0.9,0.9,0.8,0.8,0.95,0.01)
 
 optimi<-optim(x0,mLL_gauss,method="L-BFGS-B",lower=c(0.99,0.98,0.93,0.9,0.9,0.8,0.8,0.95,0.001), upper=c(1,1,1,1,1,1,1,1,0.1))
 optimi$par
