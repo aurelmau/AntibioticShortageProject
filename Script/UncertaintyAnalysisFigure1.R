@@ -13,9 +13,12 @@ library(forcats)
 library(rayshader)
 library(triangle)
 library(lhs)
+library(here)
 
+path <- here::here("Script", "DeuxAgeHuitResistanceDeuxAntibiosOdin.R")
+code <- paste(readLines(path, warn = FALSE), collapse = "\n")
+gen <- odin::odin(code)
 
-gen <- odin::odin("Script\\DeuxAgeHuitResistanceDeuxAntibiosOdin.R")
 
 #Donnees enfants 2021
 d2=0.075/0.53; d3=0.075/0.53; d4=0.085/0.53; d5=0.09/0.53; d6=0.12/0.53; d7=0.075/0.53; d8=0.01/0.53 
@@ -400,5 +403,4 @@ for (i in 1:nb_lhs_iterations) {
 }
 
 
-write.csv(dfnew,"Files\\fichierCombine070225_figure1.csv")
-
+write.csv(dfnew, here::here("Files", "fichierCombine070225_figure1.csv"))
