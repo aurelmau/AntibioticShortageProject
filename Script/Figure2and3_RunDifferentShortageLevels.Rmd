@@ -31,14 +31,14 @@ library(sensitivity)
 library(patchwork)
 library(cowplot)
 library(gridExtra)
+library(here)
 ```
 
 ##Figure 2
 
-
 ```{r plot figure 2 boxplot penurie proportion 0% à 100%}
 
-dfnew<-read.csv("Files\\fichierCombine070225_0to100.csv")
+dfnew <- read.csv(here::here("Files", "fichierCombine070225_0to100.csv"))
 
 df<-dfnew
 df$Value <- as.numeric(df$Value)
@@ -86,7 +86,7 @@ theme_clean()+
 
 grid.arrange(p)
 
-pdf("Figures\\Figure2Boxplot0to100.pdf", width = 1400/81, height = 800/81)
+pdf(filename = here::here("Figures", "Figure2Boxplot0to100.pdf"), width = 1400/81, height = 800/81)
 grid.arrange(p)
 dev.off()
 
@@ -97,7 +97,7 @@ dev.off()
 
 ```{r ggplot evolution Figure 2 boxplot valeur d'evolutions observees }
 
-dfnew<-read.csv("Files\\fichierCombine070225_0to100.csv")
+dfnew <- read.csv(here::here("Files", "fichierCombine070225_0to100.csv"))
 
 df<-dfnew
 df <- subset(df, Reduction %in% c("1","6","11","16")) #0%, 25%, #50% and 75% of shortage
@@ -128,7 +128,7 @@ df_summary
 ```{r histo figure 3 avec incertitude et points for Lambda}
 
 ##datframe pour barplot
-dfnew<-read.csv("Files\\fichierCombine070225_0to100.csv")
+dfnew <- read.csv(here::here("Files", "fichierCombine070225_0to100.csv"))
 #Proportion
 df<-dfnew
 df<-subset(df, select = -X)
@@ -176,7 +176,7 @@ summary_statsI <- dfI %>%
   )
 
 ##datframe pour points
-dfnew<-read.csv("Files\\fichierCombine070225MaxMinMean.csv")
+dfnew <- read.csv(here::here("Files", "fichierCombine070225MaxMinMean.csv"))
 ## dataframe for proprotion-related outcomes
 df<-dfnew
 #df<-subset(df, select = -X)
@@ -243,10 +243,8 @@ pI<-ggplot(dfI,aes(x=as.factor(Scenario),y=Value,fill=factor(Reduction)))+
         panel.border =element_blank(),plot.background = element_blank(),legend.position = "none")
 
 
-pdf("Figures\\Figure3Lambda.pdf", width = 1400/81, height = 750/81)
+pdf(filename = here::here("Figures", "Figure3Lambda.pdf"), width = 1400/81, height = 750/81)
 grid.arrange(pP,pI,  layout_matrix = rbind(c(1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,NA),c(2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2)))
-
-#grid.arrange(pP,pI,  layout_matrix = rbind(c(1,1,1,1,1,1,1,1,1,1,1,1),c(2,2,2,2,2,2,2,2,2,2,NA,NA)))
 dev.off()
 
 ```
@@ -254,7 +252,7 @@ dev.off()
 
 ```{r ggplot evolution Figure 3  valeur d'evolutions observees }
 
-dfnew<-read.csv("Files\\fichierCombine070225_0to100.csv")
+dfnew <- read.csv(here::here("Files", "fichierCombine070225_0to100.csv"))
 
 df<-dfnew
 df <- subset(df, Reduction %in% c("1","11")) #0%, and 50% of shortage
@@ -285,15 +283,12 @@ df_summary
 
 
 
-
-
-
-## Supplementary figure with parameter carriage of prevalenve (pi) varying
+## Supplementary figure 2 with parameter carriage of prevalenve (pi) varying
 
 ```{r histo figure 3 avec incertitude et points for pi}
 
 ##datframe pour barplot
-dfnew<-read.csv("Files\\fichierCombine070225_0to100.csv")
+dfnew <- read.csv(here::here("Files", "fichierCombine070225_0to100.csv"))
 #Proportion
 df<-dfnew
 df<-subset(df, select = -X)
@@ -341,7 +336,7 @@ summary_statsI <- dfI %>%
   )
 
 ##datframe pour points
-dfnew<-read.csv("Files\\fichierCombine070225MaxMinMean.csv")
+dfnew <- read.csv(here::here("Files", "fichierCombine070225MaxMinMean.csv"))
 ## dataframe for proprotion-related outcomes
 df<-dfnew
 #df<-subset(df, select = -X)
@@ -407,8 +402,7 @@ pI<-ggplot(dfI,aes(x=as.factor(Scenario),y=Value,fill=factor(Reduction)))+
         strip.text = element_text(size = 18, face = "bold",hjust = 0.5),strip.placement = "outside",
         panel.border =element_blank(),plot.background = element_blank(),legend.position = "none")
 
-
-pdf("Figures\\Figure3pi.pdf", width = 1400/81, height = 750/81)
+pdf(filename = here::here("Figures", "Figure3pi.pdf"), width = 1400/81, height = 750/81)
 grid.arrange(pP,pI,  layout_matrix = rbind(c(1,1,1,1,1,1,1,1,1,1,1,1,1,NA,NA,NA,NA),c(2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2)))
 dev.off()
 

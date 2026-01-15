@@ -25,24 +25,28 @@ library(lemon)
 library(ggthemes)
 library(khroma)
 library(extrafont)
+library(here)
 
 
 ```
 
 
-#Partie 1 de la figure
+#Part 1 of figure 1
 
 ```{r setup}
 
-gen <- odin::odin("Script\\DeuxAgeHuitResistanceDeuxAntibiosOdin.R")
+#Odin equations 
+path <- here::here("Script", "DeuxAgeHuitResistanceDeuxAntibiosOdin.R")
+code <- paste(readLines(path, warn = FALSE), collapse = "\n")
+gen <- odin::odin(code)
 
 #Donnes 2021 otites pour penicillines: 
 d2=0.075/0.53; d3=0.075/0.53; d4=0.085/0.53; d5=0.09/0.53; d6=0.12/0.53; d7=0.075/0.53; d8=0.01/0.53 
 Rcr=0.58; Rmacro=0.28; Ramox=0.43; pi=0.52
 ConsoAmox=0.95; ConsoMacro=0.083;Lambda=1/43
 InvasionRate=4.8*10**(-7)
-DDJAmox=1.5 #ref 1.5 DDD selon OMS pour amoxicillin
-DDJMacro=2 #ref 2 DDD selon OMS pour pristinamycin
+DDJAmox=1.5 #ref 1.5 DDD according to OMS for amoxicillin
+DDJMacro=2 #ref 2 DDD according to OMS fot pristinamycin
 
 ```
 
@@ -271,12 +275,6 @@ out_long= df %>% pivot_longer(
   values_to = "count"
 )
 
-# out_long= df %>% pivot_longer(
-#   cols = c(Amoxicilline_DDJ,Macrolide_DDJ),
-#   names_to = c("Antibiotique","Compartment"),
-#   names_pattern = "([A-Za-z0-9]+)_(.+)",
-#   values_to = "count"
-# )
 
 labeller_fig1=labeller(Scenario=c("1"="","2"="","3"="","4"=""))
 
@@ -305,7 +303,8 @@ p<-ggplot(out_long,aes(x=t,y=count,colour=Antibiotique,linetype=as.factor(Compar
     linetype = guide_legend(order = 2)
   )
 
-png("Figures\\FigureLegende1a.png", width = 700, height = 1200)
+
+png(filename = here::here("Figures", "Figure1a.png"), width = 500, height = 1200)
 p
 dev.off()
 
@@ -313,12 +312,11 @@ dev.off()
 
 
 
-#Partie 2 de la figure
-
+#Part 2 of figure 2
 
 ```{r ggplot barplot Figure 1 with Rcr=0.58 with error of incertitude bar}
 
-dfnew<-read.csv("Files\\fichierCombine070225_figure1.csv")
+dfnew <- read.csv(here::here("Files", "fichierCombine070225_figure1.csv"))
 df<-dfnew
 df<-subset(df, select = -X)
 
@@ -385,7 +383,7 @@ p<-ggplot(summary_stats, aes(x = Compartment, y = mean_value, fill = Compartment
         panel.border = element_blank() ,plot.background = element_blank())
 
 
-png("Figures\\Figure1b.png", width = 1200, height = 1200)
+png(filename = here::here("Figures", "Figure1b_test.png"), width = 1200, height = 1200)
 p
 dev.off()
 
@@ -396,7 +394,7 @@ dev.off()
 
 ```{r evolution figure 1 observées avec IC }
 
-dfnew<-read.csv("Files\\fichierCombine070225_figure1.csv")
+dfnew <- read.csv(here::here("Files", "fichierCombine070225_figure1.csv"))
 df<-dfnew
 df<-subset(df, select = -X)
 
@@ -640,9 +638,6 @@ LancementReduction <- function(z,time){
 
 ```
 
-
-
-
 ```{r datframe delay, before and during shortages }
 
 #Donnes 2021 otites pour penicillines: 
@@ -670,8 +665,6 @@ dfRcr028<-rbind(df_beforeshortage,df_shortage)
 dfRcr<-rbind(dfRcr058,dfRcr028)
 
 ```
-
-
 
 ```{r ggplot evolution Figure 1 with Rcr=0.58 and 0.28}
 
@@ -709,8 +702,7 @@ p<-ggplot(out_long,aes(x=t,y=count,colour=Compartment,linetype = as.factor(Rcr))
         panel.border = element_blank() ,plot.background = element_blank())
 
 
-
-pdf("Figures\\Figure1Supplementary_VariationRcr.pdf", width = 1200/81, height = 1200/81)
+pdf(filename = here::here("Figures", "Figure1Supplementary_VariationRcr.pdf"), width = 1200/81, height = 1200/81)
 p
 dev.off()
 

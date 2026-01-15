@@ -19,12 +19,17 @@ library(plotly)
 library(demodelr)
 library(forcats)
 library(ggh4x)
+library(here)
 
 ```
 
 
 ```{r setup}
-gen <- odin::odin("Script\\DeuxAgeHuitResistanceDeuxAntibiosOdin.R")
+
+#Odin equations 
+path <- here::here("Script", "DeuxAgeHuitResistanceDeuxAntibiosOdin.R")
+code <- paste(readLines(path, warn = FALSE), collapse = "\n")
+gen <- odin::odin(code)
 
 #Donnes 2021 otites pour penicillines: 
 d2=0.075/0.53; d3=0.075/0.53; d4=0.085/0.53; d5=0.09/0.53; d6=0.12/0.53; d7=0.075/0.53; d8=0.01/0.53 
@@ -36,7 +41,7 @@ InvasionRate=4.8*10**(-7)
 ```
 
 
-```{r optim sur le tau de portage}
+```{r generate function to optim on carriag prevalence}
 
 OptimVi <- function(x,param) {
   MDR=as.numeric(param[1])
@@ -170,7 +175,7 @@ OptimVi <- function(x,param) {
 ```
 
 
-```{r histo baseline Sensibles Intermediate Resistant}
+```{r generate function to run shortage scenarios}
 
 RunShortage9param<- function(param){
   df<-data.frame()
@@ -419,7 +424,7 @@ RunShortage9param<- function(param){
 
 
 
-```{r varier 3 paramètres pour étudier le meilleur scénario suivant les C.I}
+```{r vary 3 parameters to study the best scenario according to the C.I.}
 
 valeursResistanceAmox=c(0.05,0.1,0.15,0.2,0.25,0.3,0.35,0.4,0.45,0.5)
 valeursResistanceMacro=c(0.05,0.1,0.15,0.2,0.25,0.3,0.35,0.4,0.45,0.5)
@@ -436,6 +441,48 @@ ValeursLambda=c(1/50,1/46,1/42,1/38)
 ValeursGammaAmox=c(5,6,7,8)
 ValeursGammaMacro=c(5,6,7,8)
 
+
+#varying PNSP, MRSP, Rcr
+dfnew<-data.frame()
+for(j in valeursResistanceAmox){
+  for(k in valeursResistanceMacro){
+    for(l in valeursRcr ){
+        parami=c(l,j,k,0.95,0.083,0.52,1/43,7,7) #c(0.58,0.43,0.28,0.95,0.083,0.52,1/43,7,7)
+        df_resistance <- RunShortage9param(parami)
+        dfnew=rbind(dfnew,df_resistance)
+          }
+        }
+      }
+write.csv(dfnew, here::here("Files", "dataframeVariationPNSP_MR_Rcr.csv"))
+
+#varying PNSP, MRSP, GammaAmox
+dfnew<-data.frame()
+for(j in valeursResistanceAmox){
+  for(k in valeursResistanceMacro){
+    for(l in ValeursGammaAmox ){
+        parami=c(0.58,j,k,0.95,0.083,0.52,1/43,l,7) #c(0.58,0.43,0.28,0.95,0.083,0.52,1/43,7,7)
+        df_resistance <- RunShortage9param(parami)
+        dfnew=rbind(dfnew,df_resistance)
+          }
+        }
+      }
+write.csv(dfnew, here::here("Files", "dataframeVariationPNSP_MR_GammaAmox.csv"))
+
+#varying PNSP, MRSP, pi
+dfnew<-data.frame()
+for(j in valeursResistanceAmox){
+  for(k in valeursResistanceMacro){
+    for(l in Valeurspi ){
+        parami=c(0.58,j,k,0.95,0.083,l,1/43,7,7) #c(0.58,0.43,0.28,0.95,0.083,0.52,1/43,7,7)
+        df_resistance <- RunShortage9param(parami)
+        dfnew=rbind(dfnew,df_resistance)
+          }
+        }
+      }
+write.csv(dfnew, here::here("Files", "dataframeVariationPNSP_MR_pi.csv"))
+
+
+#varying PNSP, MRSP, Lambda
 dfnew<-data.frame()
 for(j in valeursResistanceAmox){
   for(k in valeursResistanceMacro){
@@ -446,17 +493,15 @@ for(j in valeursResistanceAmox){
           }
         }
       }
-
-
-write.csv(dfnew,"Files\\dataframeVariationPNSP_MR_Lambda.csv")
+write.csv(dfnew, here::here("Files", "dataframeVariationPNSP_MR_Lambda.csv"))
 
 ```
 
 
+#Figure 5
+```{r 2D ggplot curve plot coloured according to the best scenario for Rcr }
 
-```{r plot courbe 2d ggplot couleur selon le meilleur scénario pour Rcr }
-
-dfnew<-read.csv("Files\\dataframeVariationPNSP_MR_Rcr.csv")
+dfnew <- read.csv(here::here("Files", "dataframeVariationPNSP_MR_Rcr.csv"))
 
 dfnew<-subset(dfnew, select = -X)
 df<-dfnew
@@ -580,17 +625,19 @@ p <- ggplot(data = subset(df, Value == MinValue), aes(x = ResistanceAmox, y = Re
         panel.border = element_rect(colour = "black", fill = NA, size = 1.5)) +
   scale_size_manual(name = "Significance", values = c( "Significant" = 5,"Non-significant" = 2))+  # Ajouter la légende pour la taille des points
   guides(color = guide_legend(override.aes = list(size = 5) ) )
-pdf("Figures\\FigurePNSP_MR_Rcr.pdf", width = 2200/81, height = 1200/81)
+
+
+pdf(filename = here::here("Figures", "FigurePNSP_MR_Rcr.pdf"), width = 2200/81, height = 1200/81)
 p
 dev.off()
 
 ```
 
 
+# Supplementary Figure S4
+```{r 2D ggplot curve plot coloured according to the best scenario for Gamma Amox }
 
-```{r plot courbe 2d ggplot couleur selon le meilleur scénario pourinitial Gamma Amox }
-
-dfnew<-read.csv("Files\\dataframeVariationPNSP_MR_GammaAmox.csv")
+dfnew <- read.csv(here::here("Files", "dataframeVariationPNSP_MR_GammaAmox.csv"))
 dfnew<-subset(dfnew, select = -X)
 df<-dfnew
 
@@ -715,18 +762,16 @@ p<-ggplot(data = subset(df, Value == MinValue), aes(x = ResistanceAmox, y = Resi
         strip.background = element_rect(fill = "white"),
         panel.border =element_rect(colour = "black", fill = NA, size = 1.5))
 
-pdf("Figures\\FigurePNSP_MR_GammaAmox.pdf", width = 2200/81, height = 1200/81)
+pdf(filename = here::here("Figures", "FigurePNSP_MR_GammaAmox.pdf"), width = 2200/81, height = 1200/81)
 p
 dev.off()
 
 
 ```
 
+```{r 2D ggplot curve plot coloured according to the best scenario for initial prevelence pi }
 
-
-```{r plot courbe 2d ggplot couleur selon le meilleur scénario pourinitial prevelence pi }
-
-dfnew<-read.csv("Files\\dataframeVariationPNSP_MR_pi.csv")
+dfnew <- read.csv(here::here("Files", "dataframeVariationPNSP_MR_pi.csv"))
 dfnew<-subset(dfnew, select = -X)
 df<-dfnew
 
@@ -848,16 +893,16 @@ p<-ggplot(data = subset(df, Value == MinValue), aes(x = ResistanceAmox, y = Resi
         strip.text.y = element_text(size = 22, face = "bold"), # Facettes Rcr
         strip.background = element_rect(fill = "white"),
         panel.border =element_rect(colour = "black", fill = NA, size = 1.5))
-  
-pdf("Figures\\FigurePNSP_MR_pi.pdf", width = 2200/81, height = 1200/81)
+
+pdf(filename = here::here("Figures", "FigurePNSP_MR_pi.pdf"), width = 2200/81, height = 1200/81)  
 p
 dev.off()
 
 ```
 
-```{r plot courbe 2d ggplot couleur selon le meilleur scénario pourinitial prevelence Lambda }
+```{r 2D ggplot curve plot coloured according to the best scenario for Lambda }
 
-dfnew<-read.csv("Files\\dataframeVariationPNSP_MR_Lambda.csv")
+dfnew <- read.csv(here::here("Files", "dataframeVariationPNSP_MR_Lambda.csv"))
 dfnew<-subset(dfnew, select = -X)
 df<-dfnew
 
@@ -991,7 +1036,7 @@ p<-ggplot(data = subset(df, Value == MinValue), aes(x = ResistanceAmox, y = Resi
         strip.background = element_rect(fill = "white"),
         panel.border =element_rect(colour = "black", fill = NA, size = 1.5))
 
-pdf("Figures\\FigurePNSP_MR_Lambda.pdf", width = 2200/81, height = 1200/81)
+pdf(filename = here::here("Figures", "FigurePNSP_MR_Lambda.pdf"), width = 2200/81, height = 1200/81)
 p
 dev.off()
 ```

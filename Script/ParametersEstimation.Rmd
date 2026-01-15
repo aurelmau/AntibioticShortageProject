@@ -24,27 +24,19 @@ library(ggh4x)
 library(lemon)
 library(ggthemes)
 library(khroma)
+library(here)
+
 
 ```
 
 ```{r setup}
-
-gen <- odin::odin("Script\\DeuxAgeHuitResistanceDeuxAntibiosOdin.R")
-
-# #Donnes 2017 otites pour penicillines: 
-# d2=0.02/0.46; d3=0.05/0.46; d4=0.1/0.46; d5=0.1/0.46; d6=0.11/0.46; d7=0.07/0.46; d8=0.01/0.46 
-# Rcr=0.77; Rmacro=0.32; Ramox=0.36; pi=0.52
-# ConsoAmox=1.01; ConsoMacro=0.11;Lambda=1/43
-# InvasionRate=4.8*10**(-7)
-# 
-# #Donnes 2019 otites pour penicillines: 
-# d2=0.02/0.4; d3=0.05/0.4; d4=0.11/0.4; d5=0.06/0.4; d6=0.11/0.4; d7=0.05/0.4; d8=0/0.4 
-# Rcr=0.74; Rmacro=0.3; Ramox=0.37; pi=0.52
-# ConsoAmox=0.97; ConsoMacro=0.09;Lambda=1/43
-# InvasionRate=4.8*10**(-7)
+#Odin equations 
+path <- here::here("Script", "DeuxAgeHuitResistanceDeuxAntibiosOdin.R")
+code <- paste(readLines(path, warn = FALSE), collapse = "\n")
+gen <- odin::odin(code)
 
 
-#Donnes 2021 otites pour penicillines: 
+#2021 datas
 d2=0.075/0.53; d3=0.075/0.53; d4=0.085/0.53; d5=0.09/0.53; d6=0.12/0.53; d7=0.075/0.53; d8=0.01/0.53 
 Rcr=0.58; Rmacro=0.28; Ramox=0.43; pi=0.52
 ConsoAmox=0.95; ConsoMacro=0.083;Lambda=1/43
@@ -208,8 +200,6 @@ datasDistributions<-as.data.frame(
          nrow=6,byrow=TRUE))
 
 
-x0=c(0.99,0.98,0.93,0.9,0.9,0.8,0.8,0.95,0.01)
-
 mLL_gauss <- function(param, obs_df=datasDistributions) {
   
   predictions <- RunSimulation(param) # solve function solve with parameters on the param list
@@ -234,41 +224,65 @@ mLL_gauss <- function(param, obs_df=datasDistributions) {
   return(neg_logL)
 }
 
+x0=c(0.99,0.98,0.93,0.9,0.9,0.8,0.8,0.95,0.01)
+
 mLL_gauss(x0)
 
-optimi<-optim(x0,mLL_gauss,method="L-BFGS-B",lower=c(0.99,0.98,0.93,0.9,0.9,0.8,0.8,0.95,0.001), upper=c(1,1,1,1,1,1,1,1,0.1))
-optimi$par
-#0.9999748 0.9916096 0.9420954 0.9192299 0.9192278 0.9192375 0.9194097 0.9938509 0.0547270
 
-```
+res_TransmissibilityParameters <- data.frame()
 
+set.seed(123)
+for (i in 1:1) {
+  set.seed(i)
 
+  # tirage aléatoire du point de départ (9 paramètres)
+  x0 <- c(
+    runif(8, min = 0.8, max = 0.9),   # fACMI2..fACMI8 + fMR (8 parameters)
+    runif(1, min = 0.001, max = 0.1)  # Beta
+  )
 
-```{r plot after fit}
+  fit <- optim(par = x0,fn = mLL_gauss,method = "L-BFGS-B",lower = c(0.8,0.8,0.8, 0.8,0.8,0.8,0.8,0.95,0.001),upper=c(1,1,1,1,1,1,1,1,0.1) )
 
+  fACMI2 <- fit$par[1]
+  fACMI3 <- fit$par[2]
+  fACMI4 <- fit$par[3]
+  fACMI5 <- fit$par[4]
+  fACMI6 <- fit$par[5]
+  fACMI7 <- fit$par[6]
+  fACMI8 <- fit$par[7]
+  fMR    <- fit$par[8]
+  Beta   <- fit$par[9]
 
+  res_TransmissibilityParameters <- rbind(
+    res_TransmissibilityParameters,
+    data.frame(
+      seed = i,
+      fACMI2 = fACMI2,
+      fACMI3 = fACMI3,
+      fACMI4 = fACMI4,
+      fACMI5 = fACMI5,
+      fACMI6 = fACMI6,
+      fACMI7 = fACMI7,
+      fACMI8 = fACMI8,
+      fMR    = fMR,
+      Beta   = Beta,
+      negLogLik = fit$value,
+      convergence = fit$convergence
+    )
+  )
+}
 
-predictions <- RunSimulation(optimi$par) # solve function solve with parameters on the param list
-  #predictions <-predictions[-1,]
-  
-pred_df <- predictions %>% 
-    select(`t`:`Totcarrier[1]`)%>%#keep only the variable of interest to compare to data
-    mutate_all(as.numeric)   
+res_TransmissibilityParameters
 
-
-pred_df= pred_df %>% pivot_longer(
-  cols = `Cm1S[1]`:`Totcarrier[1]`,
-  names_to = c("Compartment"),
-  names_pattern = "([A-Za-z0-9]+)",
-  values_to = "count"
+mean_params <- colMeans(
+  res_TransmissibilityParameters[, c("fACMI2","fACMI3","fACMI4","fACMI5","fACMI6","fACMI7","fACMI8","fMR","Beta")],
+  na.rm = TRUE
 )
 
-ggplot()+
-  geom_line(data=pred_df,aes(x=t,y=count))+
-  facet_wrap(~Compartment)
-  
-  
+print(mean_params)
 
 
 ```
+
+
 

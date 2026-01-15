@@ -24,15 +24,16 @@ library(extrafont)
 library(ggpattern)
 
 
-gen <- odin::odin("Script\\DeuxAgeDeuxResistanceOdin.R")
+path <- here::here("Script", "DeuxAgeDeuxResistanceOdin.R")
+code <- paste(readLines(path, warn = FALSE), collapse = "\n")
+gen <- odin::odin(code)
 
 ```
 
 
 ##ArticleVaron 2000 Groupe Erythromicine
 
-#Choix des paramètres de transmissibilité et coût en fitness
-
+#Code to generate a function that sets the transmissibility parameters (Beta and f) in order to achieve steady state at the initial conditions.
 ```{r optim global Vi et fi}
 
 OptimViFi <- function(x,y) {
@@ -49,10 +50,8 @@ OptimViFi <- function(x,y) {
                
                V=c(x[2]),
                Beta=matrix(c(1),nrow = 1, ncol = 1 ,byrow = TRUE),
-               #V=c(0.006019609),
-               #Beta=matrix(c(4.704727),nrow = 1, ncol = 1 ,byrow = TRUE), #contact_matrix(polymod, countries = "United Kingdom", age.limits = c(0, 5, 15,65),sample.participants = TRUE)$matrix,
                Phi=c(0.07/31),
-               Mu=c(0),  #c((0.76*10**(-3))/365,(0.1*10**(-3))/365,(2.16*10**(-3))/365,(50*10**(-3))/365),
+               Mu=c(0), 
                mu0=0,
                Lambda=c(1/43),
                gamma=1/(8),
@@ -62,7 +61,7 @@ OptimViFi <- function(x,y) {
                theta=0.5,
                N_age=1)
         
-    t <- seq(0, 365*1,0.1)
+    t <- seq(0, 365*5,0.1)
     y_odin <- mod$run(t)
     out_odin <- as.data.frame(y_odin)
     
@@ -97,17 +96,9 @@ OptimViFi <- function(x,y) {
     return(abs(0.48-p1)**2+abs(0.44-r1)**2)
 }
 
-x0=c(0.7,0.011)
-y=c(1  ,0.1868004    )
-
-#optim(par=x0,OptimVi,control = list(maxit = 20000))
-optim(x0,OptimViFi,y=y,method="L-BFGS-B",lower=c(0.7,0.01), upper=c(1,0.3))
-
-
 ```
 
-#Choix de la dose pour reproduire les observations
-
+#Code to generate a function that calculates the value of the antibiotic's effect to reproduce the observations
 ```{r optim Dose pour obtenir les variations}
 
 OptimDose <- function(x) {
@@ -180,7 +171,7 @@ OptimDose <- function(x) {
 res_AntibioEffect <- data.frame()
 
 set.seed(123)
-for (i in 1:1) {
+for (i in 1:10) {
   set.seed(i)
 
   x0 <- c(
@@ -214,16 +205,9 @@ mean_DoseEffectR <- mean(res_AntibioEffect$DoseEffectR, na.rm = TRUE)
 cat(mean_DoseEffectS," ",mean_DoseEffectR)
 
 
-
-# x0=c(0.1,0.01)
-# 
-# #optim(par=x0,OptimDose,control = list(maxit = 20000))
-# optim(x0,OptimDose,method="L-BFGS-B",lower=c(0,0), upper=c(1,1))
-
-
 ```
 
-
+#Code to generate the evolution of carriage with the fitted parameters
 ```{r setup, include=FALSE}
 
 mean_DoseEffectS<-1
@@ -265,70 +249,7 @@ mod <- gen$new(US_0=c(0),
 
 ```
 
-```{r ggplot toutes les courbes}
-t <- seq(0,8,1)
-y_odin <- mod$run(t)
-out_odin <- as.data.frame(y_odin)
-
-out_odin = out_odin %>%
-mutate(
-`t`=`t`,
-`US`=`US[1]`,
-`ES`=`ES[1]`,
-`UCm1`=`UCm1[1]`,
-`ECm1`=`ECm1[1]`,
-`UCm2`=`UCm2[1]`,
-`ECm2`=`ECm2[1]`,
-`Totcarrier`=`UCm1[1]`+`ECm1[1]`+`UCm2[1]`+`ECm2[1]`,
-  .keep = "none"
-)
-
-out_long= out_odin %>% pivot_longer(
-  cols = `US`:`Totcarrier`,
-  names_to = c("Compartment"),
-  values_to = "count"
-)
-ggplot(out_long,aes(x=t))+
-  geom_line(aes(y=count,colour=Compartment),lwd=0.8,lty = 1,show.legend = TRUE)+
-  xlab("Time")+ylab("Proportion")+
-  scale_color_manual(values=c("orange2","yellow3","red","brown","cyan","blue","purple" ))
-  theme_bw()
-
-
-```
-
-```{r ggplot toutes les courbes}
-t <- seq(0,60,1)
-y_odin <- mod$run(t)
-out_odin <- as.data.frame(y_odin)
-
-out_odin = out_odin %>%
-mutate(
-`t`=`t`,
-`Cm1`=`UCm1[1]`+`ECm1[1]`,
-`Cm2`=`UCm2[1]`+`ECm2[1]`,
-`Totcarrier`=`UCm1[1]`+`ECm1[1]`+`UCm2[1]`+`ECm2[1]`,
-  .keep = "none"
-)
-
-out_long= out_odin %>% pivot_longer(
-  cols = `Cm1`:`Totcarrier`,
-  names_to = c("Compartment"),
-  values_to = "count"
-)
-
-ggplot(out_long,aes(x=t,y=count,colour=Compartment))+
-  geom_line(lwd=0.8,lty = 1,show.legend = TRUE)+
-  geom_point()+
-  geom_text(data = dplyr::filter(out_long,t==0|t==10),aes(label = round(count, 1)),vjust = "inward", hjust = "inward",show.legend = FALSE) +
-  xlab("Time")+ylab("Proportion")+
-  scale_color_manual(values=c("orange2","yellow3","red","brown","cyan","blue","purple","red","blue","brown" ))+
-theme_bw()
-
-
-```
-
-
+#Code to generate Supplementary Figure S11
 ```{r ggplot distribution des CMI}
 t <- seq(0,10,0.1)
 y_odin <- mod$run(t)
@@ -370,7 +291,7 @@ out_long= df_merged %>% pivot_longer(
 
 
 # Ouvrir un périphérique graphique pour sauvegarder le plot en tant qu'image PNG
-#png("C:\\Users\\maurinau\\Documents\\AntibioticShortage\\Figures\\FigureS7Macrolides.png", width =1000, height = 800)
+png(filename = here::here("Figures", "FigureS11Macrolides.png"), width =1000, height = 800)
 
 ggplot(out_long,aes(x=Compartment,y=count, fill=Compartment,alpha = factor(t),pattern = Datas))+
   geom_col_pattern( position = position_dodge(), color = "black")+
@@ -405,10 +326,7 @@ ggplot(out_long,aes(x=Compartment,y=count, fill=Compartment,alpha = factor(t),pa
         panel.border = element_blank() ,plot.background = element_blank())
 
 # Fermer le périphérique graphique
-#dev.off()
-
-
-
+dev.off()
 
 
 ```
@@ -417,8 +335,7 @@ ggplot(out_long,aes(x=Compartment,y=count, fill=Compartment,alpha = factor(t),pa
 
 ##Article Lewnard et al. 2018 Groupe Amoxicilline Clavulanate
 
-#Choix des paramètres de transmissibilité et coût en fitness
-
+#Code to generate a function that sets the transmissibility parameters (Beta and f) in order to achieve steady state at the initial conditions.
 ```{r optim global Vi et fi}
 
 OptimFiVi <- function(x,y) {
@@ -482,17 +399,10 @@ OptimFiVi <- function(x,y) {
     return(abs(0.64-p1)**2+abs(0.19-r1)**2)
 }
 
-x0=c(0.7,0.011)
-y=c(1  ,0.06587986)
-
-#optim(par=x0,OptimVi,control = list(maxit = 20000))
-optim(x0,OptimFiVi,y=y,method="L-BFGS-B",lower=c(0.7,0.01), upper=c(1,0.3))
-
 
 ```
 
-#Choix de la dose pour reproduire les observations
-
+#Code to generate a function that calculates the value of the antibiotic's effect to reproduce the observations
 ```{r optim Dose pour obtenir les variations}
 
 OptimDose <- function(x) {
@@ -564,13 +474,10 @@ OptimDose <- function(x) {
 res_AntibioEffect <- data.frame()
 
 set.seed(123)
-for (i in 1:1) {
+for (i in 1:2) {
   set.seed(i)
 
-  x0 <- c(
-    runif(1, min = 0.5,  max = 1.0),   # f
-    runif(1, min = 0.01, max = 0.08)   # Beta (2e param)
-  )
+  x0 <- c(runif(1, min = 0.5,  max = 1.0))
 
   fit <- optim(
     par = x0, fn = OptimDose, method = "L-BFGS-B",
@@ -597,18 +504,11 @@ mean_DoseEffectR <- mean(res_AntibioEffect$DoseEffectR, na.rm = TRUE)
 
 cat(mean_DoseEffectS," ",mean_DoseEffectR)
 
-# 
-# x0=c(0.8,0.01)
-# 
-# optim(par=x0,OptimDose,control = list(maxit = 20000))
-# optim(x0,OptimDose,method="L-BFGS-B",lower=c(0.2,0), upper=c(1,1))
-# 
-
 
 
 ```
 
-
+#Code to generate the evolution of carriage with the fitted parameters
 ```{r run the model with fitted parameters}
 
 mean_DoseEffectS<-1
@@ -650,82 +550,7 @@ mod <- gen$new(US_0=c(0),
 
 ```
 
-
-
-```{r ggplot toutes les courbes}
-t <- seq(0,50,1)
-y_odin <- mod$run(t)
-out_odin <- as.data.frame(y_odin)
-
-out_odin = out_odin %>%
-mutate(
-`t`=`t`,
-`US`=`US[1]`,
-`ES`=`ES[1]`,
-`UCm1`=`UCm1[1]`,
-`ECm1`=`ECm1[1]`,
-`UCm2`=`UCm2[1]`,
-`ECm2`=`ECm2[1]`,
-`Totcarrier`=`UCm1[1]`+`ECm1[1]`+`UCm2[1]`+`ECm2[1]`,
-  .keep = "none"
-)
-
-out_long= out_odin %>% pivot_longer(
-  cols = `US`:`Totcarrier`,
-  names_to = c("Compartment"),
-  values_to = "count"
-)
-ggplot(out_long,aes(x=t))+
-  geom_line(aes(y=count,colour=Compartment),lwd=0.8,lty = 1,show.legend = TRUE)+
-  xlab("Time")+ylab("Proportion")+
-  scale_color_manual(values=c("orange2","yellow3","red","brown","cyan","blue","purple" ))
-  theme_bw()
-
-
-```
-
-
-```{r ggplot toutes les courbes}
-t <- seq(0,60,1)
-y_odin <- mod$run(t)
-out_odin <- as.data.frame(y_odin)
-
-out_odin = out_odin %>%
-  mutate(
-    `t`=`t`,
-    `Cm1[1]`=`UCm1[1]`+`ECm1[1]`,
-    `Cm2[1]`=`UCm2[1]`+`ECm2[1]`,
-    `Totcarrier[1]`=`UCm1[1]`+`ECm1[1]`+`UCm2[1]`+`ECm2[1]`,
-    `Tot[1]`=`US[1]`+`ES[1]`+`UCm1[1]`+`ECm1[1]`+`UCm2[1]`+`ECm2[1]`,
-    .keep = "none"
-  )
-
-out_odin = out_odin %>%
-  mutate(
-    `t`=`t`,
-    `Cm1`=`Cm1[1]`/`Totcarrier[1]`,
-    `Cm2`=`Cm2[1]`/`Totcarrier[1]`,
-    `Totcarrier`=`Totcarrier[1]`/`Tot[1]`,
-    .keep = "none"
-  )
-
-out_long= out_odin %>% pivot_longer(
-  cols = `Cm1`:`Totcarrier`,
-  names_to = c("Compartment"),
-  values_to = "count"
-)
-
-ggplot(out_long,aes(x=t,y=count,colour=Compartment))+
-  geom_line(lwd=0.8,lty = 1,show.legend = TRUE)+
-  #geom_point()+
-  geom_text(data = dplyr::filter(out_long,t==0|t==8|t==15|t==30|t==60),aes(label = round(count, 2)),vjust = "inward", hjust = "inward",show.legend = FALSE) +
-  xlab("Time")+ylab("Proportion")+
-  scale_color_manual(values=c("orange2","red","brown","cyan","blue","purple","red","blue","brown" ))+
-theme_bw()
-
-
-```
-
+#Code to generate Supplementary Figure S10
 ```{r ggplot distribution des CMI}
 
 t <- seq(0,8,0.1)
@@ -768,7 +593,7 @@ out_long= df_merged %>% pivot_longer(
 
 
 # Ouvrir un périphérique graphique pour sauvegarder le plot en tant qu'image PNG
-#png("C:\\Users\\maurinau\\Documents\\AntibioticShortage\\Figures\\FigureS7Amox.png", width =1000, height = 800)
+png(filename = here::here("Figures", "FigureS10Amox.png"), width =1000, height = 800)
 
 ggplot(out_long,aes(x=Compartment,y=count, fill=Compartment,alpha = factor(t),pattern = Datas))+
   geom_col_pattern( position = position_dodge(), color = "black")+
@@ -805,7 +630,7 @@ ggplot(out_long,aes(x=Compartment,y=count, fill=Compartment,alpha = factor(t),pa
         panel.border = element_blank() ,plot.background = element_blank())
 
 # Fermer le périphérique graphique
-#dev.off()
+dev.off()
 
 
 

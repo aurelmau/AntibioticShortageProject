@@ -28,7 +28,10 @@ library(khroma)
 
 ```{r setup}
 
-gen <- odin::odin("Script\\DeuxAgeHuitResistanceDeuxAntibiosOdin.R")
+#Odin equations 
+path <- here::here("Script", "DeuxAgeHuitResistanceDeuxAntibiosOdin.R")
+code <- paste(readLines(path, warn = FALSE), collapse = "\n")
+gen <- odin::odin(code)
 
 #Donnes 2021 otites pour penicillines: 
 d2=0.075/0.53; d3=0.075/0.53; d4=0.085/0.53; d5=0.09/0.53; d6=0.12/0.53; d7=0.075/0.53; d8=0.01/0.53 
@@ -257,7 +260,7 @@ print(o)
 
 ##Suplementary Sensibility analysis of theta parameter
 
-```{r lancement et reduction pour la figure 1}
+```{r lancement shortage simulation with theta varying}
 
 LancementReduction <- function(z,thetai){
     Rcr=z[1]
@@ -464,7 +467,7 @@ for(i in listetheta){
   dfTheta<-rbind(dfTheta,dfi)
 }
 
-write.csv(dfTheta,"Files\\dfTheta.csv")
+write.csv(dfTheta, here("Files", "dfTheta.csv"))
 
 ```
 
@@ -472,7 +475,7 @@ write.csv(dfTheta,"Files\\dfTheta.csv")
 
 ```{r ggplot evolution Figure 1 with Rcr=0.58 and 0.28}
 
-resultats<-read.csv("Files\\dfTheta.csv")
+resultats <- read.csv(here("Files", "dfTheta.csv"))
 resultats<-subset(resultats, select = -X)
 resultats<-subset(resultats, select = -t)
 
@@ -518,7 +521,7 @@ p<-ggplot(out_long, aes(x = Compartment, y = count, fill = Compartment, alpha = 
 
 
 
-pdf("Figures\\FigureSupplementary_VariationTheta.pdf", width = 800/81, height = 600/81)
+pdf(here("Figures", "FigureSupplementary_VariationTheta.pdf"),width = 800/81, height = 600/81)
 p
 dev.off()
 
