@@ -18,7 +18,6 @@ library(extrafont)
 library(ggpattern)
 library(here)
 
-
 path <- here::here("Script", "DeuxAgeDeuxResistanceOdin.R")
 code <- paste(readLines(path, warn = FALSE), collapse = "\n")
 gen <- odin::odin(code)

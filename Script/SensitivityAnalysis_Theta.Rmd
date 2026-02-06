@@ -521,7 +521,7 @@ p<-ggplot(out_long, aes(x = Compartment, y = count, fill = Compartment, alpha = 
 
 
 
-pdf(here("Figures", "FigureSupplementary_VariationTheta.pdf"),width = 800/81, height = 600/81)
+pdf(here("Figures", "FigureS6VariationTheta.pdf"),width = 800/81, height = 600/81)
 p
 dev.off()
 

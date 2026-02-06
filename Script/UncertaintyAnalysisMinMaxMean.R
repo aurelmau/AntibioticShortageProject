@@ -8,7 +8,6 @@ library(lhs)
 library(here)
 library(odin)
 
-
 path <- here::here("Script", "DeuxAgeHuitResistanceDeuxAntibiosOdin.R")
 code <- paste(readLines(path, warn = FALSE), collapse = "\n")
 gen <- odin::odin(code)

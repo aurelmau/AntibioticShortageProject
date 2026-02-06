@@ -19,7 +19,6 @@ path <- here::here("Script", "DeuxAgeHuitResistanceDeuxAntibiosOdin.R")
 code <- paste(readLines(path, warn = FALSE), collapse = "\n")
 gen <- odin::odin(code)
 
-
 #Donnees enfants 2021
 d2=0.075/0.53; d3=0.075/0.53; d4=0.085/0.53; d5=0.09/0.53; d6=0.12/0.53; d7=0.075/0.53; d8=0.01/0.53 
 Rcr=0.58; Rmacro=0.28; Ramox=0.43

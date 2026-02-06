@@ -281,7 +281,7 @@ df_summary
 
 ## Supplementary figure 2 with parameter carriage of prevalenve (pi) varying
 
-```{r  Figure 3 with uncertainty and points for pi}
+```{r  Supplementary figure 2 with uncertainty and points for pi}
 
 ##datframe pour barplot
 dfnew <- read.csv(here::here("Files", "fichierCombine070225_0to100.csv"))
@@ -398,7 +398,7 @@ pI<-ggplot(dfI,aes(x=as.factor(Scenario),y=Value,fill=factor(Reduction)))+
         strip.text = element_text(size = 18, face = "bold",hjust = 0.5),strip.placement = "outside",
         panel.border =element_blank(),plot.background = element_blank(),legend.position = "none")
 
-pdf(file = here::here("Figures", "Figure3pi.pdf"), width = 1400/81, height = 750/81)
+pdf(file = here::here("Figures", "FigureS2pi.pdf"), width = 1400/81, height = 750/81)
 grid.arrange(pP,pI,  layout_matrix = rbind(c(1,1,1,1,1,1,1,1,1,1,1,1,1,NA,NA,NA,NA),c(2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2)))
 dev.off()
 

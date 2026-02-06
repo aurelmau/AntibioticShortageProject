@@ -1162,7 +1162,7 @@ ggNoAbs<-ggplot(df, aes(x = Variable, y = Scenario, fill = Moyenne)) +
 
 ```{r grid arrange}
 
-pdf(file = here::here("Figures", "FigureSupplementary3_PRCC.pdf"), width = 1200/81, height = 1200/81)
+pdf(file = here::here("Figures", "FigureS3PRCC.pdf"), width = 1200/81, height = 1200/81)
 
 #grid.arrange(gproportion,gIPD,ncol=1)
 plot_grid(ggNoAbs,ggAbs,labels=c("a","b"),ncol=1,label_size = 30,rel_heights = c(1, 1))

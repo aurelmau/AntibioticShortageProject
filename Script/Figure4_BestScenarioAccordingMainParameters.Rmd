@@ -37,7 +37,6 @@ Rcr=0.58; Rmacro=0.28; Ramox=0.43;MDR=Rcr*Ramox; pi=0.52
 ConsoAmox=0.95; ConsoMacro=0.083;Lambda=1/43
 InvasionRate=4.8*10**(-7)
 
-
 ```
 
 
@@ -627,7 +626,7 @@ p <- ggplot(data = subset(df, Value == MinValue), aes(x = ResistanceAmox, y = Re
   guides(color = guide_legend(override.aes = list(size = 5) ) )
 
 
-pdf(file = here::here("Figures", "FigurePNSP_MR_Rcr.pdf"), width = 2200/81, height = 1200/81)
+pdf(file = here::here("Figures", "Figure4PNSP_MR_Rcr.pdf"), width = 2200/81, height = 1200/81)
 p
 dev.off()
 
@@ -762,7 +761,7 @@ p<-ggplot(data = subset(df, Value == MinValue), aes(x = ResistanceAmox, y = Resi
         strip.background = element_rect(fill = "white"),
         panel.border =element_rect(colour = "black", fill = NA, size = 1.5))
 
-pdf(file = here::here("Figures", "FigurePNSP_MR_GammaAmox.pdf"), width = 2200/81, height = 1200/81)
+pdf(file = here::here("Figures", "FigureS4SPNSP_MR_GammaAmox.pdf"), width = 2200/81, height = 1200/81)
 p
 dev.off()
 
@@ -894,7 +893,7 @@ p<-ggplot(data = subset(df, Value == MinValue), aes(x = ResistanceAmox, y = Resi
         strip.background = element_rect(fill = "white"),
         panel.border =element_rect(colour = "black", fill = NA, size = 1.5))
 
-pdf(file = here::here("Figures", "FigurePNSP_MR_pi.pdf"), width = 2200/81, height = 1200/81)  
+pdf(file = here::here("Figures", "FigureS4PNSP_MR_pi.pdf"), width = 2200/81, height = 1200/81)  
 p
 dev.off()
 
@@ -1036,7 +1035,7 @@ p<-ggplot(data = subset(df, Value == MinValue), aes(x = ResistanceAmox, y = Resi
         strip.background = element_rect(fill = "white"),
         panel.border =element_rect(colour = "black", fill = NA, size = 1.5))
 
-pdf(file = here::here("Figures", "FigurePNSP_MR_Lambda.pdf"), width = 2200/81, height = 1200/81)
+pdf(file = here::here("Figures", "FigureS4PNSP_MR_Lambda.pdf"), width = 2200/81, height = 1200/81)
 p
 dev.off()
 ```

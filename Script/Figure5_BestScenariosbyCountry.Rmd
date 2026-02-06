@@ -7,32 +7,6 @@ editor_options:
 ---
 
 ```{r library}
-# library(ggplot2)
-# library(readxl)
-# library(tidyr)
-# library(dplyr)
-# library(reshape2)
-# library(ggpubr)
-# library(socialmixr)
-# data(polymod)
-# library("RColorBrewer")
-# library(rmarkdown)
-# library(plotly)
-# library(demodelr)
-# library(forcats)
-# library(sf)
-# library(rnaturalearth)
-# library(rnaturalearthdata)
-# library(corrplot)
-# library(gridExtra)
-# library(gridGraphics)
-# library(grid)
-# library(patchwork)
-# library(refset)
-# library("cowplot")
-# library(ggflags)
-
-
 library(ggplot2)
 library(tidyr)
 library(dplyr)
@@ -723,7 +697,7 @@ theme_bw()+
 
 ```{r grid arrange}
 
-pdf(file = here::here("Figures", "Figure6_HeatMapPaysAllcountries.pdf"), width = 1600/81, height = 2200/81)
+pdf(file = here::here("Figures", "Figure5HeatMapPaysAllcountries.pdf"), width = 1600/81, height = 2200/81)
 #grid.arrange(gproportion,gIPD,ncol=1)
 plot_grid(gproportion,gIPD,labels=c("a","b"),ncol=1,label_size = 30,rel_heights = c(1, 1))
 
@@ -733,11 +707,11 @@ dev.off()
 ```
 
 
-## Supplementary Figure 9
+## Supplementary Figure 8
 
 ```{r Matrice de correlation}
 
-pdf(file = here::here("Figures", "FigureSupplementary5Correlations.pdf"), width = 1600/81, height = 1600/81)
+pdf(file = here::here("Figures", "FigureS8Correlations.pdf"), width = 1600/81, height = 1600/81)
 
 # Configuration de l'espace graphique en 2x2
 par(mfrow = c(2, 2))  # Ajustez les marges pour éviter les chevauchements
@@ -819,7 +793,7 @@ dev.off()
 ```
 
 
-## Supplementary Figure 8
+## Supplementary Figure 9
 
 ```{r simulation penurie}
 
@@ -1179,7 +1153,7 @@ theme_bw()+
         panel.border =element_rect(colour = "black", fill = NA, size = 1.5))
 
 
-pdf(file = here::here("Figures", "FigureSupplementray6_IncidenceBothAntibiotics.pdf"), width = 1600/81, height = 1600/81)
+pdf(file = here::here("Figures", "FigureS9AbsoluteVariations.pdf"), width = 1600/81, height = 1600/81)
 p
 dev.off()
 
@@ -1201,7 +1175,7 @@ df$country <- tolower(c("AT", "BE", "HR", "CZ", "DK", "EE","FI", "FR", "DE", "HU
 
 # Ouvrir un périphérique graphique pour sauvegarder le plot en tant qu'image PNG
 
-png(file = here::here("Figures", "FigureCountriesConsoResistance.png"), width = 1200, height = 500)
+png(file = here::here("Figures", "FigureS13DataframeParametresPays.png"), width = 1200, height = 500)
 
 p<-ggplot(df, aes(x = PhiAmox, y = Ramox)) +
   geom_smooth(method = "lm", se = FALSE, color = "black", linetype = "dashed") +

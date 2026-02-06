@@ -31,8 +31,6 @@ library(lemon)
 ```
 
 
-#Part 1 of figure 1
-
 ```{r setup}
 
 #Odin equations 
@@ -49,6 +47,9 @@ DDJAmox=1.5 #ref 1.5 DDD according to OMS for amoxicillin
 DDJMacro=2 #ref 2 DDD according to OMS fot pristinamycin
 
 ```
+
+
+#Part 1 of figure 1
 
 ```{r lancement et reduction pour la figure 1a}
 
@@ -700,7 +701,7 @@ p<-ggplot(out_long,aes(x=t,y=count,colour=Compartment,linetype = as.factor(Rcr))
         panel.border = element_blank() ,plot.background = element_blank())
 
 
-pdf(file = here::here("Figures", "Figure1Supplementary_VariationRcr.pdf"), width = 1200/81, height = 1200/81)
+pdf(file = here::here("Figures", "FigureS1VariationRcr.pdf"), width = 1200/81, height = 1200/81)
 p
 dev.off()
 

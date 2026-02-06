@@ -17,7 +17,7 @@ d2=0.075/0.53; d3=0.075/0.53; d4=0.085/0.53; d5=0.09/0.53; d6=0.12/0.53; d7=0.07
 Rcr=0.58; Rmacro=0.28; Ramox=0.43
 ConsoAmox=0.95; ConsoMacro=0.083
 InvasionRate=4.8*10**(-7)
-#Fonction Optide la variable Vi
+
 
 OptimVi <- function(x,param) {
   Rcr=param[1]

@@ -594,7 +594,7 @@ combined_plot <- plot_grid(gproportion, gIPD,
 
 # Sauvegarder
 
-pdf(file = here::here("Figures", "FigureVariationFitnessS7.pdf"),  width = 1600/81, height = 1100/81)
+pdf(file = here::here("Figures", "FigureS7VariationFitness.pdf"),  width = 1600/81, height = 1100/81)
 combined_plot
 dev.off()
 
