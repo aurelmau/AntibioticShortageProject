@@ -8,22 +8,17 @@ editor_options:
 
 ```{r library}
 
-
 library(ggplot2)
+library(odin)
 library(tidyr)
 library(dplyr)
-library(reshape2)
-library(ggpubr)
-library(socialmixr)
-library("RColorBrewer")
+library(pkgbuild)
 library(rmarkdown)
-library(plotly)
 library(demodelr)
-library(forcats)
-library(ggh4x)
-library(lemon)
+library(plotly)
 library(ggthemes)
-library(khroma)
+library(extrafont)
+library(ggpattern)
 library(here)
 
 
@@ -231,9 +226,8 @@ mLL_gauss(x0)
 
 res_TransmissibilityParameters <- data.frame()
 
-set.seed(123)
+
 for (i in 1:1) {
-  set.seed(i)
 
   # tirage aléatoire du point de départ (9 paramètres)
   x0 <- c(

@@ -26,7 +26,7 @@ library(ggthemes)
 library(khroma)
 library(extrafont)
 library(here)
-
+library(lemon)
 
 ```
 
@@ -266,8 +266,6 @@ df<-rbind(df_beforeshortage,df_shortage)
 
 ```{r ggplot evolution Figure 1}
 
-#df<- subset(df, Reduction %in% c("1"))
-
 out_long= df %>% pivot_longer(
   cols = `Amoxicilline_Phi`:`Macrolide_Inst`,
   names_to = c("Antibiotique","Compartment"),
@@ -304,7 +302,7 @@ p<-ggplot(out_long,aes(x=t,y=count,colour=Antibiotique,linetype=as.factor(Compar
   )
 
 
-png(filename = here::here("Figures", "Figure1a.png"), width = 500, height = 1200)
+png(file = here::here("Figures", "Figure1a.png"), width = 500, height = 1200)
 p
 dev.off()
 
@@ -383,7 +381,7 @@ p<-ggplot(summary_stats, aes(x = Compartment, y = mean_value, fill = Compartment
         panel.border = element_blank() ,plot.background = element_blank())
 
 
-png(filename = here::here("Figures", "Figure1b_test.png"), width = 1200, height = 1200)
+png(file = here::here("Figures", "Figure1b_test.png"), width = 1200, height = 1200)
 p
 dev.off()
 
@@ -392,7 +390,7 @@ dev.off()
 ```
 
 
-```{r evolution figure 1 observées avec IC }
+```{r values of the changes observed in Figure 1 with CI }
 
 dfnew <- read.csv(here::here("Files", "fichierCombine070225_figure1.csv"))
 df<-dfnew
@@ -702,7 +700,7 @@ p<-ggplot(out_long,aes(x=t,y=count,colour=Compartment,linetype = as.factor(Rcr))
         panel.border = element_blank() ,plot.background = element_blank())
 
 
-pdf(filename = here::here("Figures", "Figure1Supplementary_VariationRcr.pdf"), width = 1200/81, height = 1200/81)
+pdf(file = here::here("Figures", "Figure1Supplementary_VariationRcr.pdf"), width = 1200/81, height = 1200/81)
 p
 dev.off()
 

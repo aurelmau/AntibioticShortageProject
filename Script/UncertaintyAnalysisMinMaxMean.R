@@ -1,20 +1,12 @@
-
+library(tidyr)
 library(dplyr)
+library(reshape2)
+library(ggpubr)
 library(plotly)
 library(demodelr)
-library(forcats)
-library(rayshader)
-library(triangle)
 library(lhs)
-library(ggh4x)
-library(lemon)
-library(ggthemes)
-library(khroma)
-library(lhs)
-library(sensitivity)
-library(patchwork)
-library(cowplot)
-library(gridExtra)
+library(here)
+library(odin)
 
 
 path <- here::here("Script", "DeuxAgeHuitResistanceDeuxAntibiosOdin.R")
@@ -408,4 +400,5 @@ for (i in 1:3) {
   }
 }
 
-write.csv(dfnew,"Files\\fichierCombine070225MaxMinMean.csv")
+write.csv(dfnew, here::here("Files", "fichierCombine070225MaxMinMean.csv"))
+

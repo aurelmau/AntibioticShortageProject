@@ -41,7 +41,7 @@ InvasionRate=4.8*10**(-7)
 ```
 
 
-```{r generate function to optim on carriag prevalence}
+```{r generate function to optim on carriage prevalence}
 
 OptimVi <- function(x,param) {
   MDR=as.numeric(param[1])
@@ -627,7 +627,7 @@ p <- ggplot(data = subset(df, Value == MinValue), aes(x = ResistanceAmox, y = Re
   guides(color = guide_legend(override.aes = list(size = 5) ) )
 
 
-pdf(filename = here::here("Figures", "FigurePNSP_MR_Rcr.pdf"), width = 2200/81, height = 1200/81)
+pdf(file = here::here("Figures", "FigurePNSP_MR_Rcr.pdf"), width = 2200/81, height = 1200/81)
 p
 dev.off()
 
@@ -762,7 +762,7 @@ p<-ggplot(data = subset(df, Value == MinValue), aes(x = ResistanceAmox, y = Resi
         strip.background = element_rect(fill = "white"),
         panel.border =element_rect(colour = "black", fill = NA, size = 1.5))
 
-pdf(filename = here::here("Figures", "FigurePNSP_MR_GammaAmox.pdf"), width = 2200/81, height = 1200/81)
+pdf(file = here::here("Figures", "FigurePNSP_MR_GammaAmox.pdf"), width = 2200/81, height = 1200/81)
 p
 dev.off()
 
@@ -894,7 +894,7 @@ p<-ggplot(data = subset(df, Value == MinValue), aes(x = ResistanceAmox, y = Resi
         strip.background = element_rect(fill = "white"),
         panel.border =element_rect(colour = "black", fill = NA, size = 1.5))
 
-pdf(filename = here::here("Figures", "FigurePNSP_MR_pi.pdf"), width = 2200/81, height = 1200/81)  
+pdf(file = here::here("Figures", "FigurePNSP_MR_pi.pdf"), width = 2200/81, height = 1200/81)  
 p
 dev.off()
 
@@ -1036,7 +1036,7 @@ p<-ggplot(data = subset(df, Value == MinValue), aes(x = ResistanceAmox, y = Resi
         strip.background = element_rect(fill = "white"),
         panel.border =element_rect(colour = "black", fill = NA, size = 1.5))
 
-pdf(filename = here::here("Figures", "FigurePNSP_MR_Lambda.pdf"), width = 2200/81, height = 1200/81)
+pdf(file = here::here("Figures", "FigurePNSP_MR_Lambda.pdf"), width = 2200/81, height = 1200/81)
 p
 dev.off()
 ```

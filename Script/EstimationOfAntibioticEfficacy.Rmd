@@ -6,22 +6,17 @@ editor_options:
 
 ```{r setup}
 library(ggplot2)
+library(odin)
 library(tidyr)
 library(dplyr)
-library(reshape2)
-library(ggpubr)
-library(socialmixr)
-library("RColorBrewer")
+library(pkgbuild)
 library(rmarkdown)
-library(plotly)
 library(demodelr)
-library(forcats)
-library(ggh4x)
-library(lemon)
+library(plotly)
 library(ggthemes)
-library(khroma)
 library(extrafont)
 library(ggpattern)
+library(here)
 
 
 path <- here::here("Script", "DeuxAgeDeuxResistanceOdin.R")
@@ -102,8 +97,11 @@ OptimViFi <- function(x,y) {
 ```{r optim Dose pour obtenir les variations}
 
 OptimDose <- function(x) {
-  fi<-optim(par=c(0.72,0.01),OptimViFi,y=c(x[1],x[2]),control = list(maxit = 20000))$par[1]
-  Vi=optim(par=c(0.72,0.01),OptimViFi,y=c(x[1],x[2]),control = list(maxit = 20000))$par[2]
+  
+  Optimi<-optim(par=c(0.72,0.01),OptimViFi,y=c(x[1],x[2]),control = list(maxit = 20000))
+  
+  fi<-Optim$par[1]
+  Vi<-Optimi$par[2]
   
     mod <- gen$new(US_0=c(0),
                UCm1_0=c(0),
@@ -121,10 +119,8 @@ OptimDose <- function(x) {
                V=Vi,
                #V=0.01926239,
                Beta=matrix(c(1),nrow = 1, ncol = 1 ,byrow = TRUE),
-               #V=c(0.006019609),
-               #Beta=matrix(c(4.704727),nrow = 1, ncol = 1 ,byrow = TRUE), #contact_matrix(polymod, countries = "United Kingdom", age.limits = c(0, 5, 15,65),sample.participants = TRUE)$matrix,
                Phi=c(0),
-               Mu=c(0),  #c((0.76*10**(-3))/365,(0.1*10**(-3))/365,(2.16*10**(-3))/365,(50*10**(-3))/365),
+               Mu=c(0),  
                mu0=0,
                Lambda=c(1/43), #décolonisation naturelle 
                gamma=1/8,
@@ -170,14 +166,10 @@ OptimDose <- function(x) {
 
 res_AntibioEffect <- data.frame()
 
-set.seed(123)
-for (i in 1:10) {
-  set.seed(i)
 
-  x0 <- c(
-    runif(1, min = 0.5,  max = 1.0),   # f
-    runif(1, min = 0.01, max = 0.08)   # Beta (2e param)
-  )
+for (i in 1:10) {
+
+  x0 <- c(runif(2, min = 0,  max = 1))
 
   fit <- optim(
     par = x0, fn = OptimDose, method = "L-BFGS-B",
@@ -211,7 +203,7 @@ cat(mean_DoseEffectS," ",mean_DoseEffectR)
 ```{r setup, include=FALSE}
 
 mean_DoseEffectS<-1
-mean_DoseEffectR<-0.03543902
+mean_DoseEffectR<-0.03449561
 
 Optim=optim(par=c(0.72,0.01),OptimViFi,y=c(mean_DoseEffectS,mean_DoseEffectR),control = list(maxit = 20000))
 f_f<-Optim$par[1] #0.9345706
@@ -407,7 +399,8 @@ OptimFiVi <- function(x,y) {
 
 OptimDose <- function(x) {
   
-    Optim=optim(par=c(0.72,0.01),OptimFiVi,y=c(x[1],x[2]),control = list(maxit = 20000))
+    fi<-optim(par=c(0.72,0.01),OptimFiVi,y=c(x[1],x[2]),control = list(maxit = 20000))$par[1]
+    Vi<-optim(par=c(0.72,0.01),OptimFiVi,y=c(x[1],x[2]),control = list(maxit = 20000))$par[2]
     
     mod <- gen$new(US_0=c(0),
                UCm1_0=c(0),
@@ -418,15 +411,13 @@ OptimDose <- function(x) {
                ECm2_0=c(146*0.64*0.19),
 
                
-               f=Optim$par[1],
+               f=fi,
                a1=0,a2=1,
                
-               V=Optim$par[2],
+               V=Vi,
                Beta=matrix(c(1),nrow = 1, ncol = 1 ,byrow = TRUE),
-               #V=c(0.006019609),
-               #Beta=matrix(c(4.704727),nrow = 1, ncol = 1 ,byrow = TRUE), #contact_matrix(polymod, countries = "United Kingdom", age.limits = c(0, 5, 15,65),sample.participants = TRUE)$matrix,
                Phi=c(0),
-               Mu=c(0),  #c((0.76*10**(-3))/365,(0.1*10**(-3))/365,(2.16*10**(-3))/365,(50*10**(-3))/365),
+               Mu=c(0),  
                mu0=0,
                Lambda=c(1/43), #décolonisation naturelle 
                gamma=1/7,
@@ -465,7 +456,7 @@ OptimDose <- function(x) {
     p1=as.numeric(f[4])
     r1=as.numeric(f[3])
     
-    cat(x[1],x[2]," :",r1," ",p1,"\n")
+    #cat(x[1],x[2]," :",r1," ",p1,"\n")
     
     return(abs(0.67-r1)**2+abs(0.13-p1)**2)
 }
@@ -473,11 +464,10 @@ OptimDose <- function(x) {
 
 res_AntibioEffect <- data.frame()
 
-set.seed(123)
-for (i in 1:2) {
-  set.seed(i)
 
-  x0 <- c(runif(1, min = 0.5,  max = 1.0))
+for (i in 1:10) {
+
+  x0 <- c(runif(2, min = 0,  max = 1.0))
 
   fit <- optim(
     par = x0, fn = OptimDose, method = "L-BFGS-B",
@@ -512,7 +502,7 @@ cat(mean_DoseEffectS," ",mean_DoseEffectR)
 ```{r run the model with fitted parameters}
 
 mean_DoseEffectS<-1
-mean_DoseEffectR<-0.06599847
+mean_DoseEffectR<-0.08799847
 
 Optim=optim(par=c(0.72,0.01),OptimFiVi,y=c(mean_DoseEffectS,mean_DoseEffectR),control = list(maxit = 20000))
 f_f<-Optim$par[1] #0.9345706

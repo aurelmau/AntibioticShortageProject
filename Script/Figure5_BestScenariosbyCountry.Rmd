@@ -7,31 +7,49 @@ editor_options:
 ---
 
 ```{r library}
+# library(ggplot2)
+# library(readxl)
+# library(tidyr)
+# library(dplyr)
+# library(reshape2)
+# library(ggpubr)
+# library(socialmixr)
+# data(polymod)
+# library("RColorBrewer")
+# library(rmarkdown)
+# library(plotly)
+# library(demodelr)
+# library(forcats)
+# library(sf)
+# library(rnaturalearth)
+# library(rnaturalearthdata)
+# library(corrplot)
+# library(gridExtra)
+# library(gridGraphics)
+# library(grid)
+# library(patchwork)
+# library(refset)
+# library("cowplot")
+# library(ggflags)
+
+
 library(ggplot2)
-library(readxl)
 library(tidyr)
 library(dplyr)
 library(reshape2)
 library(ggpubr)
 library(socialmixr)
-data(polymod)
 library("RColorBrewer")
 library(rmarkdown)
 library(plotly)
 library(demodelr)
 library(forcats)
-library(sf)
-library(rnaturalearth)
-library(rnaturalearthdata)
-library(corrplot)
-library(gridExtra)
-library(gridGraphics)
-library(grid)
-library(patchwork)
-library(refset)
+library(ggh4x)
+library(here)
+library(readxl)
 library("cowplot")
+library(corrplot)
 library(ggflags)
-
 ```
 
 
@@ -705,7 +723,7 @@ theme_bw()+
 
 ```{r grid arrange}
 
-pdf(filename = here::here("Figures", "Figure6_HeatMapPaysAllcountries.pdf"), width = 1600/81, height = 2200/81)
+pdf(file = here::here("Figures", "Figure6_HeatMapPaysAllcountries.pdf"), width = 1600/81, height = 2200/81)
 #grid.arrange(gproportion,gIPD,ncol=1)
 plot_grid(gproportion,gIPD,labels=c("a","b"),ncol=1,label_size = 30,rel_heights = c(1, 1))
 
@@ -719,8 +737,7 @@ dev.off()
 
 ```{r Matrice de correlation}
 
-
-pdf(filename = here::here("Figures", "FigureSupplementary5Correlations.pdf"), width = 1600/81, height = 1600/81)
+pdf(file = here::here("Figures", "FigureSupplementary5Correlations.pdf"), width = 1600/81, height = 1600/81)
 
 # Configuration de l'espace graphique en 2x2
 par(mfrow = c(2, 2))  # Ajustez les marges pour éviter les chevauchements
@@ -758,7 +775,7 @@ pivot_wider(
   values_from = Variation  # Les valeurs des cellules proviendront de Variation
 )
 
-df<-read_excel("Files\\DataframeParametresPays.xlsx")
+df<-read_excel(here("Files", "DataframeParametresPays.xlsx"))
 
 merged_data <- left_join(out_wide, df, by = c("Country" = "Pays"))
 
@@ -803,7 +820,6 @@ dev.off()
 
 
 ## Supplementary Figure 8
-
 
 ```{r simulation penurie}
 
@@ -1050,7 +1066,6 @@ RunShortageCountry <- function(param,country){
 
 ```
 
-
 ```{r Lancement penurie sur tous les Pays}
 
 #Dataframe with adult datas
@@ -1164,7 +1179,7 @@ theme_bw()+
         panel.border =element_rect(colour = "black", fill = NA, size = 1.5))
 
 
-pdf(filename = here::here("Figures", "FigureSupplementray6_IncidenceBothAntibiotics.pdf"), width = 1600/81, height = 1600/81)
+pdf(file = here::here("Figures", "FigureSupplementray6_IncidenceBothAntibiotics.pdf"), width = 1600/81, height = 1600/81)
 p
 dev.off()
 
@@ -1186,7 +1201,7 @@ df$country <- tolower(c("AT", "BE", "HR", "CZ", "DK", "EE","FI", "FR", "DE", "HU
 
 # Ouvrir un périphérique graphique pour sauvegarder le plot en tant qu'image PNG
 
-png(filename = here::here("Figures", "FigureCountriesConsoResistance.png"), width = 1200, height = 500)
+png(file = here::here("Figures", "FigureCountriesConsoResistance.png"), width = 1200, height = 500)
 
 p<-ggplot(df, aes(x = PhiAmox, y = Ramox)) +
   geom_smooth(method = "lm", se = FALSE, color = "black", linetype = "dashed") +

@@ -7,31 +7,27 @@ editor_options:
 ---
 
 ```{r library}
+
 library(ggplot2)
 library(tidyr)
 library(dplyr)
 library(reshape2)
 library(ggpubr)
 library(socialmixr)
-data(polymod)
 library("RColorBrewer")
 library(rmarkdown)
 library(plotly)
 library(demodelr)
 library(forcats)
-library(rayshader)
-library(triangle)
-library(lhs)
 library(ggh4x)
 library(lemon)
 library(ggthemes)
 library(khroma)
-library(lhs)
-library(sensitivity)
-library(patchwork)
-library(cowplot)
-library(gridExtra)
+library(extrafont)
 library(here)
+library(lemon)
+library(gridExtra)
+
 ```
 
 ##Figure 2
@@ -86,7 +82,7 @@ theme_clean()+
 
 grid.arrange(p)
 
-pdf(filename = here::here("Figures", "Figure2Boxplot0to100.pdf"), width = 1400/81, height = 800/81)
+pdf(file = here::here("Figures", "Figure2Boxplot0to100.pdf"), width = 1400/81, height = 800/81)
 grid.arrange(p)
 dev.off()
 
@@ -95,7 +91,7 @@ dev.off()
 ```
 
 
-```{r ggplot evolution Figure 2 boxplot valeur d'evolutions observees }
+```{r values of the changes observed in Figure 2 boxplot }
 
 dfnew <- read.csv(here::here("Files", "fichierCombine070225_0to100.csv"))
 
@@ -125,7 +121,7 @@ df_summary
 
 ## Figure 3
 
-```{r histo figure 3 avec incertitude et points for Lambda}
+```{r Figure 3 with uncertainty and points for Lambda}
 
 ##datframe pour barplot
 dfnew <- read.csv(here::here("Files", "fichierCombine070225_0to100.csv"))
@@ -243,14 +239,14 @@ pI<-ggplot(dfI,aes(x=as.factor(Scenario),y=Value,fill=factor(Reduction)))+
         panel.border =element_blank(),plot.background = element_blank(),legend.position = "none")
 
 
-pdf(filename = here::here("Figures", "Figure3Lambda.pdf"), width = 1400/81, height = 750/81)
+pdf(file = here::here("Figures", "Figure3Lambda.pdf"), width = 1400/81, height = 750/81)
 grid.arrange(pP,pI,  layout_matrix = rbind(c(1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,NA),c(2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2)))
 dev.off()
 
 ```
 
 
-```{r ggplot evolution Figure 3  valeur d'evolutions observees }
+```{r values of the changes observed in Figure 3 }
 
 dfnew <- read.csv(here::here("Files", "fichierCombine070225_0to100.csv"))
 
@@ -285,7 +281,7 @@ df_summary
 
 ## Supplementary figure 2 with parameter carriage of prevalenve (pi) varying
 
-```{r histo figure 3 avec incertitude et points for pi}
+```{r  Figure 3 with uncertainty and points for pi}
 
 ##datframe pour barplot
 dfnew <- read.csv(here::here("Files", "fichierCombine070225_0to100.csv"))
@@ -402,7 +398,7 @@ pI<-ggplot(dfI,aes(x=as.factor(Scenario),y=Value,fill=factor(Reduction)))+
         strip.text = element_text(size = 18, face = "bold",hjust = 0.5),strip.placement = "outside",
         panel.border =element_blank(),plot.background = element_blank(),legend.position = "none")
 
-pdf(filename = here::here("Figures", "Figure3pi.pdf"), width = 1400/81, height = 750/81)
+pdf(file = here::here("Figures", "Figure3pi.pdf"), width = 1400/81, height = 750/81)
 grid.arrange(pP,pI,  layout_matrix = rbind(c(1,1,1,1,1,1,1,1,1,1,1,1,1,NA,NA,NA,NA),c(2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2)))
 dev.off()
 

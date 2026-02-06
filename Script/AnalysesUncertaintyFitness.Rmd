@@ -1,0 +1,602 @@
+---
+title: "AnalysesIncertitudeFitness"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r library}
+
+library(ggplot2)
+library(tidyr)
+library(dplyr)
+library(reshape2)
+library(ggpubr)
+library(socialmixr)
+library("RColorBrewer")
+library(rmarkdown)
+library(plotly)
+library(demodelr)
+library(forcats)
+library(ggh4x)
+library(here)
+library(tidyverse)
+library(cowplot)
+
+
+```
+
+
+```{r donnes et lancer fit ViFi }
+
+#Odin equations 
+path <- here::here("Script", "DeuxAgeHuitResistanceDeuxAntibiosOdin.R")
+code <- paste(readLines(path, warn = FALSE), collapse = "\n")
+gen <- odin::odin(code)
+
+#Donnes 2021 otites pour penicillines: 
+d2=0.075/0.53; d3=0.075/0.53; d4=0.085/0.53; d5=0.09/0.53; d6=0.12/0.53; d7=0.075/0.53; d8=0.01/0.53 
+Rcr=0.58; Rmacro=0.28; Ramox=0.43; pi=0.52
+ConsoAmox=0.95; ConsoMacro=0.083;Lambda=1/43
+InvasionRate=4.8*10**(-7)
+
+TreatmentDuration_Amox=7
+TreatmentDuration_Macro=7
+
+```
+
+
+```{r run shortages }
+
+
+RunShortageparam<-function(param){
+  df<-data.frame()
+  f2=as.numeric(param[1])
+  f3=as.numeric(param[2])
+  f4=as.numeric(param[3])
+  f5=as.numeric(param[4])
+  f6=as.numeric(param[5])
+  f7=as.numeric(param[6])
+  f8=as.numeric(param[7])
+  f9=as.numeric(param[8])
+  for (k in 1:4){
+    #print(k)
+    if(k==1){ReductionDose=matrix(c(1,0.93,0.47,0.06,0,0,0,0,
+                                    1,0.93,0.47,0.06,0,0,0,0,
+                                    1,0.93,0.47,0.06,0,0,0,0,
+                                    1,0.93,0.47,0.06,0,0,0,0),ncol=4)
+    ReductionDuree=c(1,1,1,1)
+    ReductionFreq=c(1,0.75,0.5,0.25)
+    AugmentationFreq=c(0,0,0,0)
+    A=matrix(c(0,0,0,1,1,1,1,1,0,0,0,1,1,1,1,1,0,0,0,1,1,1,1,1,0,0,0,1,1,1,1,1),nrow =4 ,ncol=8,byrow = TRUE)
+    }
+    
+    if(k==2){ ReductionDose=matrix(c(1,0.93,0.47,0.06,0,0,0,0,
+                                     1,0.93,0.47,0.06,0,0,0,0,
+                                     1,0.93,0.47,0.06,0,0,0,0,
+                                     1,0.93,0.47,0.06,0,0,0,0),ncol=4)
+    ReductionDuree=c(1,0.75,0.5,0.25)
+    ReductionFreq=c(1,1,1,1)
+    AugmentationFreq=c(0,0,0,0)
+    A=matrix(c(0,0,0,1,1,1,1,1,0,0,0,1,1,1,1,1,0,0,0,1,1,1,1,1,0,0,0,1,1,1,1,1),nrow =4 ,ncol=8,byrow = TRUE)
+    }
+    
+    if(k==3){ ReductionDose=matrix(c(1,0.93,0.47,0.06,0,0,0,0,
+                                     1,0.93,0.06,0,0,0,0,0,
+                                     1,0.47,0,0,0,0,0,0,
+                                     1,0.06,0,0,0,0,0,0),ncol=4)
+    ReductionDuree=c(1,1,1,1)
+    ReductionFreq=c(1,1,1,1)
+    AugmentationFreq=c(0,0,0,0)
+    A=matrix(c(0,0,0,1,1,1,1,1,
+               0,0,1,1,1,1,1,1,
+               0,0,1,1,1,1,1,1,
+               0,1,1,1,1,1,1,1),nrow =4 ,ncol=8,byrow = TRUE)
+    }
+    if(k==4){ReductionDose=matrix(c(1,0.93,0.47,0.06,0,0,0,0,
+                                    1,0.93,0.47,0.06,0,0,0,0,
+                                    1,0.93,0.47,0.06,0,0,0,0,
+                                    1,0.93,0.47,0.06,0,0,0,0),ncol=4)
+    ReductionDuree=c(1,1,1,1)
+    ReductionFreq=c(1,0.75,0.5,0.25)
+    AugmentationFreq=c(0,0.25,0.5,0.75)
+    A=matrix(c(0,0,0,1,1,1,1,1,0,0,0,1,1,1,1,1,0,0,0,1,1,1,1,1,0,0,0,1,1,1,1,1),nrow =4 ,ncol=8,byrow = TRUE)}
+    
+    #reduction : j=1 0%; j=2=25%, j=3=50% et j=4=75%
+    for(j in 1:4){
+      #print(j)
+      mod <- gen$new( US_0=c((70000000*(1-(0.0163+0.0016)))*(1-pi)*0.055),
+                      UCm1_S_0=c((70000000*(1-(0.0163+0.0016)))*pi*((1-Rmacro)-(1-Rcr)*Ramox)*0.055),
+                      UCm1_R_0=c((70000000*(1-(0.0163+0.0016)))*pi*(Rmacro-Rcr*Ramox)*0.055),
+                      UCm2_S_0=c((70000000*(1-(0.0163+0.0016)))*pi*(1-Rcr)*Ramox*d2*0.055),
+                      UCm2_R_0=c((70000000*(1-(0.0163+0.0016)))*pi*Rcr*Ramox*d2*0.055),
+                      UCm3_S_0=c((70000000*(1-(0.0163+0.0016)))*pi*(1-Rcr)*Ramox*d3*0.055),
+                      UCm3_R_0=c((70000000*(1-(0.0163+0.0016)))*pi*Rcr*Ramox*d3*0.055),
+                      UCm4_S_0=c((70000000*(1-(0.0163+0.0016)))*pi*(1-Rcr)*Ramox*d4*0.055),
+                      UCm4_R_0=c((70000000*(1-(0.0163+0.0016)))*pi*Rcr*Ramox*d4*0.055),
+                      UCm5_S_0=c((70000000*(1-(0.0163+0.0016)))*pi*(1-Rcr)*Ramox*d5*0.055),
+                      UCm5_R_0=c((70000000*(1-(0.0163+0.0016)))*pi*Rcr*Ramox*d5*0.055),
+                      UCm6_S_0=c((70000000*(1-(0.0163+0.0016)))*pi*(1-Rcr)*Ramox*d6*0.055),
+                      UCm6_R_0=c((70000000*(1-(0.0163+0.0016)))*pi*Rcr*Ramox*d6*0.055),
+                      UCm7_S_0=c((70000000*(1-(0.0163+0.0016)))*pi*(1-Rcr)*Ramox*d7*0.055),
+                      UCm7_R_0=c((70000000*(1-(0.0163+0.0016)))*pi*Rcr*Ramox*d7*0.055),
+                      UCm8_S_0=c((70000000*(1-(0.0163+0.0016)))*pi*(1-Rcr)*Ramox*d8*0.055),
+                      UCm8_R_0=c((70000000*(1-(0.0163+0.0016)))*pi*Rcr*Ramox*d8*0.055),
+                      
+                      AES_0=c((70000000*0.0163)*(1-pi)*0.055),
+                      AECm1_S_0=c((70000000*0.0163)*pi*((1-Rmacro)-(1-Rcr)*Ramox)*0.055),
+                      AECm1_R_0=c((70000000*0.0163)*pi*(Rmacro-Rcr*Ramox)*0.055),
+                      AECm2_S_0=c((70000000*0.0163)*pi*(1-Rcr)*Ramox*d2*0.055),
+                      AECm2_R_0=c((70000000*0.0163)*pi*Rcr*Ramox*d2*0.055),
+                      AECm3_S_0=c((70000000*0.0163)*pi*(1-Rcr)*Ramox*d3*0.055),
+                      AECm3_R_0=c((70000000*0.0163)*pi*Rcr*Ramox*d3*0.055),
+                      AECm4_S_0=c((70000000*0.0163)*pi*(1-Rcr)*Ramox*d4*0.055),
+                      AECm4_R_0=c((70000000*0.0163)*pi*Rcr*Ramox*d4*0.055),
+                      AECm5_S_0=c((70000000*0.0163)*pi*(1-Rcr)*Ramox*d5*0.055),
+                      AECm5_R_0=c((70000000*0.0163)*pi*Rcr*Ramox*d5*0.055),
+                      AECm6_S_0=c((70000000*0.0163)*pi*(1-Rcr)*Ramox*d6*0.055),
+                      AECm6_R_0=c((70000000*0.0163)*pi*Rcr*Ramox*d6*0.055),
+                      AECm7_S_0=c((70000000*0.0163)*pi*(1-Rcr)*Ramox*d7*0.055),
+                      AECm7_R_0=c((70000000*0.0163)*pi*Rcr*Ramox*d7*0.055),
+                      AECm8_S_0=c((70000000*0.0163)*pi*(1-Rcr)*Ramox*d8*0.055),
+                      AECm8_R_0=c((70000000*0.0163)*pi*Rcr*Ramox*d8*0.055),
+                      
+                      MES_0=c((70000000*0.0016)*(1-pi)*0.055),
+                      MECm1_S_0=c((70000000*0.0016)*pi*((1-Rmacro)-(1-Rcr)*Ramox)*0.055),
+                      MECm1_R_0=c((70000000*0.0016)*pi*(Rmacro-Rcr*Ramox)*0.055),
+                      MECm2_S_0=c((70000000*0.0016)*pi*(1-Rcr)*Ramox*d2*0.055),
+                      MECm2_R_0=c((70000000*0.0016)*pi*Rcr*Ramox*d2*0.055),
+                      MECm3_S_0=c((70000000*0.0016)*pi*(1-Rcr)*Ramox*d3*0.055),
+                      MECm3_R_0=c((70000000*0.0016)*pi*Rcr*Ramox*d3*0.055),
+                      MECm4_S_0=c((70000000*0.0016)*pi*(1-Rcr)*Ramox*d4*0.055),
+                      MECm4_R_0=c((70000000*0.0016)*pi*Rcr*Ramox*d4*0.055),
+                      MECm5_S_0=c((70000000*0.0016)*pi*(1-Rcr)*Ramox*d5*0.055),
+                      MECm5_R_0=c((70000000*0.0016)*pi*Rcr*Ramox*d5*0.055),
+                      MECm6_S_0=c((70000000*0.0016)*pi*(1-Rcr)*Ramox*d6*0.055),
+                      MECm6_R_0=c((70000000*0.0016)*pi*Rcr*Ramox*d6*0.055),
+                      MECm7_S_0=c((70000000*0.0016)*pi*(1-Rcr)*Ramox*d7*0.055),
+                      MECm7_R_0=c((70000000*0.0016)*pi*Rcr*Ramox*d7*0.055),
+                      MECm8_S_0=c((70000000*0.0016)*pi*(1-Rcr)*Ramox*d8*0.055),
+                      MECm8_R_0=c((70000000*0.0016)*pi*Rcr*Ramox*d8*0.055),
+                      
+                      fA1=1 ,fA2=f2 ,fA3=f3 ,fA4=f4 ,fA5=f5,fA6=f6,fA7=f7,fA8=f8,
+                      fMS=1 ,fMR=f9,
+                      a1=A[j,1],a2=A[j,2],a3=A[j,3],a4=A[j,4],a5=A[j,5],a6=A[j,6],a7=A[j,7],a8=A[j,8],
+                      V=c(0.05546875 ),
+                      
+                      Beta=matrix(c(1),nrow = 1, ncol = 1,byrow = TRUE),
+                      
+                      #Consommation normale observée
+                      Phi_A=c(ConsoAmox*ReductionFreq[j]/(365)),
+                      
+                      Phi_M=c((ConsoMacro*(1+((ConsoAmox)/(ConsoMacro))*AugmentationFreq[j]))/365),
+                      
+                      Mu=c(0),  #c((0.76*10**(-3))/365,(0.1*10**(-3))/365,(2.16*10**(-3))/365,(50*10**(-3))/365),
+                      mu0=0,
+                      Lambda=c(Lambda),
+                      gamma_A=1/(TreatmentDuration_Amox*ReductionDuree[j]),
+                      gamma_M=1/(TreatmentDuration_Macro),
+                      
+                      #Dose 500mg, q8h
+                      dose1_A=ReductionDose[1,j],
+                      dose2_A=ReductionDose[2,j],
+                      dose3_A=ReductionDose[3,j],
+                      dose4_A=ReductionDose[4,j],
+                      dose5_A=ReductionDose[5,j],
+                      dose6_A=ReductionDose[6,j],
+                      dose7_A=ReductionDose[7,j],
+                      dose8_A=ReductionDose[8,j],
+                      dose1_M= 1.006924, #500mg,q12h MIC=0.06
+                      dose2_M=0.03449561,#500mg,q12h MIC=0.125
+                      
+                      theta=0.5,
+                      N_age=1)
+      
+      t <- seq(0, 365*1,1)
+      y_odin <- mod$run(t)
+      out_odin <- as.data.frame(y_odin)
+      
+      out_odin = out_odin %>%
+        mutate(
+          `t`=`t`,
+          `S[1]`=`US[1]`+`AES[1]`+`MES[1]`,
+          `Cm1[1]`=`UCm1_S[1]`+`AECm1_S[1]`+`MECm1_S[1]`+`UCm1_R[1]`+`AECm1_R[1]`+`MECm1_R[1]`,
+          `Cm2[1]`=`UCm2_S[1]`+`AECm2_S[1]`+`MECm2_S[1]`+`UCm2_R[1]`+`AECm2_R[1]`+`MECm2_R[1]`,
+          `Cm3[1]`=`UCm3_S[1]`+`AECm3_S[1]`+`MECm3_S[1]`+`UCm3_R[1]`+`AECm3_R[1]`+`MECm3_R[1]`,
+          `Cm4[1]`=`UCm4_S[1]`+`AECm4_S[1]`+`MECm4_S[1]`+`UCm4_R[1]`+`AECm4_R[1]`+`MECm4_R[1]`,
+          `Cm5[1]`=`UCm5_S[1]`+`AECm5_S[1]`+`MECm5_S[1]`+`UCm5_R[1]`+`AECm5_R[1]`+`MECm5_R[1]`,
+          `Cm6[1]`=`UCm6_S[1]`+`AECm6_S[1]`+`MECm6_S[1]`+`UCm6_R[1]`+`AECm6_R[1]`+`MECm6_R[1]`,
+          `Cm7[1]`=`UCm7_S[1]`+`AECm7_S[1]`+`MECm7_S[1]`+`UCm7_R[1]`+`AECm7_R[1]`+`MECm7_R[1]`,
+          `Cm8[1]`=`UCm8_S[1]`+`AECm8_S[1]`+`MECm8_S[1]`+`UCm8_R[1]`+`AECm8_R[1]`+`MECm8_R[1]`,
+          
+          `CmMDS[1]`=`UCm1_S[1]`+`AECm1_S[1]`+`MECm1_S[1]`,
+          
+          `CmN_S[1]`=`UCm1_S[1]`+`AECm1_S[1]`+`MECm1_S[1]`+`UCm2_S[1]`+`AECm2_S[1]`+`MECm2_S[1]`+`UCm3_S[1]`+`AECm3_S[1]`+`MECm3_S[1]`+`UCm4_S[1]`+`AECm4_S[1]`+`MECm4_S[1]`+`UCm5_S[1]`+`AECm5_S[1]`+`MECm5_S[1]`+`UCm6_S[1]`+`AECm6_S[1]`+`MECm6_S[1]`+`UCm7_S[1]`+`AECm7_S[1]`+`MECm7_S[1]`+`UCm8_S[1]`+`AECm8_S[1]`+`MECm8_S[1]`,
+          
+          `CmN_R[1]`=`UCm1_R[1]`+`AECm1_R[1]`+`MECm1_R[1]`+`UCm2_R[1]`+`AECm2_R[1]`+`MECm2_R[1]`+`UCm3_R[1]`+`AECm3_R[1]`+`MECm3_R[1]`+`UCm4_R[1]`+`AECm4_R[1]`+`MECm4_R[1]`+`UCm5_R[1]`+`AECm5_R[1]`+`MECm5_R[1]`+`UCm6_R[1]`+`AECm6_R[1]`+`MECm6_R[1]`+`UCm7_R[1]`+`AECm7_R[1]`+`MECm7_R[1]`+`UCm8_R[1]`+`AECm8_R[1]`+`MECm8_R[1]`,
+          
+          `CmMDR[1]`=`UCm2_R[1]`+`AECm2_R[1]`+`MECm2_R[1]`+`UCm3_R[1]`+`AECm3_R[1]`+`MECm3_R[1]`+`UCm4_R[1]`+`AECm4_R[1]`+`MECm4_R[1]`+`UCm5_R[1]`+`AECm5_R[1]`+`MECm5_R[1]`+`UCm6_R[1]`+`AECm6_R[1]`+`MECm6_R[1]`+`UCm7_R[1]`+`AECm7_R[1]`+`MECm7_R[1]`+`UCm8_R[1]`+`AECm8_R[1]`+`MECm8_R[1]`,
+          
+          `Totcarrier[1]`=`UCm1_S[1]`+`AECm1_S[1]`+`MECm1_S[1]`+`UCm1_R[1]`+`AECm1_R[1]`+`MECm1_R[1]`+`UCm2_S[1]`+`AECm2_S[1]`+`MECm2_S[1]`+`UCm2_R[1]`+`AECm2_R[1]`+`MECm2_R[1]`+`UCm3_S[1]`+`AECm3_S[1]`+`MECm3_S[1]`+`UCm3_R[1]`+`AECm3_R[1]`+`MECm3_R[1]`+`UCm4_S[1]`+`AECm4_S[1]`+`MECm4_S[1]`+`UCm4_R[1]`+`AECm4_R[1]`+`MECm4_R[1]`+`UCm5_S[1]`+`AECm5_S[1]`+`MECm5_S[1]`+`UCm5_R[1]`+`AECm5_R[1]`+`MECm5_R[1]`+`UCm6_S[1]`+`AECm6_S[1]`+`MECm6_S[1]`+`UCm6_R[1]`+`AECm6_R[1]`+`MECm6_R[1]`+`UCm7_S[1]`+`AECm7_S[1]`+`MECm7_S[1]`+`UCm7_R[1]`+`AECm7_R[1]`+`MECm7_R[1]`+`UCm8_S[1]`+`AECm8_S[1]`+`MECm8_S[1]`+`UCm8_R[1]`+`AECm8_R[1]`+`MECm8_R[1]`,
+          
+          `Tot[1]`=`US[1]`+`AES[1]`+`MES[1]`+`UCm1_S[1]`+`AECm1_S[1]`+`MECm1_S[1]`+`UCm1_R[1]`+`AECm1_R[1]`+`MECm1_R[1]`+`UCm2_S[1]`+`AECm2_S[1]`+`MECm2_S[1]`+`UCm2_R[1]`+`AECm2_R[1]`+`MECm2_R[1]`+`UCm3_S[1]`+`AECm3_S[1]`+`MECm3_S[1]`+`UCm3_R[1]`+`AECm3_R[1]`+`MECm3_R[1]`+`UCm4_S[1]`+`AECm4_S[1]`+`MECm4_S[1]`+`UCm4_R[1]`+`AECm4_R[1]`+`MECm4_R[1]`+`UCm5_S[1]`+`AECm5_S[1]`+`MECm5_S[1]`+`UCm5_R[1]`+`AECm5_R[1]`+`MECm5_R[1]`+`UCm6_S[1]`+`AECm6_S[1]`+`MECm6_S[1]`+`UCm6_R[1]`+`AECm6_R[1]`+`MECm6_R[1]`+`UCm7_S[1]`+`AECm7_S[1]`+`MECm7_S[1]`+`UCm7_R[1]`+`AECm7_R[1]`+`MECm7_R[1]`+`UCm8_S[1]`+`AECm8_S[1]`+`MECm8_S[1]`+`UCm8_R[1]`+`AECm8_R[1]`+`MECm8_R[1]`,
+          
+          .keep = "none"
+        )
+      out_odin = out_odin %>%
+      mutate(
+        `InfectionsGraves[1]`=InvasionRate*`Totcarrier[1]`,
+        `InfectionsGravesPSSPMS[1]`=InvasionRate*`CmMDS[1]`,
+        `InfectionsGravesPSSP[1]`=InvasionRate*`Cm1[1]`,
+        `InfectionsGravesPNSP[1]`=InvasionRate*(`Cm2[1]`+`Cm3[1]`+`Cm4[1]`+`Cm5[1]`+`Cm6[1]`+`Cm7[1]`+`Cm8[1]`),
+        `InfectionsGravesMS[1]`=InvasionRate*`CmN_S[1]`,
+        `InfectionsGravesMR[1]`=InvasionRate*`CmN_R[1]`,
+        `InfectionsGravesPNSPMR[1]`=InvasionRate*`CmMDR[1]`,
+        )
+    
+    out_odin = out_odin %>%
+      mutate(
+        `InfectionsGravesCumulees[1]`=cumsum(`InfectionsGraves[1]`),
+        `InfectionsGravesPSSPMSCumulees[1]`=cumsum(`InfectionsGravesPSSPMS[1]`),
+        `InfectionsGravesPSSPCumulees[1]`=cumsum(`InfectionsGravesPSSP[1]`),
+        `InfectionsGravesPNSPCumulees[1]`=cumsum(`InfectionsGravesPNSP[1]`),
+        `InfectionsGravesMSCumulees[1]`=cumsum(`InfectionsGravesMS[1]`),
+        `InfectionsGravesMRCumulees[1]`=cumsum(`InfectionsGravesMR[1]`),
+        `InfectionsGravesPNSPMRCumulees[1]`=cumsum(`InfectionsGravesPNSPMR[1]`),
+        )
+    
+    out_odin=out_odin[c(nrow(out_odin)),]
+    
+    PSSP<-(out_odin$`Cm1[1]`)/(out_odin$`Totcarrier[1]`) 
+    
+    PNSP=1-PSSP
+    
+    MS<-(out_odin$`CmN_S[1]`)/(out_odin$`Totcarrier[1]`)
+    
+    MR<-(out_odin$`CmN_R[1]`)/(out_odin$`Totcarrier[1]`)
+    
+    MDR<-(out_odin$`CmMDR[1]`)/(out_odin$`Totcarrier[1]`)
+    
+    I<-out_odin$`InfectionsGravesCumulees[1]` *1000000/(70000000*0.055)
+    
+    IMDS<-out_odin$`InfectionsGravesPSSPMSCumulees[1]` *1000000/(70000000*0.055)
+    
+    IPSSP<-out_odin$`InfectionsGravesPSSPCumulees[1]` *1000000/(70000000*0.055)
+    
+    IPNSP<-out_odin$`InfectionsGravesPNSPCumulees[1]`*1000000/(70000000*0.055)
+    
+    IMS<-out_odin$`InfectionsGravesMSCumulees[1]`*1000000/(70000000*0.055)
+    
+    IMR<-out_odin$`InfectionsGravesMRCumulees[1]`*1000000/(70000000*0.055)
+    
+    IMDR<-out_odin$`InfectionsGravesPNSPMRCumulees[1]`*1000000/(70000000*0.055)
+      
+      df2<-data.frame(Scenario=numeric(), Reduction=numeric(), Outcome=character(), Value=numeric(), Fitness=numeric() )
+      df2[1,]<-c(k,j,"PropPNSP",PNSP,f2)
+      df2[2,]<-c(k,j,"PropMR",MR,f2)
+      df2[3,]<-c(k,j,"PropMDR",MDR,f2)
+      df2[4,]<-c(k,j,"IncidenceInfectionsGraves",I,f2)
+      df2[5,]<-c(k,j,"IncidenceInfectionsGravesMDS",IMDS,f2)
+      df2[6,]<-c(k,j,"IncidenceInfectionsGravesPSSP",IPSSP,f2)
+      df2[7,]<-c(k,j,"IncidenceInfectionsGravesPNSP",IPNSP,f2)
+      df2[8,]<-c(k,j,"IncidenceInfectionsGravesMS",IMS,f2)
+      df2[9,]<-c(k,j,"IncidenceInfectionsGravesMR",IMR,f2)
+      df2[10,]<-c(k,j,"IncidenceInfectionsGravesMDR",IMDR,f2)
+      df=rbind(df,df2)
+      }
+   }
+  return(df)
+  
+    }
+
+
+
+```
+
+
+
+```{r run shortage with variations around fitness cost }
+
+#Donnes 2021 otites pour penicillines de distribution française : 
+FitnessCost <- c(0.9999748 ,0.9916096 , 0.9420954 ,0.9192299 , 0.9192278 , 0.9192375 , 0.9194097 ,0.9938509 )
+
+
+var=0.05
+FitnessCostMoins5 <- c(0.9999748-0.05*0.9999748 ,0.9916096-0.05*0.9916096 , 0.9420954-0.05*0.9420954 ,0.9192299 -0.05*0.9192299,
+                       0.9192278-0.05*0.9192278 , 0.9192375-0.05* 0.9192375, 0.9194097-0.05*0.9194097 ,0.9938509-0.05* 0.9938509)
+
+FitnessCostPlus5 <- c(0.9999748+0.05*0.9999748 ,0.9916096+0.05*0.9916096 , 0.9420954+0.05*0.9420954 ,0.9192299 +0.05*0.9192299,
+                      0.9192278+0.05*0.9192278 , 0.9192375+0.05* 0.9192375, 0.9194097+0.05*0.9194097 ,0.9938509+0.05* 0.9938509)
+
+list_fitness=list(FitnessCost,FitnessCostMoins5,FitnessCostPlus5)
+
+
+dfnew<-data.frame(Scenario=numeric(), Reduction=numeric(), Outcome=character(), Value=numeric(), Fitness=numeric())
+
+for (i in list_fitness) {
+    param=c(i[1],i[2],i[3],i[4],i[5],i[6],i[7],i[8])
+    print(param)
+    df_resistance <- RunShortageparam(param)
+    dfnew=rbind(dfnew,df_resistance)
+}
+
+
+
+```
+
+
+
+```{r figure avec variation relative}
+
+#Figure of proportion
+
+df_prop <- dfnew
+df_prop <- subset(df_prop, Reduction %in% c("1","3"))
+df_prop <- subset(df_prop, Outcome %in% c("PropPNSP","PropMR","PropMDR"))
+
+desired_order_prop <- c("PropMDR","PropMR","PropPNSP")
+df_prop$Outcome <- factor(df_prop$Outcome, levels = desired_order_prop)
+df_prop$Value <- as.numeric(df_prop$Value)
+df_prop$Fitness <- as.numeric(df_prop$Fitness)
+
+# Créer les labels de fitness
+fitness_values <- sort(unique(df_prop$Fitness))
+fitness_labels <- c("Fitted fitness - 5%", "Fitted fitness", "Fitted fitness + 5%")
+fitness_mapping <- data.frame(
+  Fitness = fitness_values,
+  FitnessLabel = factor(fitness_labels, levels = fitness_labels)
+)
+df_prop <- df_prop %>% left_join(fitness_mapping, by = "Fitness")
+
+# Calculer la variation relative
+variation_df <- df_prop %>%
+  group_by(Scenario, Outcome, Fitness, FitnessLabel) %>%
+  summarise(Variation = ((Value[Reduction == 3] - Value[Reduction == 1])*100/(Value[Reduction == 1])),
+            .groups = "drop")
+
+df_prop <- merge(df_prop, variation_df, by = c("Scenario", "Outcome", "Fitness", "FitnessLabel"))
+
+df_prop <- subset(df_prop, Reduction %in% c("3"))
+df_prop <- subset(df_prop, select = -Reduction)
+
+# Trouver les valeurs minimales
+min_values <- df_prop %>%
+  group_by(Outcome, Fitness) %>%
+  summarize(MinValue = min(Value), .groups = "drop")
+
+df_prop <- merge(df_prop, min_values, by = c("Outcome", "Fitness"))
+
+# Test de significativité
+calculate_Diff <- function(p1, p2) {
+  if(abs(p1-p2)/p2 > 0.05){return(TRUE)} 
+  else{return(FALSE)}
+}
+
+df_prop <- df_prop %>%
+  rowwise() %>%
+  mutate(Significativite = calculate_Diff(Value, MinValue)) %>%
+  ungroup()
+
+# Pivot wider
+df_pivot <- df_prop %>%
+  pivot_wider(names_from = Scenario, values_from = Significativite, names_prefix = "Significatif_")
+
+df_final <- df_prop %>%
+  left_join(df_pivot, by = c("Outcome", "Fitness", "FitnessLabel")) %>%
+  group_by(Outcome, Fitness) %>%
+  mutate(
+    Significatif_1 = first(na.omit(Significatif_1)),
+    Significatif_2 = first(na.omit(Significatif_2)),
+    Significatif_3 = first(na.omit(Significatif_3)),
+    Significatif_4 = first(na.omit(Significatif_4))
+  ) %>%
+  ungroup()
+
+df_final <- subset(df_final, select = -c(Value.y, Variation.y, MinValue.y))
+df_final <- distinct(df_final)
+df_prop <- df_final
+
+# Filtrer les valeurs significatives
+df_filtered <- df_prop %>% filter(Value.x == MinValue.x)
+df_filtered <- df_filtered %>%
+  filter(
+    (Significatif_1 == TRUE & Significatif_2 == TRUE & Significatif_3 == TRUE) |
+    (Significatif_1 == TRUE & Significatif_2 == TRUE & Significatif_4 == TRUE) |
+    (Significatif_1 == TRUE & Significatif_3 == TRUE & Significatif_4 == TRUE) |
+    (Significatif_2 == TRUE & Significatif_3 == TRUE & Significatif_4 == TRUE) 
+  )
+
+colnames(df_prop)[colnames(df_prop) == "Variation.x"] <- "Variation"
+colnames(df_prop)[colnames(df_prop) == "Value.x"] <- "Value"
+colnames(df_prop)[colnames(df_prop) == "MinValue.x"] <- "MinValue"
+
+# Plot proportions
+gproportion <- ggplot(df_prop, aes(x = as.factor(Scenario), y = Outcome, fill = Variation)) +
+  geom_tile() +
+  geom_text(aes(label = sprintf("%.1f", round(Variation, digits = 1))), 
+            show.legend = TRUE, size = 7) +
+  geom_tile(data = df_prop %>% filter(Value == MinValue), 
+            aes(x = as.factor(Scenario), y = Outcome), 
+            color = "darkgrey", linewidth = 1.5, fill = NA) +
+  geom_tile(data = df_filtered, 
+            aes(x = as.factor(Scenario), y = Outcome), 
+            color = "black", linewidth = 1.5, fill = NA) +
+  scale_fill_gradient2(low = "#075AFF", mid = "white", high = "#FF6347", 
+                       name = "Relative \nvariation(%)") +
+  labs(x = "Strategies", y = "Resistant proportion") +
+  facet_wrap(~ FitnessLabel, ncol = 3) +
+  scale_x_discrete(labels = c("S1", "S2", "S3", "S4")) +
+  scale_y_discrete(labels = c("PropPNSP" = "PNSP", "PropMR" = "MRSP", "PropMDR" = "MDRSP")) +
+  theme_bw() +
+  theme(
+    axis.text = element_text(size = 24),
+    axis.title = element_text(size = 28),
+    legend.text = element_text(size = 22),
+    legend.title = element_text(size = 24),
+    legend.key.height = unit(0.8, "cm"),
+    legend.key.width = unit(0.8, "cm"),
+    strip.text = element_text(size = 28, face = "bold"),
+    strip.background = element_rect(fill = "white"),
+    panel.border = element_rect(colour = "black", fill = NA, linewidth = 1.5)
+  )
+
+#Figure of IPD
+
+df_ipd <- dfnew
+df_ipd <- subset(df_ipd, Reduction %in% c("1","3"))
+df_ipd <- subset(df_ipd, Outcome %in% c("IncidenceInfectionsGravesMDR",
+                                          "IncidenceInfectionsGravesMR",
+                                          "IncidenceInfectionsGravesPNSP",
+                                          "IncidenceInfectionsGravesMDS",
+                                          "IncidenceInfectionsGraves"))
+
+desired_order_ipd <- c("IncidenceInfectionsGravesMDR",
+                       "IncidenceInfectionsGravesMR",
+                       "IncidenceInfectionsGravesPNSP",
+                       "IncidenceInfectionsGravesMDS",
+                       "IncidenceInfectionsGraves")
+
+df_ipd$Outcome <- factor(df_ipd$Outcome, levels = desired_order_ipd)
+df_ipd$Value <- as.numeric(df_ipd$Value)
+df_ipd$Fitness <- as.numeric(df_ipd$Fitness)
+
+df_ipd <- df_ipd %>% left_join(fitness_mapping, by = "Fitness")
+
+# Calculer la variation absolue
+variation_df <- df_ipd %>%
+  group_by(Scenario, Outcome, Fitness, FitnessLabel) %>%
+  summarise(Variation = (Value[Reduction == 3] - Value[Reduction == 1]),
+            .groups = "drop")
+
+df_ipd <- merge(df_ipd, variation_df, by = c("Scenario", "Outcome", "Fitness", "FitnessLabel"))
+
+df_ipd <- subset(df_ipd, Reduction %in% c("3"))
+df_ipd <- subset(df_ipd, select = -Reduction)
+
+# Arrondir
+df_ipd <- df_ipd %>%
+  mutate(Variation = round(Variation)) %>%
+  mutate(Variation = ifelse(Variation == 0, 0, Variation))
+
+# Corriger les arrondis
+df_modifie <- df_ipd %>%
+  group_by(Scenario, Fitness) %>%
+  mutate(
+    diff_pns_s = sum(Variation[Outcome == "IncidenceInfectionsGraves"] - 
+                     Variation[Outcome == "IncidenceInfectionsGravesMDS"]),
+    Variation = if_else(Outcome == "IncidenceInfectionsGravesPNSP" & Variation != diff_pns_s, 
+                        diff_pns_s, Variation)
+  ) %>%
+  ungroup() %>%
+  select(-diff_pns_s)
+
+df_ipd <- df_modifie
+
+# Trouver les valeurs minimales
+min_values <- df_ipd %>%
+  group_by(Outcome, Fitness) %>%
+  summarize(MinVariation = min(Variation), .groups = "drop")
+
+df_ipd <- merge(df_ipd, min_values, by = c("Outcome", "Fitness"))
+
+# Test de significativité
+calculate_Diff <- function(p1, p2) {
+  if(abs(p1-p2) >= 1){return(TRUE)}
+  else{return(FALSE)}
+}
+
+df_ipd <- df_ipd %>%
+  rowwise() %>%
+  mutate(Significativite = calculate_Diff(Variation, MinVariation)) %>%
+  ungroup()
+
+# Pivot wider
+df_pivot <- df_ipd %>%
+  pivot_wider(names_from = Scenario, values_from = Significativite, names_prefix = "Significatif_")
+
+df_final <- df_ipd %>%
+  left_join(df_pivot, by = c("Outcome", "Fitness", "FitnessLabel")) %>%
+  group_by(Outcome, Fitness) %>%
+  mutate(
+    Significatif_1 = first(na.omit(Significatif_1)),
+    Significatif_2 = first(na.omit(Significatif_2)),
+    Significatif_3 = first(na.omit(Significatif_3)),
+    Significatif_4 = first(na.omit(Significatif_4))
+  ) %>%
+  ungroup()
+
+df_final <- subset(df_final, select = -c(Value.y, Variation.y, MinVariation.y))
+df_final <- distinct(df_final)
+df_ipd <- df_final
+
+# Filtrer les valeurs significatives
+df_filtered <- df_ipd %>% filter(Variation.x == MinVariation.x)
+df_filtered <- df_filtered %>%
+  filter(
+    (Significatif_1 == TRUE & Significatif_2 == TRUE & Significatif_3 == TRUE) |
+    (Significatif_1 == TRUE & Significatif_2 == TRUE & Significatif_4 == TRUE) |
+    (Significatif_1 == TRUE & Significatif_3 == TRUE & Significatif_4 == TRUE) |
+    (Significatif_2 == TRUE & Significatif_3 == TRUE & Significatif_4 == TRUE)
+  )
+
+colnames(df_ipd)[colnames(df_ipd) == "Variation.x"] <- "Variation"
+colnames(df_ipd)[colnames(df_ipd) == "Value.x"] <- "Value"
+colnames(df_ipd)[colnames(df_ipd) == "MinVariation.x"] <- "MinVariation"
+
+# Labels
+labels_y <- c(
+  "IncidenceInfectionsGraves" = expression(IPD),
+  "IncidenceInfectionsGravesMDS" = expression(IPD[SSP]),
+  "IncidenceInfectionsGravesPNSP" = expression(IPD[PNSP]),
+  "IncidenceInfectionsGravesMR" = expression(IPD[MRSP]),
+  "IncidenceInfectionsGravesMDR" = expression(IPD[MDRSP])
+)
+
+df_ipd <- as.data.frame(df_ipd)
+df_filtered <- as.data.frame(df_filtered)
+
+# Plot IPD
+gIPD <- ggplot(df_ipd, aes(x = as.factor(Scenario), y = Outcome, fill = Variation)) +
+  geom_tile() +
+  geom_text(aes(label = sprintf("%.0f", Variation)), 
+            show.legend = TRUE, size = 7) +
+  geom_tile(data = df_ipd %>% filter(Variation == MinVariation), 
+            aes(x = as.factor(Scenario), y = Outcome), 
+            color = "darkgrey", linewidth = 1.5, fill = NA) +
+  geom_tile(data = df_filtered, 
+            aes(x = as.factor(Scenario), y = Outcome), 
+            color = "black", linewidth = 1.5, fill = NA) +
+  scale_fill_gradient2(low = "#075AFF", mid = "white", high = "#FF6347", 
+                       name = "Absolute \nvariation") +
+  labs(x = "Strategies", y = "IPD/1 million children per year") +
+  facet_wrap(~ FitnessLabel, ncol = 3) +
+  scale_x_discrete(labels = c("S1", "S2", "S3", "S4")) +
+  scale_y_discrete(labels = labels_y) +
+  theme_bw() +
+  theme(
+    axis.text = element_text(size = 24),
+    axis.title = element_text(size = 28),
+    legend.text = element_text(size = 22),
+    legend.title = element_text(size = 24),
+    legend.key.height = unit(0.8, "cm"),
+    legend.key.width = unit(0.8, "cm"),
+    strip.text = element_text(size = 28, face = "bold"),
+    strip.background = element_rect(fill = "white"),
+    panel.border = element_rect(colour = "black", fill = NA, linewidth = 1.5)
+  )
+
+
+combined_plot <- plot_grid(gproportion, gIPD, 
+                           labels = c("a", "b"), 
+                           ncol = 1, 
+                           label_size = 30, 
+                           rel_heights = c(1, 1))
+
+# Sauvegarder
+
+pdf(file = here::here("Figures", "FigureVariationFitnessS7.pdf"),  width = 1600/81, height = 1100/81)
+combined_plot
+dev.off()
+
+
+```

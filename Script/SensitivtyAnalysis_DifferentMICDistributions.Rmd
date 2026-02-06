@@ -1,0 +1,779 @@
+---
+title: "BestScenarioAccordingMainParameters_Figure5"
+output: html_document
+date: "2024-07-10"
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r library}
+
+library(ggplot2)
+library(tidyr)
+library(dplyr)
+library(reshape2)
+library(ggpubr)
+library(socialmixr)
+library("RColorBrewer")
+library(rmarkdown)
+library(plotly)
+library(demodelr)
+library(forcats)
+library(ggh4x)
+library(here)
+
+
+```
+
+
+```{r setup}
+
+#Odin equations 
+path <- here::here("Script", "DeuxAgeHuitResistanceDeuxAntibiosOdin.R")
+code <- paste(readLines(path, warn = FALSE), collapse = "\n")
+gen <- odin::odin(code)
+
+Rcr=0.58; Rmacro=0.28; Ramox=0.43; pi=0.52
+ConsoAmox=0.95; ConsoMacro=0.083;Lambda=1/43
+InvasionRate=4.8*10**(-7)
+
+
+```
+
+
+```{r Plot CMIs distributions }
+
+dfnew <- read.csv(here::here("Files", "donnees_pneumo_atlas.csv"))
+head(dfnew)
+
+# Filtrer les pays souhaités
+dfnew_filtered <- dfnew %>%
+  filter(Country %in% c("France (n=1540)", "Germany (n=525)", "Poland (n=153)"))
+
+# Définir l'ordre des niveaux de MIC avec >4 à la fin
+mic_levels <- sort(unique(dfnew_filtered$MIC))
+mic_levels <- c(mic_levels[mic_levels != ">4"], ">4")
+
+dfnew_filtered <- dfnew_filtered %>%
+  mutate(MIC = factor(MIC, levels = mic_levels))
+
+# Créer le graphique
+p<-ggplot(dfnew_filtered, aes(x = MIC, y = prop, fill = Country)) +
+  geom_col() +
+  facet_wrap(~ Country, ncol = 3) +
+  scale_fill_manual(values = c("France (n=1540)" = "blue",
+                                "Germany (n=525)" = "#FFA500",
+                                "Poland (n=153)" = "#FF4500")) +
+  labs(x = "MIC", 
+       y = "Proportion") +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),
+        legend.position = "none")
+
+
+pdf(file = here::here("Figures", "CMIDistributionAcross3countries.pdf"), width = 1000/81, height = 300/81)
+p
+
+dev.off()
+
+
+```
+
+
+```{r }
+
+
+RunSimulation <- function(x,param, distribution) {
+    Rcr=as.numeric(param[1])
+    Ramox=as.numeric(param[2])
+    Rmacro=as.numeric(param[3])
+    ConsoAmox=as.numeric(param[4])
+    ConsoMacro=as.numeric(param[5])
+    pi=as.numeric(param[6])
+    Lambda=as.numeric(param[7])
+    TreatmentDuration_Amox=as.numeric(param[8])
+    TreatmentDuration_Macro=as.numeric(param[9])
+    
+    
+    d2=distribution[1]
+    d3=distribution[2]
+    d4=distribution[3]
+    d5=distribution[4]
+    d6=distribution[5]
+    d7=distribution[6]
+    d8=distribution[7]
+    
+  
+  paras <- list(  US_0=c((70000000*(1-(0.0163+0.0016)))*(1-pi)*0.055),
+                   UCm1_S_0=c((70000000*(1-(0.0163+0.0016)))*pi*((1-Rmacro)-(1-Rcr)*Ramox)*0.055),
+                   UCm1_R_0=c((70000000*(1-(0.0163+0.0016)))*pi*(Rmacro-Rcr*Ramox)*0.055),
+                   UCm2_S_0=c((70000000*(1-(0.0163+0.0016)))*pi*(1-Rcr)*Ramox*d2*0.055),
+                   UCm2_R_0=c((70000000*(1-(0.0163+0.0016)))*pi*Rcr*Ramox*d2*0.055),
+                   UCm3_S_0=c((70000000*(1-(0.0163+0.0016)))*pi*(1-Rcr)*Ramox*d3*0.055),
+                   UCm3_R_0=c((70000000*(1-(0.0163+0.0016)))*pi*Rcr*Ramox*d3*0.055),
+                   UCm4_S_0=c((70000000*(1-(0.0163+0.0016)))*pi*(1-Rcr)*Ramox*d4*0.055),
+                   UCm4_R_0=c((70000000*(1-(0.0163+0.0016)))*pi*Rcr*Ramox*d4*0.055),
+                   UCm5_S_0=c((70000000*(1-(0.0163+0.0016)))*pi*(1-Rcr)*Ramox*d5*0.055),
+                   UCm5_R_0=c((70000000*(1-(0.0163+0.0016)))*pi*Rcr*Ramox*d5*0.055),
+                   UCm6_S_0=c((70000000*(1-(0.0163+0.0016)))*pi*(1-Rcr)*Ramox*d6*0.055),
+                   UCm6_R_0=c((70000000*(1-(0.0163+0.0016)))*pi*Rcr*Ramox*d6*0.055),
+                   UCm7_S_0=c((70000000*(1-(0.0163+0.0016)))*pi*(1-Rcr)*Ramox*d7*0.055),
+                   UCm7_R_0=c((70000000*(1-(0.0163+0.0016)))*pi*Rcr*Ramox*d7*0.055),
+                   UCm8_S_0=c((70000000*(1-(0.0163+0.0016)))*pi*(1-Rcr)*Ramox*d8*0.055),
+                   UCm8_R_0=c((70000000*(1-(0.0163+0.0016)))*pi*Rcr*Ramox*d8*0.055),
+                   
+                   AES_0=c((70000000*0.0163)*(1-pi)*0.055),
+                   AECm1_S_0=c((70000000*0.0163)*pi*((1-Rmacro)-(1-Rcr)*Ramox)*0.055),
+                   AECm1_R_0=c((70000000*0.0163)*pi*(Rmacro-Rcr*Ramox)*0.055),
+                   AECm2_S_0=c((70000000*0.0163)*pi*(1-Rcr)*Ramox*d2*0.055),
+                   AECm2_R_0=c((70000000*0.0163)*pi*Rcr*Ramox*d2*0.055),
+                   AECm3_S_0=c((70000000*0.0163)*pi*(1-Rcr)*Ramox*d3*0.055),
+                   AECm3_R_0=c((70000000*0.0163)*pi*Rcr*Ramox*d3*0.055),
+                   AECm4_S_0=c((70000000*0.0163)*pi*(1-Rcr)*Ramox*d4*0.055),
+                   AECm4_R_0=c((70000000*0.0163)*pi*Rcr*Ramox*d4*0.055),
+                   AECm5_S_0=c((70000000*0.0163)*pi*(1-Rcr)*Ramox*d5*0.055),
+                   AECm5_R_0=c((70000000*0.0163)*pi*Rcr*Ramox*d5*0.055),
+                   AECm6_S_0=c((70000000*0.0163)*pi*(1-Rcr)*Ramox*d6*0.055),
+                   AECm6_R_0=c((70000000*0.0163)*pi*Rcr*Ramox*d6*0.055),
+                   AECm7_S_0=c((70000000*0.0163)*pi*(1-Rcr)*Ramox*d7*0.055),
+                   AECm7_R_0=c((70000000*0.0163)*pi*Rcr*Ramox*d7*0.055),
+                   AECm8_S_0=c((70000000*0.0163)*pi*(1-Rcr)*Ramox*d8*0.055),
+                   AECm8_R_0=c((70000000*0.0163)*pi*Rcr*Ramox*d8*0.055),
+                   
+                   MES_0=c((70000000*0.0016)*(1-pi)*0.055),
+                   MECm1_S_0=c((70000000*0.0016)*pi*((1-Rmacro)-(1-Rcr)*Ramox)*0.055),
+                   MECm1_R_0=c((70000000*0.0016)*pi*(Rmacro-Rcr*Ramox)*0.055),
+                   MECm2_S_0=c((70000000*0.0016)*pi*(1-Rcr)*Ramox*d2*0.055),
+                   MECm2_R_0=c((70000000*0.0016)*pi*Rcr*Ramox*d2*0.055),
+                   MECm3_S_0=c((70000000*0.0016)*pi*(1-Rcr)*Ramox*d3*0.055),
+                   MECm3_R_0=c((70000000*0.0016)*pi*Rcr*Ramox*d3*0.055),
+                   MECm4_S_0=c((70000000*0.0016)*pi*(1-Rcr)*Ramox*d4*0.055),
+                   MECm4_R_0=c((70000000*0.0016)*pi*Rcr*Ramox*d4*0.055),
+                   MECm5_S_0=c((70000000*0.0016)*pi*(1-Rcr)*Ramox*d5*0.055),
+                   MECm5_R_0=c((70000000*0.0016)*pi*Rcr*Ramox*d5*0.055),
+                   MECm6_S_0=c((70000000*0.0016)*pi*(1-Rcr)*Ramox*d6*0.055),
+                   MECm6_R_0=c((70000000*0.0016)*pi*Rcr*Ramox*d6*0.055),
+                   MECm7_S_0=c((70000000*0.0016)*pi*(1-Rcr)*Ramox*d7*0.055),
+                   MECm7_R_0=c((70000000*0.0016)*pi*Rcr*Ramox*d7*0.055),
+                   MECm8_S_0=c((70000000*0.0016)*pi*(1-Rcr)*Ramox*d8*0.055),
+                   MECm8_R_0=c((70000000*0.0016)*pi*Rcr*Ramox*d8*0.055),
+                   # Dose1=1 sigmoid 0.08
+                   fA1=1, fA2=0.9999748 , fA3=0.9916096 , fA4=0.9420954 , fA5=0.9192299 , fA6=0.9192278 , fA7=0.9192375 , fA8=0.9194097 ,
+                  fMS=1,fMR=0.9938509 ,
+                   
+                   a1=0,a2=0,a3=0,a4=1,a5=1,a6=1,a7=1,a8=1,
+                   V=c(x[1]),
+                   Beta=matrix(c(1),nrow = 1, ncol = 1,byrow = TRUE),
+                   Phi_A=c(ConsoAmox/365),
+                   Phi_M=c(ConsoMacro/365),
+                   
+                   Mu=c(0),
+                   mu0=0,
+                   Lambda=c(Lambda),
+                   gamma_A=1/TreatmentDuration_Amox,
+                   gamma_M=1/TreatmentDuration_Macro,
+                   
+                   #Dose calculées sur les articles
+                   dose1_A=1, # MIC=0.06
+                   dose2_A=0.93,# MIC=0.125
+                   dose3_A=0.47,#MIC=0.25
+                   dose4_A=0.06,#MIC=0.5
+                   dose5_A=0,#MIC=1
+                   dose6_A=0,# MIC=2
+                   dose7_A=0, #MIC=4
+                   dose8_A=0, #MIC=8
+                   dose1_M= 1.006924, #MIC=0.06
+                   dose2_M=0.03449561,#MIC=0.125
+                   
+                   theta=0.5,
+                   N_age=1)
+  
+  
+  
+    mod <-dust_system_create(gen,pars = paras)
+    dust_system_set_state_initial(mod)
+    t <- seq(0,365*2,365)
+    y <- dust_system_simulate(mod, t)
+    y_odin <- dust_unpack_state(mod, y)
+    y_odin2<-flatten_list_of_arrays(y_odin)
+    
+    out_odin <- as.data.frame(y_odin2)
+  
+  out_odin = out_odin %>%
+    mutate(
+      `t`=`t`,
+      `Cm1S[1]`=`UCm1_S[1]`+`AECm1_S[1]`+`MECm1_S[1]`,
+      `Cm1R[1]`=`UCm1_R[1]`+`AECm1_R[1]`+`MECm1_R[1]`,
+      `Cm2S[1]`=`UCm2_S[1]`+`AECm2_S[1]`+`MECm2_S[1]`,
+      `Cm2R[1]`=`UCm2_R[1]`+`AECm2_R[1]`+`MECm2_R[1]`,
+      `Cm3S[1]`=`UCm3_S[1]`+`AECm3_S[1]`+`MECm3_S[1]`,
+      `Cm3R[1]`=`UCm3_R[1]`+`AECm3_R[1]`+`MECm3_R[1]`,
+      `Cm4S[1]`=`UCm4_S[1]`+`AECm4_S[1]`+`MECm4_S[1]`,
+      `Cm4R[1]`=`UCm4_R[1]`+`AECm4_R[1]`+`MECm4_R[1]`,
+      `Cm5S[1]`=`UCm5_S[1]`+`AECm5_S[1]`+`MECm5_S[1]`,
+      `Cm5R[1]`=`UCm5_R[1]`+`AECm5_R[1]`+`MECm5_R[1]`,
+      `Cm6S[1]`=`UCm6_S[1]`+`AECm6_S[1]`+`MECm6_S[1]`,
+      `Cm6R[1]`=`UCm6_R[1]`+`AECm6_R[1]`+`MECm6_R[1]`,
+      `Cm7S[1]`=`UCm7_S[1]`+`AECm7_S[1]`+`MECm7_S[1]`,
+      `Cm7R[1]`=`UCm7_R[1]`+`AECm7_R[1]`+`MECm7_R[1]`,
+      `Cm8S[1]`=`UCm8_S[1]`+`AECm8_S[1]`+`MECm8_S[1]`,
+      `Cm8R[1]`=`UCm8_R[1]`+`AECm8_R[1]`+`MECm8_R[1]`,
+      
+      `Totcarrier[1]`=`UCm1_S[1]`+`AECm1_S[1]`+`MECm1_S[1]`+`UCm1_R[1]`+`AECm1_R[1]`+`MECm1_R[1]`+`UCm2_S[1]`+`AECm2_S[1]`+`MECm2_S[1]`+`UCm2_R[1]`+`AECm2_R[1]`+`MECm2_R[1]`+`UCm3_S[1]`+`AECm3_S[1]`+`MECm3_S[1]`+`UCm3_R[1]`+`AECm3_R[1]`+`MECm3_R[1]`+`UCm4_S[1]`+`AECm4_S[1]`+`MECm4_S[1]`+`UCm4_R[1]`+`AECm4_R[1]`+`MECm4_R[1]`+`UCm5_S[1]`+`AECm5_S[1]`+`MECm5_S[1]`+`UCm5_R[1]`+`AECm5_R[1]`+`MECm5_R[1]`+`UCm6_S[1]`+`AECm6_S[1]`+`MECm6_S[1]`+`UCm6_R[1]`+`AECm6_R[1]`+`MECm6_R[1]`+`UCm7_S[1]`+`AECm7_S[1]`+`MECm7_S[1]`+`UCm7_R[1]`+`AECm7_R[1]`+`MECm7_R[1]`+`UCm8_S[1]`+`AECm8_S[1]`+`MECm8_S[1]`+`UCm8_R[1]`+`AECm8_R[1]`+`MECm8_R[1]`,
+      
+      `Tot[1]`=`US[1]`+`AES[1]`+`MES[1]`+`UCm1_S[1]`+`AECm1_S[1]`+`MECm1_S[1]`+`UCm1_R[1]`+`AECm1_R[1]`+`MECm1_R[1]`+`UCm2_S[1]`+`AECm2_S[1]`+`MECm2_S[1]`+`UCm2_R[1]`+`AECm2_R[1]`+`MECm2_R[1]`+`UCm3_S[1]`+`AECm3_S[1]`+`MECm3_S[1]`+`UCm3_R[1]`+`AECm3_R[1]`+`MECm3_R[1]`+`UCm4_S[1]`+`AECm4_S[1]`+`MECm4_S[1]`+`UCm4_R[1]`+`AECm4_R[1]`+`MECm4_R[1]`+`UCm5_S[1]`+`AECm5_S[1]`+`MECm5_S[1]`+`UCm5_R[1]`+`AECm5_R[1]`+`MECm5_R[1]`+`UCm6_S[1]`+`AECm6_S[1]`+`MECm6_S[1]`+`UCm6_R[1]`+`AECm6_R[1]`+`MECm6_R[1]`+`UCm7_S[1]`+`AECm7_S[1]`+`MECm7_S[1]`+`UCm7_R[1]`+`AECm7_R[1]`+`MECm7_R[1]`+`UCm8_S[1]`+`AECm8_S[1]`+`MECm8_S[1]`+`UCm8_R[1]`+`AECm8_R[1]`+`MECm8_R[1]`,
+      
+      .keep = "none"
+    )
+  out_odin = out_odin %>%
+    mutate(
+      `t`=`t`,
+      # `Cm1S[1]`=`Cm1S[1]`/`Totcarrier[1]`,
+      # `Cm1R[1]`=`Cm1R[1]`/`Totcarrier[1]`,
+      # `Cm2S[1]`=`Cm2S[1]`/`Totcarrier[1]`,
+      # `Cm2R[1]`=`Cm2R[1]`/`Totcarrier[1]`,
+      # `Cm3S[1]`=`Cm3S[1]`/`Totcarrier[1]`,
+      # `Cm3R[1]`=`Cm3R[1]`/`Totcarrier[1]`,
+      # `Cm4S[1]`=`Cm4S[1]`/`Totcarrier[1]`,
+      # `Cm4R[1]`=`Cm4R[1]`/`Totcarrier[1]`,
+      # `Cm5S[1]`=`Cm5S[1]`/`Totcarrier[1]`,
+      # `Cm5R[1]`=`Cm5R[1]`/`Totcarrier[1]`,
+      # `Cm6S[1]`=`Cm6S[1]`/`Totcarrier[1]`,
+      # `Cm6R[1]`=`Cm6R[1]`/`Totcarrier[1]`,
+      # `Cm7S[1]`=`Cm7S[1]`/`Totcarrier[1]`,
+      # `Cm7R[1]`=`Cm7R[1]`/`Totcarrier[1]`,
+      # `Cm8S[1]`=`Cm8S[1]`/`Totcarrier[1]`,
+      # `Cm8R[1]`=`Cm8R[1]`/`Totcarrier[1]`,
+      `Totcarrier[1]`=`Totcarrier[1]`/`Tot[1]`,
+      .keep = "none"
+    )
+  
+  return(out_odin)
+}
+
+# x0=c(0.01)
+# param0<-c(0.58,0.43,0.28,0.95,0.083,0.52,1/43,7,7)
+# 
+# predictions <- RunSimulation(x0,param0,distributionFrench) 
+# 
+
+# mLL_gauss <- function(x,param,distribution) {
+#   Rcr=as.numeric(param[1])
+#     Ramox=as.numeric(param[2])
+#     Rmacro=as.numeric(param[3])
+#     ConsoAmox=as.numeric(param[4])
+#     ConsoMacro=as.numeric(param[5])
+#     pi=as.numeric(param[6])
+#     Lambda=as.numeric(param[7])
+#     TreatmentDuration_Amox=as.numeric(param[8])
+#     TreatmentDuration_Macro=as.numeric(param[9])
+#     
+#   datasDistributions2021<-c(pi)
+#   
+#   datasDistributions<-as.data.frame(matrix(rep(datasDistributions2021, times = 3), nrow=3,byrow=TRUE))
+#   
+#   obs_df=datasDistributions
+#   
+#   predictions <- RunSimulation(x,param,distribution) # solve function solve with parameters on the param list
+#   #predictions <-predictions[-1,]
+#   
+#   pred_df <- predictions %>% 
+#     select(`Totcarrier[1]`)%>%#keep only the variable of interest to compare to data
+#     mutate_all(as.numeric)   
+#   
+#   pred_mat <- as.matrix(pred_df)
+#   
+#   obs_mat  <- as.matrix(obs_df)
+#   
+#   #calcul de la vraissmeblance de la prévalence
+#   
+#   ll_mat <- dnorm(x = pred_mat,
+#                   mean = obs_mat,
+#                   sd=0.05,
+#                   log    = TRUE)
+#   neg_logL <- -sum(ll_mat, na.rm = TRUE)
+#   
+#   return(neg_logL)
+# }
+
+
+# x0=c(0.05)
+# param0<-c(0.58,0.43,0.28,0.95,0.083,0.52,1/43,7,7)
+# distribution0<-distributionFrench
+# a<-mLL_gauss(x0,param0)
+# cat("mll gauss:",a)
+# 
+# optimi<-optim(x0,mLL_gauss,param=param0,control = list(maxit = 20000))
+# optimi$par
+# optimi$value
+
+
+```
+
+
+
+
+```{r Run shortages}
+
+RunShortage9param<- function(param,distribution){
+    df<-data.frame()
+    Rcr=as.numeric(param[1])
+    Ramox=as.numeric(param[2])
+    Rmacro=as.numeric(param[3])
+    ConsoAmox=as.numeric(param[4])
+    ConsoMacro=as.numeric(param[5])
+    pi=as.numeric(param[6])
+    Lambda=as.numeric(param[7])
+    TreatmentDuration_Amox=as.numeric(param[8])
+    TreatmentDuration_Macro=as.numeric(param[9])
+    
+    d2=distribution[1]
+    d3=distribution[2]
+    d4=distribution[3]
+    d5=distribution[4]
+    d6=distribution[5]
+    d7=distribution[6]
+    d8=distribution[7]
+    
+   for (k in 1:4){
+    #print(k)
+    #Scenario 1 : amoxicillin exposure rate reduction
+    if(k==1){ReductionDose=matrix(c(1,0.93,0.47,0.06,0,0,0,0,
+                                    1,0.93,0.47,0.06,0,0,0,0,
+                                    1,0.93,0.47,0.06,0,0,0,0,
+                                    1,0.93,0.47,0.06,0,0,0,0),ncol=4)
+    ReductionDuree=c(1,1,1,1)
+    ReductionFreq=c(1,0.75,0.5,0.25)
+    AugmentationFreq=c(0,0,0,0)
+    A=matrix(c(0,0,0,1,1,1,1,1,0,0,0,1,1,1,1,1,0,0,0,1,1,1,1,1,0,0,0,1,1,1,1,1),nrow =4 ,ncol=8,byrow = TRUE)
+    }
+    #Scenario 2 : amoxicillin treatment duration reduction
+    if(k==2){ ReductionDose=matrix(c(1,0.93,0.47,0.06,0,0,0,0,
+                                     1,0.93,0.47,0.06,0,0,0,0,
+                                     1,0.93,0.47,0.06,0,0,0,0,
+                                     1,0.93,0.47,0.06,0,0,0,0),ncol=4)
+    ReductionDuree=c(1,0.75,0.5,0.25)
+    ReductionFreq=c(1,1,1,1)
+    AugmentationFreq=c(0,0,0,0)
+    A=matrix(c(0,0,0,1,1,1,1,1,0,0,0,1,1,1,1,1,0,0,0,1,1,1,1,1,0,0,0,1,1,1,1,1),nrow =4 ,ncol=8,byrow = TRUE)
+    }
+    #Scenario 3 : amoxicillin dose/day reduction
+    if(k==3){ ReductionDose=mreductionDose=matrix(c(1,0.93,0.47,0.06,0,0,0,0,
+                                                    1,0.93,0.06,0,0,0,0,0,
+                                                    1,0.47,0,0,0,0,0,0,
+                                                    1,0,0,0,0,0,0,0),ncol=4)
+    ReductionDuree=c(1,1,1,1)
+    ReductionFreq=c(1,1,1,1)
+    AugmentationFreq=c(0,0,0,0)
+    A=matrix(c(0,0,0,1,1,1,1,1,
+               0,0,1,1,1,1,1,1,
+               0,0,1,1,1,1,1,1,
+               0,1,1,1,1,1,1,1),nrow =4 ,ncol=8,byrow = TRUE)}
+    #Scenario 4 : switching from amoxicillin to macrolides
+    if(k==4){ReductionDose=matrix(c(1,0.93,0.47,0.06,0,0,0,0,
+                                    1,0.93,0.47,0.06,0,0,0,0,
+                                    1,0.93,0.47,0.06,0,0,0,0,
+                                    1,0.93,0.47,0.06,0,0,0,0),ncol=4)
+    ReductionDuree=c(1,1,1,1)
+    ReductionFreq=c(1,0.75,0.5,0.25)
+    AugmentationFreq=c(0,0.25,0.5,0.75)
+    A=matrix(c(0,0,0,1,1,1,1,1,0,0,0,1,1,1,1,1,0,0,0,1,1,1,1,1,0,0,0,1,1,1,1,1),nrow =4 ,ncol=8,byrow = TRUE)}
+    for(j in 1:4){
+      #print(j)
+     mod <- gen$new(US_0=c((70000000*(1-(0.0163+0.0016)))*(1-pi)*0.055),
+                      UCm1_S_0=c((70000000*(1-(0.0163+0.0016)))*pi*((1-Rmacro)-(1-Rcr)*Ramox)*0.055),
+                      UCm1_R_0=c((70000000*(1-(0.0163+0.0016)))*pi*(Rmacro-Rcr*Ramox)*0.055),
+                      UCm2_S_0=c((70000000*(1-(0.0163+0.0016)))*pi*(1-Rcr)*Ramox*d2*0.055),
+                      UCm2_R_0=c((70000000*(1-(0.0163+0.0016)))*pi*Rcr*Ramox*d2*0.055),
+                      UCm3_S_0=c((70000000*(1-(0.0163+0.0016)))*pi*(1-Rcr)*Ramox*d3*0.055),
+                      UCm3_R_0=c((70000000*(1-(0.0163+0.0016)))*pi*Rcr*Ramox*d3*0.055),
+                      UCm4_S_0=c((70000000*(1-(0.0163+0.0016)))*pi*(1-Rcr)*Ramox*d4*0.055),
+                      UCm4_R_0=c((70000000*(1-(0.0163+0.0016)))*pi*Rcr*Ramox*d4*0.055),
+                      UCm5_S_0=c((70000000*(1-(0.0163+0.0016)))*pi*(1-Rcr)*Ramox*d5*0.055),
+                      UCm5_R_0=c((70000000*(1-(0.0163+0.0016)))*pi*Rcr*Ramox*d5*0.055),
+                      UCm6_S_0=c((70000000*(1-(0.0163+0.0016)))*pi*(1-Rcr)*Ramox*d6*0.055),
+                      UCm6_R_0=c((70000000*(1-(0.0163+0.0016)))*pi*Rcr*Ramox*d6*0.055),
+                      UCm7_S_0=c((70000000*(1-(0.0163+0.0016)))*pi*(1-Rcr)*Ramox*d7*0.055),
+                      UCm7_R_0=c((70000000*(1-(0.0163+0.0016)))*pi*Rcr*Ramox*d7*0.055),
+                      UCm8_S_0=c((70000000*(1-(0.0163+0.0016)))*pi*(1-Rcr)*Ramox*d8*0.055),
+                      UCm8_R_0=c((70000000*(1-(0.0163+0.0016)))*pi*Rcr*Ramox*d8*0.055),
+                      
+                      AES_0=c((70000000*0.0163)*(1-pi)*0.055),
+                      AECm1_S_0=c((70000000*0.0163)*pi*((1-Rmacro)-(1-Rcr)*Ramox)*0.055),
+                      AECm1_R_0=c((70000000*0.0163)*pi*(Rmacro-Rcr*Ramox)*0.055),
+                      AECm2_S_0=c((70000000*0.0163)*pi*(1-Rcr)*Ramox*d2*0.055),
+                      AECm2_R_0=c((70000000*0.0163)*pi*Rcr*Ramox*d2*0.055),
+                      AECm3_S_0=c((70000000*0.0163)*pi*(1-Rcr)*Ramox*d3*0.055),
+                      AECm3_R_0=c((70000000*0.0163)*pi*Rcr*Ramox*d3*0.055),
+                      AECm4_S_0=c((70000000*0.0163)*pi*(1-Rcr)*Ramox*d4*0.055),
+                      AECm4_R_0=c((70000000*0.0163)*pi*Rcr*Ramox*d4*0.055),
+                      AECm5_S_0=c((70000000*0.0163)*pi*(1-Rcr)*Ramox*d5*0.055),
+                      AECm5_R_0=c((70000000*0.0163)*pi*Rcr*Ramox*d5*0.055),
+                      AECm6_S_0=c((70000000*0.0163)*pi*(1-Rcr)*Ramox*d6*0.055),
+                      AECm6_R_0=c((70000000*0.0163)*pi*Rcr*Ramox*d6*0.055),
+                      AECm7_S_0=c((70000000*0.0163)*pi*(1-Rcr)*Ramox*d7*0.055),
+                      AECm7_R_0=c((70000000*0.0163)*pi*Rcr*Ramox*d7*0.055),
+                      AECm8_S_0=c((70000000*0.0163)*pi*(1-Rcr)*Ramox*d8*0.055),
+                      AECm8_R_0=c((70000000*0.0163)*pi*Rcr*Ramox*d8*0.055),
+                      
+                      MES_0=c((70000000*0.0016)*(1-pi)*0.055),
+                      MECm1_S_0=c((70000000*0.0016)*pi*((1-Rmacro)-(1-Rcr)*Ramox)*0.055),
+                      MECm1_R_0=c((70000000*0.0016)*pi*(Rmacro-Rcr*Ramox)*0.055),
+                      MECm2_S_0=c((70000000*0.0016)*pi*(1-Rcr)*Ramox*d2*0.055),
+                      MECm2_R_0=c((70000000*0.0016)*pi*Rcr*Ramox*d2*0.055),
+                      MECm3_S_0=c((70000000*0.0016)*pi*(1-Rcr)*Ramox*d3*0.055),
+                      MECm3_R_0=c((70000000*0.0016)*pi*Rcr*Ramox*d3*0.055),
+                      MECm4_S_0=c((70000000*0.0016)*pi*(1-Rcr)*Ramox*d4*0.055),
+                      MECm4_R_0=c((70000000*0.0016)*pi*Rcr*Ramox*d4*0.055),
+                      MECm5_S_0=c((70000000*0.0016)*pi*(1-Rcr)*Ramox*d5*0.055),
+                      MECm5_R_0=c((70000000*0.0016)*pi*Rcr*Ramox*d5*0.055),
+                      MECm6_S_0=c((70000000*0.0016)*pi*(1-Rcr)*Ramox*d6*0.055),
+                      MECm6_R_0=c((70000000*0.0016)*pi*Rcr*Ramox*d6*0.055),
+                      MECm7_S_0=c((70000000*0.0016)*pi*(1-Rcr)*Ramox*d7*0.055),
+                      MECm7_R_0=c((70000000*0.0016)*pi*Rcr*Ramox*d7*0.055),
+                      MECm8_S_0=c((70000000*0.0016)*pi*(1-Rcr)*Ramox*d8*0.055),
+                      MECm8_R_0=c((70000000*0.0016)*pi*Rcr*Ramox*d8*0.055),
+                      
+                   fA1=1, fA2=0.9999748 , fA3=0.9916096 , fA4=0.9420954 , fA5=0.9192299 , fA6=0.9192278 , fA7=0.9192375 , fA8=0.9194097 ,
+                  fMS=1,fMR=0.9938509 ,
+                  a1=A[j,1],a2=A[j,2],a3=A[j,3],a4=A[j,4],a5=A[j,5],a6=A[j,6],a7=A[j,7],a8=A[j,8], 
+                  V=c(0.05464062 ),
+                      
+                  Beta=matrix(c(1),nrow = 1, ncol = 1,byrow = TRUE),
+                  
+                  #Consommation normale observée adultes 
+                  Phi_A=c(ConsoAmox*ReductionFreq[j]/(365)),
+                  Phi_M=c((ConsoMacro*(1+((ConsoAmox)/(ConsoMacro))*AugmentationFreq[j]))/365),
+                      
+                  Mu=c(0),
+                  mu0=0,
+                  Lambda=c(Lambda),
+                  gamma_A=1/(TreatmentDuration_Amox*ReductionDuree[j]),
+                  gamma_M=1/TreatmentDuration_Macro,
+                      
+                  #Dose 500mg, q8h
+                  dose1_A=ReductionDose[1,j],
+                  dose2_A=ReductionDose[2,j],
+                  dose3_A=ReductionDose[3,j],
+                  dose4_A=ReductionDose[4,j],
+                  dose5_A=ReductionDose[5,j],
+                  dose6_A=ReductionDose[6,j],
+                  dose7_A=ReductionDose[7,j],
+                  dose8_A=ReductionDose[8,j],
+                  dose1_M= 1.006924, #500mg,q12h MIC=0.06
+                  dose2_M=0.03449561,#500mg,q12h MIC=0.125
+                  
+                  theta=0.5,
+                  N_age=1)
+      
+      t <- seq(0, 365*1,1)
+      y_odin <- mod$run(t)
+      out_odin <- as.data.frame(y_odin)
+        
+      out_odin = out_odin %>%
+       mutate(
+          `t`=`t`,
+          `S[1]`=`US[1]`+`AES[1]`+`MES[1]`,
+          `Cm1[1]`=`UCm1_S[1]`+`AECm1_S[1]`+`MECm1_S[1]`+`UCm1_R[1]`+`AECm1_R[1]`+`MECm1_R[1]`,
+          `Cm2[1]`=`UCm2_S[1]`+`AECm2_S[1]`+`MECm2_S[1]`+`UCm2_R[1]`+`AECm2_R[1]`+`MECm2_R[1]`,
+          `Cm3[1]`=`UCm3_S[1]`+`AECm3_S[1]`+`MECm3_S[1]`+`UCm3_R[1]`+`AECm3_R[1]`+`MECm3_R[1]`,
+          `Cm4[1]`=`UCm4_S[1]`+`AECm4_S[1]`+`MECm4_S[1]`+`UCm4_R[1]`+`AECm4_R[1]`+`MECm4_R[1]`,
+          `Cm5[1]`=`UCm5_S[1]`+`AECm5_S[1]`+`MECm5_S[1]`+`UCm5_R[1]`+`AECm5_R[1]`+`MECm5_R[1]`,
+          `Cm6[1]`=`UCm6_S[1]`+`AECm6_S[1]`+`MECm6_S[1]`+`UCm6_R[1]`+`AECm6_R[1]`+`MECm6_R[1]`,
+          `Cm7[1]`=`UCm7_S[1]`+`AECm7_S[1]`+`MECm7_S[1]`+`UCm7_R[1]`+`AECm7_R[1]`+`MECm7_R[1]`,
+          `Cm8[1]`=`UCm8_S[1]`+`AECm8_S[1]`+`MECm8_S[1]`+`UCm8_R[1]`+`AECm8_R[1]`+`MECm8_R[1]`,
+          
+          `CmMDS[1]`=`UCm1_S[1]`+`AECm1_S[1]`+`MECm1_S[1]`,
+          
+          `CmN_S[1]`=`UCm1_S[1]`+`AECm1_S[1]`+`MECm1_S[1]`+`UCm2_S[1]`+`AECm2_S[1]`+`MECm2_S[1]`+`UCm3_S[1]`+`AECm3_S[1]`+`MECm3_S[1]`+`UCm4_S[1]`+`AECm4_S[1]`+`MECm4_S[1]`+`UCm5_S[1]`+`AECm5_S[1]`+`MECm5_S[1]`+`UCm6_S[1]`+`AECm6_S[1]`+`MECm6_S[1]`+`UCm7_S[1]`+`AECm7_S[1]`+`MECm7_S[1]`+`UCm8_S[1]`+`AECm8_S[1]`+`MECm8_S[1]`,
+          
+          `CmN_R[1]`=`UCm1_R[1]`+`AECm1_R[1]`+`MECm1_R[1]`+`UCm2_R[1]`+`AECm2_R[1]`+`MECm2_R[1]`+`UCm3_R[1]`+`AECm3_R[1]`+`MECm3_R[1]`+`UCm4_R[1]`+`AECm4_R[1]`+`MECm4_R[1]`+`UCm5_R[1]`+`AECm5_R[1]`+`MECm5_R[1]`+`UCm6_R[1]`+`AECm6_R[1]`+`MECm6_R[1]`+`UCm7_R[1]`+`AECm7_R[1]`+`MECm7_R[1]`+`UCm8_R[1]`+`AECm8_R[1]`+`MECm8_R[1]`,
+          
+          `CmMDR[1]`=`UCm2_R[1]`+`AECm2_R[1]`+`MECm2_R[1]`+`UCm3_R[1]`+`AECm3_R[1]`+`MECm3_R[1]`+`UCm4_R[1]`+`AECm4_R[1]`+`MECm4_R[1]`+`UCm5_R[1]`+`AECm5_R[1]`+`MECm5_R[1]`+`UCm6_R[1]`+`AECm6_R[1]`+`MECm6_R[1]`+`UCm7_R[1]`+`AECm7_R[1]`+`MECm7_R[1]`+`UCm8_R[1]`+`AECm8_R[1]`+`MECm8_R[1]`,
+          
+          `Totcarrier[1]`=`UCm1_S[1]`+`AECm1_S[1]`+`MECm1_S[1]`+`UCm1_R[1]`+`AECm1_R[1]`+`MECm1_R[1]`+`UCm2_S[1]`+`AECm2_S[1]`+`MECm2_S[1]`+`UCm2_R[1]`+`AECm2_R[1]`+`MECm2_R[1]`+`UCm3_S[1]`+`AECm3_S[1]`+`MECm3_S[1]`+`UCm3_R[1]`+`AECm3_R[1]`+`MECm3_R[1]`+`UCm4_S[1]`+`AECm4_S[1]`+`MECm4_S[1]`+`UCm4_R[1]`+`AECm4_R[1]`+`MECm4_R[1]`+`UCm5_S[1]`+`AECm5_S[1]`+`MECm5_S[1]`+`UCm5_R[1]`+`AECm5_R[1]`+`MECm5_R[1]`+`UCm6_S[1]`+`AECm6_S[1]`+`MECm6_S[1]`+`UCm6_R[1]`+`AECm6_R[1]`+`MECm6_R[1]`+`UCm7_S[1]`+`AECm7_S[1]`+`MECm7_S[1]`+`UCm7_R[1]`+`AECm7_R[1]`+`MECm7_R[1]`+`UCm8_S[1]`+`AECm8_S[1]`+`MECm8_S[1]`+`UCm8_R[1]`+`AECm8_R[1]`+`MECm8_R[1]`,
+          
+          `Tot[1]`=`US[1]`+`AES[1]`+`MES[1]`+`UCm1_S[1]`+`AECm1_S[1]`+`MECm1_S[1]`+`UCm1_R[1]`+`AECm1_R[1]`+`MECm1_R[1]`+`UCm2_S[1]`+`AECm2_S[1]`+`MECm2_S[1]`+`UCm2_R[1]`+`AECm2_R[1]`+`MECm2_R[1]`+`UCm3_S[1]`+`AECm3_S[1]`+`MECm3_S[1]`+`UCm3_R[1]`+`AECm3_R[1]`+`MECm3_R[1]`+`UCm4_S[1]`+`AECm4_S[1]`+`MECm4_S[1]`+`UCm4_R[1]`+`AECm4_R[1]`+`MECm4_R[1]`+`UCm5_S[1]`+`AECm5_S[1]`+`MECm5_S[1]`+`UCm5_R[1]`+`AECm5_R[1]`+`MECm5_R[1]`+`UCm6_S[1]`+`AECm6_S[1]`+`MECm6_S[1]`+`UCm6_R[1]`+`AECm6_R[1]`+`MECm6_R[1]`+`UCm7_S[1]`+`AECm7_S[1]`+`MECm7_S[1]`+`UCm7_R[1]`+`AECm7_R[1]`+`MECm7_R[1]`+`UCm8_S[1]`+`AECm8_S[1]`+`MECm8_S[1]`+`UCm8_R[1]`+`AECm8_R[1]`+`MECm8_R[1]`,
+          
+          .keep = "none"
+        )
+      out_odin = out_odin %>%
+      mutate(
+        `InfectionsGraves[1]`=InvasionRate*`Totcarrier[1]`,
+        `InfectionsGravesPSSPMS[1]`=InvasionRate*`CmMDS[1]`,
+        `InfectionsGravesPSSP[1]`=InvasionRate*`Cm1[1]`,
+        `InfectionsGravesPNSP[1]`=InvasionRate*(`Cm2[1]`+`Cm3[1]`+`Cm4[1]`+`Cm5[1]`+`Cm6[1]`+`Cm7[1]`+`Cm8[1]`),
+        `InfectionsGravesMS[1]`=InvasionRate*`CmN_S[1]`,
+        `InfectionsGravesMR[1]`=InvasionRate*`CmN_R[1]`,
+        `InfectionsGravesPNSPMR[1]`=InvasionRate*`CmMDR[1]`,
+        )
+    
+    out_odin = out_odin %>%
+      mutate(
+        `InfectionsGravesCumulees[1]`=cumsum(`InfectionsGraves[1]`),
+        `InfectionsGravesPSSPMSCumulees[1]`=cumsum(`InfectionsGravesPSSPMS[1]`),
+        `InfectionsGravesPSSPCumulees[1]`=cumsum(`InfectionsGravesPSSP[1]`),
+        `InfectionsGravesPNSPCumulees[1]`=cumsum(`InfectionsGravesPNSP[1]`),
+        `InfectionsGravesMSCumulees[1]`=cumsum(`InfectionsGravesMS[1]`),
+        `InfectionsGravesMRCumulees[1]`=cumsum(`InfectionsGravesMR[1]`),
+        `InfectionsGravesPNSPMRCumulees[1]`=cumsum(`InfectionsGravesPNSPMR[1]`),
+        )
+    
+    out_odin=out_odin[c(nrow(out_odin)),]
+    
+   PSSP<-(out_odin$`Cm1[1]`)/(out_odin$`Totcarrier[1]`) 
+    
+    PNSP=1-PSSP
+    
+    MS<-(out_odin$`CmN_S[1]`)/(out_odin$`Totcarrier[1]`)
+    
+    MR<-(out_odin$`CmN_R[1]`)/(out_odin$`Totcarrier[1]`)
+    
+    MDR<-(out_odin$`CmMDR[1]`)/(out_odin$`Totcarrier[1]`)
+    
+    I<-out_odin$`InfectionsGravesCumulees[1]` *1000000/(70000000*0.055)
+    
+    IMDS<-out_odin$`InfectionsGravesPSSPMSCumulees[1]` *1000000/(70000000*0.055)
+    
+    IPSSP<-out_odin$`InfectionsGravesPSSPCumulees[1]` *1000000/(70000000*0.055)
+    
+    IPNSP<-out_odin$`InfectionsGravesPNSPCumulees[1]`*1000000/(70000000*0.055)
+    
+    IMS<-out_odin$`InfectionsGravesMSCumulees[1]`*1000000/(70000000*0.055)
+    
+    IMR<-out_odin$`InfectionsGravesMRCumulees[1]`*1000000/(70000000*0.055)
+    
+    IMDR<-out_odin$`InfectionsGravesPNSPMRCumulees[1]`*1000000/(70000000*0.055)
+      
+      df2<-data.frame(Scenario=numeric(),Reduction=numeric(),Rcr=numeric(),ResistanceAmox=numeric(),ResistanceMacro=numeric(),d2=numeric(), Outcome=character(), Value=numeric() )
+      df2[1,]<-c(k,j,Rcr,Ramox,Rmacro,d2,"PropPNSP",PNSP)
+      df2[2,]<-c(k,j,Rcr,Ramox,Rmacro,d2,"PropMR",MR)
+      df2[3,]<-c(k,j,Rcr,Ramox,Rmacro,d2,"PropMDR",MDR)
+      df2[4,]<-c(k,j,Rcr,Ramox,Rmacro,d2,"IncidenceInfectionsGraves",I)
+      df2[5,]<-c(k,j,Rcr,Ramox,Rmacro,d2,"IncidenceInfectionsGravesMDS",IMDS)
+      df2[6,]<-c(k,j,Rcr,Ramox,Rmacro,d2,"IncidenceInfectionsGravesPSSP",IPSSP)
+      df2[7,]<-c(k,j,Rcr,Ramox,Rmacro,d2,"IncidenceInfectionsGravesPNSP",IPNSP)
+      df2[8,]<-c(k,j,Rcr,Ramox,Rmacro,d2,"IncidenceInfectionsGravesMS",IMS)
+      df2[9,]<-c(k,j,Rcr,Ramox,Rmacro,d2,"IncidenceInfectionsGravesMR",IMR)
+      df2[10,]<-c(k,j,Rcr,Ramox,Rmacro,d2,"IncidenceInfectionsGravesMDR",IMDR)
+      df=rbind(df,df2)
+      }
+   }
+  return(df)
+  
+}
+
+
+```
+
+
+
+```{r Variation of the three parameters PNSPinit, MRSPiniti and Rcrinit for three different CMI distributions }
+
+valeursResistanceAmox=c(0.05,0.1,0.15,0.2,0.25,0.3,0.35,0.4,0.45,0.5)
+valeursResistanceMacro=c(0.05,0.1,0.15,0.2,0.25,0.3,0.35,0.4,0.45,0.5)
+
+valeursRcr=c(0.15,0.35,0.55,0.75)
+
+
+distributionFrench<-c(0.075/0.53,0.075/0.53,0.085/0.53,0.09/0.53,0.12/0.53,0.075/0.53,0.01/0.53)
+distributionGermany<-c(0.299047619047619,0.272380952380952,0.15047619047619,0.0857142857142857,0.11047619047619,0.0666666666666667,0.0152380952380952)
+distributionPoland<-c(0.163398692810458,0.124183006535948,0.124183006535948,0.0718954248366013,0.228758169934641,0.222222222222222,0.065359477124183)
+
+
+dfnew<-data.frame()
+for(j in valeursResistanceAmox){
+  for(k in valeursResistanceMacro){
+    for(l in valeursRcr ){
+      
+        parami=c(l,j,k,0.95,0.083,0.52,1/43,7,7) #c(0.58,0.43,0.28,0.95,0.083,0.52,1/43,7,7)
+        df_resistance <- RunShortage9param(parami,distributionFrench)
+        dfnew=rbind(dfnew,df_resistance)
+          }
+        }
+}
+
+write.csv(dfnew, here::here("Files", "dataframeVariationPNSP_MR_Rcr_FrenchDistribution.csv"))
+
+
+dfnew<-data.frame()
+for(j in valeursResistanceAmox){
+  for(k in valeursResistanceMacro){
+    for(l in valeursRcr ){
+      
+        parami=c(l,j,k,0.95,0.083,0.52,1/43,7,7) #c(0.58,0.43,0.28,0.95,0.083,0.52,1/43,7,7)
+        df_resistance <- RunShortage9param(parami,distributionGermany)
+        dfnew=rbind(dfnew,df_resistance)
+          }
+        }
+}
+
+write.csv(dfnew, here::here("Files", "dataframeVariationPNSP_MR_Rcr_GermanDistribution.csv"))
+
+dfnew<-data.frame()
+for(j in valeursResistanceAmox){
+  for(k in valeursResistanceMacro){
+    for(l in valeursRcr ){
+      
+        parami=c(l,j,k,0.95,0.083,0.52,1/43,7,7) #c(0.58,0.43,0.28,0.95,0.083,0.52,1/43,7,7)
+        df_resistance <- RunShortage9param(parami,distributionPoland)
+        dfnew=rbind(dfnew,df_resistance)
+          }
+        }
+}
+
+write.csv(dfnew, here::here("Files", "dataframeVariationPNSP_MR_Rcr_PolandDistribution.csv"))
+
+
+
+
+
+
+```
+
+
+
+```{r plot courbe 2d ggplot couleur selon le meilleur scénario pour Rcr }
+
+distributions <- c("French", "German", "Poland")
+
+for (dist in distributions) {
+  
+  dfnew <- read.csv(here::here("Files", paste0("dataframeVariationPNSP_MR_Rcr_", dist, "Distribution.csv")))
+  
+  dfnew<-subset(dfnew, select = -X)
+  df<-dfnew
+  df$Value <- as.numeric(df$Value)
+  df$ResistanceAmox <- as.numeric(df$ResistanceAmox)
+  df$ResistanceMacro <- as.numeric(df$ResistanceMacro)
+
+# Filtrer les données selon la condition Rcr * Ramox >= Rmacro
+df <- df %>% filter(Rcr * ResistanceAmox <= ResistanceMacro)
+
+
+df <- subset(df, Outcome %in% c("PropMDR","PropMR","PropPNSP",
+                   "IncidenceInfectionsGraves","IncidenceInfectionsGravesPNSP",
+                   "IncidenceInfectionsGravesMR","IncidenceInfectionsGravesMDR","IncidenceInfectionsGravesMDS"))
+
+
+desired_order <- c("PropPNSP","PropMR","PropMDR",
+                   "IncidenceInfectionsGraves","IncidenceInfectionsGravesPNSP",
+                   "IncidenceInfectionsGravesMR","IncidenceInfectionsGravesMDR","IncidenceInfectionsGravesMDS")
+
+
+df$Outcome <- factor(df$Outcome, levels = (desired_order))
+
+df <- subset(df, Reduction %in% c("3"))
+df<-subset(df,select=-Reduction)
+#df <- subset(df, Outcome %in% c("PropAnsMr"))
+
+min_values <- df %>%
+  group_by(Rcr,ResistanceAmox, ResistanceMacro, Outcome) %>%
+  summarize(MinValue = min(Value))
+df <- merge(df, min_values, by = c("ResistanceAmox", "ResistanceMacro", "Outcome", "Rcr"))
+
+#Different est for proportion and incidence
+calculate_Diff <- function(p1, p2) {
+  if(p1<=1){if(abs(p1-p2)/p2>0.05){return(TRUE)} 
+  else{return(FALSE)}
+  }
+  else{p1=p1*10
+        p2=p2*10
+    if(abs(p1-p2)>1){return(TRUE)} 
+  else{return(FALSE)}
+    
+  }
+  
+}
+
+df <- df %>%
+  rowwise() %>%
+  mutate(Significativite = calculate_Diff(Value, MinValue)) %>%
+  ungroup()
+
+# Pivot wider pour obtenir les p_values dans des colonnes séparées
+df_pivot <- df %>%
+  pivot_wider(names_from = Scenario, values_from = Significativite, names_prefix = "Significatif_")
+
+# Joindre les données pivotées au dataframe original et remplir les NA avec les valeurs de p_value correspondantes
+df_final <- df %>%
+  left_join(df_pivot, by = c("Rcr","ResistanceAmox", "ResistanceMacro", "Outcome")) %>%
+  group_by(Rcr,ResistanceAmox, ResistanceMacro, Outcome) %>%
+  mutate(
+    Significatif_1 = first(na.omit(Significatif_1)),
+    Significatif_2 = first(na.omit(Significatif_2)),
+    Significatif_3 = first(na.omit(Significatif_3)),
+    Significatif_4 = first(na.omit(Significatif_4))
+  ) %>%
+  ungroup()
+
+df_final<-subset(df_final, select=-Value.y)
+df_final<-subset(df_final, select=-MinValue.y)
+df_final<-distinct(df_final)
+df<-df_final
+
+# Filtrer les lignes où au moins trois des quatre p_values sont <= 0.05
+df_filtered <- df %>% filter(Value.x == MinValue.x)
+df_filtered <- df_filtered %>%
+  filter(
+    (Significatif_1 ==TRUE & Significatif_2 == TRUE & Significatif_3 == TRUE) |
+    (Significatif_1 == TRUE & Significatif_2 == TRUE & Significatif_4 == TRUE) |
+    (Significatif_1 == TRUE & Significatif_3 == TRUE & Significatif_4 == TRUE) |
+    (Significatif_2 == TRUE & Significatif_3 == TRUE & Significatif_4 == TRUE) 
+  )
+
+colnames(df)[colnames(df) == "Value.x"] <- "Value"
+colnames(df)[colnames(df) == "MinValue.x"] <- "MinValue"
+
+
+labeller_function <- labeller(
+  Outcome = c(
+    "PropPNSP" = "Penicillin-\nnon-susceptible\nS. pneumoniae",
+    "PropMR" = "Macrolide-\nresistant\nS. pneumoniae",
+    "PropMDR"="Multidrug-\nresistant\nS. pneumoniae",
+    "IncidenceInfectionsGraves" = "IPD",
+    "IncidenceInfectionsGravesPNSP"="IPD penicillin- \nnon-susceptible ",
+    "IncidenceInfectionsGravesMR"="IPD macrolide-\nresistant",
+    "IncidenceInfectionsGravesMDR"="IPD multidrug-\nresistant ",
+    "IncidenceInfectionsGravesMDS"="IPD susceptible "
+  ),
+  Rcr = as_labeller(c(
+    "0.15" = "Rcr^Init==0.15",
+    "0.35" = "Rcr^Init==0.35",
+    "0.55" = "Rcr^Init==0.55",
+    "0.75" = "Rcr^Init==0.75"
+  ), default = label_parsed)
+)
+
+
+p <- ggplot(data = subset(df, Value == MinValue), aes(x = ResistanceAmox, y = ResistanceMacro, color = factor(Scenario))) +
+  geom_point(data = df_filtered, aes(size = "Significant")) +  # Ajouter une taille 5 pour les points du deuxième dataset
+  geom_point(aes(size = "Non-significant")) +  # Ajouter une taille 2 pour les points du premier dataset
+  xlab(expression("Initial proportion of PNSP strains (PNSP"^init*")")) +
+  ylab(expression("Initial proportion of MRSP strains (MRSP"^init*")")) +
+  scale_color_manual(name = "Strategies", values = c("red", "green", "blue", "#FDC257"), labels = c("S1", "S2", "S3", "S4")) +  # Définir les couleurs
+  facet_grid(Rcr ~ Outcome, labeller = labeller_function) +
+  theme_bw() +
+  theme(axis.text = element_text(size = 22), axis.title = element_text(size = 28),
+        legend.text = element_text(size = 26), legend.title = element_text(size = 28),
+        legend.key.height = unit(1, "cm"), legend.key.width = unit(1, "cm"),
+        strip.text.x = element_text(size = 24, face = "bold"),  # Facettes Outcome
+        strip.text.y = element_text(size = 24, face = "bold"),  # Facettes Rcr
+        strip.background = element_rect(fill = "white"),
+        panel.border = element_rect(colour = "black", fill = NA, size = 1.5)) +
+  scale_size_manual(name = "Significance", values = c( "Significant" = 5,"Non-significant" = 2))+  # Ajouter la légende pour la taille des points
+  guides(color = guide_legend(override.aes = list(size = 5) ) )
+
+  chemin_base <- here::here("Figures", "FigurePNSP_MR_Rcr_")
+  chemin_complet <- paste0(chemin_base, dist, "Distribution.pdf")
+
+  pdf(file = chemin_complet, width = 2200/81, height = 1200/81)
+  print(p)
+  dev.off()
+
+}  
+  
+```
+
+
+

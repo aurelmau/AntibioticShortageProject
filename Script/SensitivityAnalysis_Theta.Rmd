@@ -249,11 +249,11 @@ out_odin = out_odin %>%
 }
 
 
-theta=0.5
-x0=c(0.99,0.98,0.93,0.9,0.9,0.8,0.8,0.95,0.01)
-o<-as.numeric(optim(x0,y=theta,OptimViFi,method="L-BFGS-B",lower=c(0.99,0.98,0.93,0.9,0.9,0.8,0.8,0.95,0.001), upper=c(1,1,1,1,1,1,1,1,0.1))$par)
-
-print(o)
+# theta=0.5
+# x0=c(0.99,0.98,0.93,0.9,0.9,0.8,0.8,0.95,0.01)
+# o<-as.numeric(optim(x0,y=theta,OptimViFi,method="L-BFGS-B",lower=c(0.99,0.98,0.93,0.9,0.9,0.8,0.8,0.95,0.001), upper=c(1,1,1,1,1,1,1,1,0.1))$par)
+# 
+# print(o)
 
 ```
 
