@@ -57,11 +57,11 @@ which will install in about 2 minutes on a machine with the recommended specs.
 - [DeuxAgeHuitResistanceDeuxAntibiosOdin.R](./Script/DeuxAgeHuitResistanceDeuxAntibiosOdin.R): Odin equations to generate all the simulations
 - [EstimationOfAntibioticEfficacy.Rmd](./Script/EstimationOfAntibioticEfficacy.Rmd): R code to calibrate antibiotic-induced decolonization rates (Figure S10 and S11)
 - [Figure1_ScenariosPresentation.Rmd](./Script/Figure1_ScenariosPresentation.Rmd): R code to simulate the impact of different shortage management strategies on the evolution of antibiotic exposure and pneumococcal resistance (Figure 2 and Figure S1)
-- [Figure2and3_RunDifferentShortageLevels.Rmd](./Script/Figure2and3_RunDifferentShortageLevels.Rmd): R code to simulate the relative variation of different shortage levels (Figure 2) and a 1-year impact of a 50% beta-lactam shortage (Figure 3 and Figure S2)
+- [Figure2and3_RunDifferentShortageLevels.Rmd](./Script/Figure2and3_RunDifferentShortageLevels.Rmd): R code to simulate the relative variation of different shortage levels (Figure 3) and a 1-year impact of a 50% beta-lactam shortage (Figure 4 and Figure S2)
 - [Figure4_BestScenarioAccordingMainParameters.Rmd](./Script/Figure4_BestScenarioAccordingMainParameters.Rmd): R code to generate dataframeVariationPNSP_MR_GammaAmox.csv, dataframeVariationPNSP_MR_Lambda.csv, dataframeVariationPNSP_MR_Rcr.csv, and dataframeVariationPNSP_MR_pi.csv and to simulate the recommended antibiotic shortage management strategy depending on the initial conditions (Figure 5 and Figure S4)
-- [Figure5_BestScenariosbyCountry.Rmd](./Script/Figure5_BestScenariosbyCountry.Rmd): R code to simulate shortage in 20 European countries (Figure 6, Figure S7) and to construct the correlation matrix between initial conditions on country-specific pharmaco-epidemiological context (Figure S6)
+- [Figure5_BestScenariosbyCountry.Rmd](./Script/Figure5_BestScenariosbyCountry.Rmd): R code to simulate shortage in 20 European countries (Figure 6, Figure S9) and to construct the correlation matrix between initial conditions on country-specific pharmaco-epidemiological context (Figure S8) and to genrate the plot of tha association between antibiotic consumption frequency and associated resistance across 20 European countries (Figure S13). 
 - [ParametersEstimation.Rmd](./Script/ParametersEstimation.Rmd): R code to calibrate transmission parameters 
-- [SensitivityAnalysis_Theta.Rmd](./Script/SensitivityAnalysis_Theta.Rmd): R code to simulate a sensitivity analysis of competition parameter (Figure S5)
+- [SensitivityAnalysis_Theta.Rmd](./Script/SensitivityAnalysis_Theta.Rmd): R code to simulate a sensitivity analysis of competition parameter (Figure S6)
 - [SensitivityAnlaysis_PRCC.Rmd](./Script/SensitivityAnlaysis_PRCC.Rmd): R code to simulate multivariate sensitivity analysis (Figure S3)
 - [SigmoidReductionFunction.R](./Script/SigmoidReductionFunction.R): R code to plot amoxicillin treatment induced decolonization rate for different shortage level (Figure S10)
 - [UncertaintyAnalysis0to100LevelsOfShortage.R](./Script/UncertaintyAnalysis0to100LevelsOfShortage.R): R code to generate fichierCombine070225_0to100.csv
@@ -81,11 +81,31 @@ A few minutes to run the code with the recommended specs
 
 ## Order of running the code
 
-To generate and retrieve the values of the parameters used later in the code, you must run [EstimationOfAntibioticEfficacy.Rmd](./Script/EstimationOfAntibioticEfficacy.Rmd), that give the value of antibiotic-induced deoclonization rate and genrate Figure S10 and S11. Then to generate the transmissibiliyt (Beta) and relative transmsisibility parameters (f_k), you must run [ParametersEstimation.Rmd](./Script/ParametersEstimation.Rmd).
+To generate and retrieve the values of the parameters used later in the code, you must run [EstimationOfAntibioticEfficacy.Rmd](./Script/EstimationOfAntibioticEfficacy.Rmd), that give the value of antibiotic-induced deoclonization rate and genrate supplementary Figure S10 and S11. Then to generate the transmissibiliyt (Beta) and relative transmsisibility parameters (f_k), you must run [ParametersEstimation.Rmd](./Script/ParametersEstimation.Rmd).
 
-Then to generate the Figure 2 of the paper, first run [UncertaintyAnalysisFigure1.R](./Script/UncertaintyAnalysisFigure1.R) to generate fichierCombine070225_figure1.csv (takes several tens of minutes). Then you can run all the code [Figure1_ScenariosPresentation.Rmd](./Script/Figure1_ScenariosPresentation.Rmd).
+Then to generate the Figure 2 of the paper and supplementary figure S1, first run [UncertaintyAnalysisFigure1.R](./Script/UncertaintyAnalysisFigure1.R) to generate fichierCombine070225_figure1.csv (takes several tens of minutes). Then you can run all the code [Figure1_ScenariosPresentation.Rmd](./Script/Figure1_ScenariosPresentation.Rmd).
 
-To generate the Figures 3 and 4 of the paper, 
+To generate the Figures 3 and 4 of the paper and suplmentary figure S2, first run [UncertaintyAnalysis0to100LevelsOfShortage.R](./Script/UncertaintyAnalysis0to100LevelsOfShortage.R) and [UncertaintyAnalysisMinMaxMean.R](./Script/UncertaintyAnalysisMinMaxMean.R) to generate fichierCombine070225_0to100.csv and fichierCombine070225MaxMinMean.csv (takes several tens of minutes). Then you can run all the code [Figure2and3_RunDifferentShortageLevels.Rmd](./Script/Figure2and3_RunDifferentShortageLevels.Rmd).
+
+To generate Figure 5 of the paper and suplementary Figure S4, run the code [Figure4_BestScenarioAccordingMainParameters.Rmd](./Script/Figure4_BestScenarioAccordingMainParameters.Rmd) to generate dataframeVariationPNSP_MR_GammaAmox.csv, dataframeVariationPNSP_MR_Lambda.csv, dataframeVariationPNSP_MR_Rcr.csv, and dataframeVariationPNSP_MR_pi.csv and to simulate the recommended antibiotic shortage management strategy depending on the initial conditions.
+
+To generate Figure 6 of the paper and supplemnetray Figures S8, S9 and S13, run the code [Figure5_BestScenariosbyCountry.Rmd](./Script/Figure5_BestScenariosbyCountry.Rmd).
+
+To generate supplementary Figure S3 run the code [SensitivityAnlaysis_PRCC.Rmd](./Script/SensitivityAnlaysis_PRCC.Rmd)
+
+To generate supplementary Figure S5 run the code ...
+
+To generate supplementary Figure S6 run the code [SensitivityAnalysis_Theta.Rmd](./Script/SensitivityAnalysis_Theta.Rmd).
+
+To generate supplementary Figure S7 run the code ...
+
+
+
+
+
+
+
+
 
 
 
