@@ -35,8 +35,11 @@ gen <- odin::odin(code)
 
 #Donnes 2021 otites pour penicillines: 
 d2=0.075/0.53; d3=0.075/0.53; d4=0.085/0.53; d5=0.09/0.53; d6=0.12/0.53; d7=0.075/0.53; d8=0.01/0.53 
-Rcr=0.58; Rmacro=0.28; Ramox=0.43; pi=0.52
+Rcr=0.58; Rmacro=0.28; Ramox=0.43;MDR=Rcr*Ramox; pi=0.52
+ConsoAmox=0.95; ConsoMacro=0.083;Lambda=1/43
 InvasionRate=4.8*10**(-7)
+TreatmentDuration_Amox=7
+TreatmentDuration_Macro=7
 
 ```
 
@@ -243,7 +246,7 @@ mLL_gauss <- function(x,param) {
 }
 
 
-# x0=c(0.99,0.98,0.93,0.9,0.9,0.8,0.8,0.95,0.01)
+x0=c(0.99,0.98,0.93,0.9,0.9,0.8,0.8,0.95,0.01)
 # param0<-c(0.075/0.53, 0.075/0.53,0.085/0.53,0.09/0.53,0.12/0.53,0.075/0.53,0.01/0.53 )
 # mLL_gauss(x0,param0)
 
@@ -577,7 +580,7 @@ resultats_lhs[, 10:16] <- param_normalized
 
 #Génerer les resultats du modèle pour chaque échantillon
 
-resultats <- t(apply(resultats_lhs, 1, RunShortage9param)) #dataframe de nb_lhs_iterations lignes et de 16 colonnes respectivement : outIgS1,outIgS2,outIgS3,outIgS4,outPropAnsS1,outPropAnsS2,outPropAnsS3,outPropAnsS4,outPropMRS1,outPropMRS2,outPropMRS3,outPropMRS4,outPropRcrS1,outPropRcrS, outPropRcrS3,outPropRcrS4
+resultats <- t(apply(resultats_lhs, 1, RunShortage9paramAbs)) #dataframe de nb_lhs_iterations lignes et de 16 colonnes respectivement : outIgS1,outIgS2,outIgS3,outIgS4,outPropAnsS1,outPropAnsS2,outPropAnsS3,outPropAnsS4,outPropMRS1,outPropMRS2,outPropMRS3,outPropMRS4,outPropRcrS1,outPropRcrS, outPropRcrS3,outPropRcrS4
 
 
 write.csv(resultats, here::here("Files", "ResultsDistributionRCCN500_abs_005_all.csv"))
@@ -661,9 +664,9 @@ write.csv(dfRCC, here::here("Files", "DataframePRCCN500_abs_005_all.csv"))
 
 #Run without absolute value
 
-```{r lancement with abs}
+```{r lancement without abs}
 
-RunShortage9paramAbs<-function(param){
+RunShortage9param<-function(param){
   df<-data.frame(Scenario=numeric(), Reduction=numeric(), Outcome=character(), Value=numeric())
   param_normalized <- param / sum(param)
   
@@ -1110,10 +1113,6 @@ ggAbs
 ```
 
 
-
-
-
-
 ```{r lire et combiner RDS files plot heatmap NoAbs}
 
 #Ouvrir fichier Resultats
@@ -1162,7 +1161,7 @@ ggNoAbs<-ggplot(df, aes(x = Variable, y = Scenario, fill = Moyenne)) +
 
 ```{r grid arrange}
 
-pdf(file = here::here("Figures", "FigureS3PRCC.pdf"), width = 1200/81, height = 1200/81)
+pdf(file = here::here("Figures", "FigureS3PRCC.pdf"), width = 1400/81, height = 1200/81)
 
 #grid.arrange(gproportion,gIPD,ncol=1)
 plot_grid(ggNoAbs,ggAbs,labels=c("a","b"),ncol=1,label_size = 30,rel_heights = c(1, 1))
