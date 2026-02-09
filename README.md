@@ -66,7 +66,7 @@ which will install in about 2 minutes on a machine with the recommended specs.
 - [Figure1_ScenariosPresentation.Rmd](./Script/Figure1_ScenariosPresentation.Rmd): R code to simulate the impact of different shortage management strategies on the evolution of antibiotic exposure and pneumococcal resistance (Figure 2 and Figure S1)
 - [Figure2and3_RunDifferentShortageLevels.Rmd](./Script/Figure2and3_RunDifferentShortageLevels.Rmd): R code to simulate the relative variation of different shortage levels (Figure 3) and a 1-year impact of a 50% beta-lactam shortage (Figure 4 and Figure S2)
 - [Figure4_BestScenarioAccordingMainParameters.Rmd](./Script/Figure4_BestScenarioAccordingMainParameters.Rmd): R code to generate dataframeVariationPNSP_MR_GammaAmox.csv, dataframeVariationPNSP_MR_Lambda.csv, dataframeVariationPNSP_MR_Rcr.csv, and dataframeVariationPNSP_MR_pi.csv and to simulate the recommended antibiotic shortage management strategy depending on the initial conditions (Figure 5 and Figure S4)
-- [Figure5_BestScenariosbyCountry.Rmd](./Script/Figure5_BestScenariosbyCountry.Rmd): R code to simulate shortage in 20 European countries (Figure 6, Figure S9) and to construct the correlation matrix between initial conditions on country-specific pharmaco-epidemiological context (Figure S8) and to genrate the plot of tha association between antibiotic consumption frequency and associated resistance across 20 European countries (Figure S13).
+- [Figure5_BestScenariosbyCountry.Rmd](./Script/Figure5_BestScenariosbyCountry.Rmd): R code to simulate shortage in 20 European countries (Figure 6, Figure S9) and to construct the correlation matrix between initial conditions on country-specific pharmaco-epidemiological context (Figure S8) and to genrate the plot of tha association between antibiotic consumption frequency and associated resistance across 20 European countries (Figure S13)
 
 #### Sensitivity and Uncertainty Analyses
 - [PRCCAnlaysis_ResistanceDistribution.Rmd](./Script/PRCCAnlaysis_ResistanceDistribution.Rmd) : R code to simulate multivariate sensitivity analysis (Figure S3)
@@ -81,14 +81,14 @@ which will install in about 2 minutes on a machine with the recommended specs.
 - [SigmoidReductionFunction.R](./Script/SigmoidReductionFunction.R): Plots amoxicillin treatment-induced decolonization rate for different shortage levels (Figure S10)
 
 
-## Execution Order
+## Execution Order :
 
 ### Step 1 : parameter calibration 
 
 1. Run [EstimationOfAntibioticEfficacy.Rmd](./Script/EstimationOfAntibioticEfficacy.Rmd) to obtain antibiotic-induced decolonization rates
 2. Run [ParametersEstimation.Rmd](./Script/ParametersEstimation.Rmd) to obtain transmissibility parameters
 
-#### Step 2: Main Figures
+### Step 2: Main Figures :
 
 **For Figure 2 and Figure S1:**
 1. Run [UncertaintyAnalysisFigure1.R](./Script/UncertaintyAnalysisFigure1.R) to generate [fichierCombine070225_figure1.csv](./Files/fichierCombine070225_figure1.csv) *(takes several tens of minutes)*
@@ -104,7 +104,8 @@ which will install in about 2 minutes on a machine with the recommended specs.
 **For Figure 6 and Figures S8-S9, S13:**
 - Run [Figure5_BestScenariosbyCountry.Rmd](./Script/Figure5_BestScenariosbyCountry.Rmd)
 
-#### Step 3: Supplementary Figures
+### Step 3: Supplementary Figures :
+
 - **Figure S3**: Run [PRCCAnlaysis_ResistanceDistribution.Rmd](./Script/PRCCAnlaysis_ResistanceDistribution.Rmd) *(~12 hours)*
 - **Figure S5**: Run [SensitivtyAnalysis_DifferentMICDistributions.Rmd](./Script/SensitivtyAnalysis_DifferentMICDistributions.Rmd) *(several tens of minutes)*
 - **Figure S6**: Run [SensitivityAnalysis_Theta.Rmd](./Script/SensitivityAnalysis_Theta.Rmd)
