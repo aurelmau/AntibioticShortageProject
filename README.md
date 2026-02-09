@@ -83,7 +83,7 @@ which will install in about 2 minutes on a machine with the recommended specs.
 
 ## Execution Order :
 
-### Step 1 : parameter calibration 
+### Step 1 : Parameter Calibration 
 
 1. Run [EstimationOfAntibioticEfficacy.Rmd](./Script/EstimationOfAntibioticEfficacy.Rmd) to obtain antibiotic-induced decolonization rates
 2. Run [ParametersEstimation.Rmd](./Script/ParametersEstimation.Rmd) to obtain transmissibility parameters
@@ -114,9 +114,6 @@ which will install in about 2 minutes on a machine with the recommended specs.
 
 
 Most scripts run in a few minutes with recommended specs, except where noted otherwise
-
-
-
 
 
 
