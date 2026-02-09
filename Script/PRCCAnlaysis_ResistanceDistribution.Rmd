@@ -48,13 +48,23 @@ TreatmentDuration_Macro=7
 ```{r run simulation with specific distributions en estimated parameters}
 
 RunSimulation <- function(x,param) {
-  d2=as.numeric(param[1])
-  d3=as.numeric(param[2])
-  d4=as.numeric(param[3])
-  d5=as.numeric(param[4])
-  d6=as.numeric(param[5])
-  d7=as.numeric(param[6])
-  d8=as.numeric(param[7])
+  Rcr=as.numeric(param[1])
+  Ramox=as.numeric(param[2])
+  Rmacro=as.numeric(param[3])
+  ConsoAmox=as.numeric(param[4])
+  ConsoMacro=as.numeric(param[5])
+  pi=as.numeric(param[6])
+  Lambda=as.numeric(param[7])
+  TreatmentDuration_Amox=as.numeric(param[8])
+  TreatmentDuration_Macro=as.numeric(param[9])
+  
+  d2=as.numeric(param[10])
+  d3=as.numeric(param[11])
+  d4=as.numeric(param[12])
+  d5=as.numeric(param[13])
+  d6=as.numeric(param[14])
+  d7=as.numeric(param[15])
+  d8=as.numeric(param[16])
    mod <- gen$new(  US_0=c((70000000*(1-(0.0163+0.0016)))*(1-pi)*0.055),
                   UCm1_S_0=c((70000000*(1-(0.0163+0.0016)))*pi*((1-Rmacro)-(1-Rcr)*Ramox)*0.055),
                   UCm1_R_0=c((70000000*(1-(0.0163+0.0016)))*pi*(Rmacro-Rcr*Ramox)*0.055),
@@ -267,17 +277,26 @@ x0=c(0.99,0.98,0.93,0.9,0.9,0.8,0.8,0.95,0.01)
 
 RunShortage9paramAbs<-function(param){
   df<-data.frame(Scenario=numeric(), Reduction=numeric(), Outcome=character(), Value=numeric())
-  param_normalized <- param / sum(param)
   
-  d2=as.numeric(param_normalized[1])
-  d3=as.numeric(param_normalized[2])
-  d4=as.numeric(param_normalized[3])
-  d5=as.numeric(param_normalized[4])
-  d6=as.numeric(param_normalized[5])
-  d7=as.numeric(param_normalized[6])
-  d8=as.numeric(param_normalized[7])
+  Rcr=as.numeric(param[1])
+  Ramox=as.numeric(param[2])
+  Rmacro=as.numeric(param[3])
+  ConsoAmox=as.numeric(param[4])
+  ConsoMacro=as.numeric(param[5])
+  pi=as.numeric(param[6])
+  Lambda=as.numeric(param[7])
+  TreatmentDuration_Amox=as.numeric(param[8])
+  TreatmentDuration_Macro=as.numeric(param[9])
+  
+  d2=as.numeric(param[10])
+  d3=as.numeric(param[11])
+  d4=as.numeric(param[12])
+  d5=as.numeric(param[13])
+  d6=as.numeric(param[14])
+  d7=as.numeric(param[15])
+  d8=as.numeric(param[16])
 
-  opti=as.numeric((Optim_vi=optim(x0,mLL_gauss,param=param_normalized,method="L-BFGS-B",lower=c(0.99,0.98,0.93,0.9,0.9,0.8,0.8,0.95,0.001), upper=c(1,1,1,1,1,1,1,1,0.1)))$par)
+  opti=as.numeric((Optim_vi=optim(x0,mLL_gauss,param=param,method="L-BFGS-B",lower=c(0.99,0.98,0.93,0.9,0.9,0.8,0.8,0.95,0.001), upper=c(1,1,1,1,1,1,1,1,0.1)))$par)
   for (k in 1:4){
     #print(k)
     if(k==1){ReductionDose=matrix(c(1,0.93,0.47,0.06,0,0,0,0,
@@ -670,6 +689,16 @@ RunShortage9param<-function(param){
   df<-data.frame(Scenario=numeric(), Reduction=numeric(), Outcome=character(), Value=numeric())
   param_normalized <- param / sum(param)
   
+  Rcr=as.numeric(param[1])
+  Ramox=as.numeric(param[2])
+  Rmacro=as.numeric(param[3])
+  ConsoAmox=as.numeric(param[4])
+  ConsoMacro=as.numeric(param[5])
+  pi=as.numeric(param[6])
+  Lambda=as.numeric(param[7])
+  TreatmentDuration_Amox=as.numeric(param[8])
+  TreatmentDuration_Macro=as.numeric(param[9])
+  
   d2=as.numeric(param_normalized[1])
   d3=as.numeric(param_normalized[2])
   d4=as.numeric(param_normalized[3])
@@ -974,6 +1003,8 @@ genere_echantillon_lhs <- function(parametres, n) {
 # Exécuter LHS pour générer un échantillon pour les paramètres Lambda
 resultats_lhs <- genere_echantillon_lhs(parametres_list, nb_lhs_iterations)
 resultats_lhs=as.data.frame(resultats_lhs)
+
+
 
 param_normalized  <- t(apply(resultats_lhs[, 10:16], 1, function(x) x / sum(x)))
 resultats_lhs[, 10:16] <- param_normalized
