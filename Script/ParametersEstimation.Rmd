@@ -225,7 +225,6 @@ mLL_gauss(x0)
 
 res_TransmissibilityParameters <- data.frame()
 
-
 for (i in 1:10) {
 
   # tirage aléatoire du point de départ (9 paramètres)
@@ -242,7 +241,7 @@ for (i in 1:10) {
   fACMI5 <- fit$par[4]
   fACMI6 <- fit$par[5]
   fACMI7 <- fit$par[6]
-  fACMI8 <- fit$par[7]
+  fACMI8 <- fit$par[6]
   fMR    <- fit$par[8]
   Beta   <- fit$par[9]
 
