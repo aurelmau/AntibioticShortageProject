@@ -226,7 +226,7 @@ mLL_gauss(x0)
 res_TransmissibilityParameters <- data.frame()
 
 
-for (i in 1:1) {
+for (i in 1:10) {
 
   # tirage aléatoire du point de départ (9 paramètres)
   x0 <- c(
