@@ -222,56 +222,10 @@ x0=c(0.99,0.98,0.93,0.9,0.9,0.8,0.8,0.95,0.01)
 
 mLL_gauss(x0)
 
-
 res_TransmissibilityParameters <- data.frame()
 
-for (i in 1:10) {
 
-  # tirage aléatoire du point de départ (9 paramètres)
-  x0 <- c(
-    runif(8, min = 0.8, max = 0.9),   # fACMI2..fACMI8 + fMR (8 parameters)
-    runif(1, min = 0.001, max = 0.1)  # Beta
-  )
 
-  fit <- optim(par = x0,fn = mLL_gauss,method = "L-BFGS-B",lower = c(0.8,0.8,0.8, 0.8,0.8,0.8,0.8,0.95,0.001),upper=c(1,1,1,1,1,1,1,1,0.1) )
-
-  fACMI2 <- fit$par[1]
-  fACMI3 <- fit$par[2]
-  fACMI4 <- fit$par[3]
-  fACMI5 <- fit$par[4]
-  fACMI6 <- fit$par[5]
-  fACMI7 <- fit$par[6]
-  fACMI8 <- fit$par[6]
-  fMR    <- fit$par[8]
-  Beta   <- fit$par[9]
-
-  res_TransmissibilityParameters <- rbind(
-    res_TransmissibilityParameters,
-    data.frame(
-      seed = i,
-      fACMI2 = fACMI2,
-      fACMI3 = fACMI3,
-      fACMI4 = fACMI4,
-      fACMI5 = fACMI5,
-      fACMI6 = fACMI6,
-      fACMI7 = fACMI7,
-      fACMI8 = fACMI8,
-      fMR    = fMR,
-      Beta   = Beta,
-      negLogLik = fit$value,
-      convergence = fit$convergence
-    )
-  )
-}
-
-res_TransmissibilityParameters
-
-mean_params <- colMeans(
-  res_TransmissibilityParameters[, c("fACMI2","fACMI3","fACMI4","fACMI5","fACMI6","fACMI7","fACMI8","fMR","Beta")],
-  na.rm = TRUE
-)
-
-print(mean_params)
 
 
 ```
