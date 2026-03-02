@@ -1,12 +1,11 @@
 library(tidyr)
 library(dplyr)
 library(reshape2)
-library(ggpubr)
 library(plotly)
-library(demodelr)
 library(lhs)
 library(here)
 library(odin)
+library(triangle)
 
 path <- here::here("Script", "DeuxAgeHuitResistanceDeuxAntibiosOdin.R")
 code <- paste(readLines(path, warn = FALSE), collapse = "\n")

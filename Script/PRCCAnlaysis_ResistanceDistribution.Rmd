@@ -8,20 +8,21 @@ editor_options:
 
 ```{r library}
 library(ggplot2)
+library(odin)
 library(tidyr)
 library(dplyr)
-library(reshape2)
-library(ggpubr)
-library(socialmixr)
-library("RColorBrewer")
+library(pkgbuild)
+library(pkgload)
 library(rmarkdown)
 library(plotly)
-library(demodelr)
-library(forcats)
-library(ggh4x)
+library(ggthemes)
+library(ggpattern)
+library(extrafont)
 library(here)
-library(lhs)
+library(lemon)
+library(gridExtra)
 library(sensitivity)
+library(lhs)
 
 ```
 

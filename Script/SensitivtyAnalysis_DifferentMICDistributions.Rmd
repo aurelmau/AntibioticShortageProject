@@ -9,18 +9,19 @@ editor_options:
 ```{r library}
 
 library(ggplot2)
+library(odin)
 library(tidyr)
 library(dplyr)
-library(reshape2)
-library(ggpubr)
-library(socialmixr)
-library("RColorBrewer")
+library(pkgbuild)
+library(pkgload)
 library(rmarkdown)
 library(plotly)
-library(demodelr)
-library(forcats)
-library(ggh4x)
+library(ggthemes)
+library(ggpattern)
+library(extrafont)
 library(here)
+library(lemon)
+library(gridExtra)
 
 
 ```
@@ -397,7 +398,7 @@ write.csv(dfnew, here::here("Files", "dataframeVariationPNSP_MR_Rcr_PolandDistri
 
 
 
-```{r plot courbe 2d ggplot couleur selon le meilleur scénario pour Rcr }
+```{r 2D ggplot curve plot coloured according to the best scenario for Rcr, different countries }
 
 distributions <- c("French", "German", "Poland")
 

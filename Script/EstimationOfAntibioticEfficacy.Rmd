@@ -10,8 +10,8 @@ library(odin)
 library(tidyr)
 library(dplyr)
 library(pkgbuild)
+library(pkgload)
 library(rmarkdown)
-library(demodelr)
 library(plotly)
 library(ggthemes)
 library(ggpattern)
@@ -84,12 +84,10 @@ OptimViFi <- function(x,y) {
     p1=as.numeric(f[4])
     r1=as.numeric(f[3])
     
-    cat(x[1]," :",p1,x[2]," :",r1)
+    #cat(x[1]," :",p1,x[2]," :",r1)
     
     return(abs(0.48-p1)**2+abs(0.44-r1)**2)
 }
-
-Optimi<-optim(par=c(0.72,0.01),OptimViFi,y=c(1,0.1),control = list(maxit = 20000))
 
 
 ```

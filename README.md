@@ -37,7 +37,9 @@ The code has been tested on the following systems:
 
 Windows 11 Professionnel
 
-#### Installing R version 4.3.3 
+#### Installing R version 4.3.0
+
+#### Installing Rtools 4.3
 
 # Installation Guide
 
@@ -45,8 +47,23 @@ Windows 11 Professionnel
 Users should install the following packages, from an `R` terminal:
 
 ```
-install.packages(c("ggplot2", "readxl", "tidyr","pkgbuild", "ggpattern", "triangle", "dplyr", "reshape2", "ggpubr", "socialmixr", "RColorBrewer", "rmarkdown", "plotly", "demodelr", "forcats", "sf", "corrplot", "gridExtra", "gridGraphics","patchwork", "refset",
- "cowplot", "odin","ggh4x", "here", "lhs", "sensitivity", "ggflags", "lemon", "ggthemes", "khroma"))
+install.packages("remotes")
+
+remotes::install_version("ggplot2", version = "3.5.1")
+ 
+install.packages(c("readxl", "tidyr","pkgbuild","pkgload", "ggpattern", "triangle", "dplyr", "reshape2", "extrafont",
+"rmarkdown", "plotly", "demodelr", "forcats", "sf", "corrplot", "gridExtra", "gridGraphics","patchwork", "refset",
+ "cowplot", "odin","ggh4x", "here", "lhs", "RcppParallel","clue", "lemon", "ggthemes"))
+ 
+remotes::install_github("rensa/ggflags")
+
+remotes::install_version("ggrepel", version = "0.9.5")
+
+install.packages("sensitivity", 
+                 dependencies = TRUE,
+                 type = "binary",
+                 repos = "https://cran.rstudio.com/")
+ 
 ```
 
 which will install in about 2 minutes on a machine with the recommended specs.

@@ -19,7 +19,7 @@ df_long <- pivot_longer(df, cols = c(y1, y2, y3,y4,y5), names_to = "Variable", v
 df_long<-as.data.frame(df_long)
 
 
-png("C:\\Users\\Aurélie\\Documents\\AntibioticShortage\\Figures\\FigureSupp9.png", width = 600, height = 400)
+pdf(file = here::here("Figures", "FigureS12.pdf"), width = 600/81, height = 500/81)
 ggplot(df_long, aes(x = x, y = Value, color = Variable)) +
   geom_line(linewidth=1.4) +
   scale_color_manual(name = "Dose Effect", labels = c("Baseline dosage","25% shortage","50% shortage","75% shortage","95% shortage"),values=c("#000066","#0033CC","#0066FF","#3399FF","#66CCFF"))+

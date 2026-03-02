@@ -7,23 +7,16 @@ editor_options:
 ---
 
 ```{r library}
-
-
 library(ggplot2)
+library(odin)
 library(tidyr)
 library(dplyr)
-library(reshape2)
-library(ggpubr)
-library(socialmixr)
-library("RColorBrewer")
+library(pkgbuild)
+library(pkgload)
 library(rmarkdown)
 library(plotly)
-library(demodelr)
-library(forcats)
-library(ggh4x)
-library(lemon)
 library(ggthemes)
-library(khroma)
+library(ggpattern)
 library(extrafont)
 library(here)
 library(lemon)
@@ -382,7 +375,7 @@ p<-ggplot(summary_stats, aes(x = Compartment, y = mean_value, fill = Compartment
         panel.border = element_blank() ,plot.background = element_blank())
 
 
-png(file = here::here("Figures", "Figure1b_test.png"), width = 1200, height = 1200)
+png(file = here::here("Figures", "Figure1b.png"), width = 1200, height = 1200)
 p
 dev.off()
 
