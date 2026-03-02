@@ -3,14 +3,10 @@ library(tidyr)
 library(dplyr)
 library(reshape2)
 library(ggpubr)
-library(socialmixr)
-data(polymod)
-library("RColorBrewer")
 library(rmarkdown)
 library(plotly)
 library(demodelr)
 library(forcats)
-library(rayshader)
 library(triangle)
 library(lhs)
 library(here)
@@ -115,7 +111,7 @@ OptimVi <- function(x,param) {
                   dose6_A=0,#500mg,q12h MIC=2
                   dose7_A=0, #500mg,q12h MIC=4
                   dose8_A=0, #500mg,q8h MIC=8
-                  dose1_M= 1.006924, #500mg,q12h MIC=0.06
+                  dose1_M= 1.006924, #500mg,q12h MIC=0.06rr
                   dose2_M=0.03449561,#500mg,q12h MIC=0.125
                   
                   theta=0.5,

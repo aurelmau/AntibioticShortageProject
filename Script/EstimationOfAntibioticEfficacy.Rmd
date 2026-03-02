@@ -14,7 +14,6 @@ library(rmarkdown)
 library(demodelr)
 library(plotly)
 library(ggthemes)
-library(extrafont)
 library(ggpattern)
 library(here)
 
@@ -85,21 +84,24 @@ OptimViFi <- function(x,y) {
     p1=as.numeric(f[4])
     r1=as.numeric(f[3])
     
-    #cat(x[1]," :",p1,x[2]," :",r1)
+    cat(x[1]," :",p1,x[2]," :",r1)
     
     return(abs(0.48-p1)**2+abs(0.44-r1)**2)
 }
 
+Optimi<-optim(par=c(0.72,0.01),OptimViFi,y=c(1,0.1),control = list(maxit = 20000))
+
+
 ```
 
 #Code to generate a function that calculates the value of the antibiotic's effect to reproduce the observations
-```{r optim Dose pour obtenir les variations}
+```{r optim Dose }
 
 OptimDose <- function(x) {
   
   Optimi<-optim(par=c(0.72,0.01),OptimViFi,y=c(x[1],x[2]),control = list(maxit = 20000))
   
-  fi<-Optim$par[1]
+  fi<-Optimi$par[1]
   Vi<-Optimi$par[2]
   
     mod <- gen$new(US_0=c(0),
@@ -199,7 +201,7 @@ cat(mean_DoseEffectS," ",mean_DoseEffectR)
 ```
 
 #Code to generate the evolution of carriage with the fitted parameters
-```{r setup, include=FALSE}
+```{r generate the evolution of carriage , include=FALSE}
 
 mean_DoseEffectS<-1
 mean_DoseEffectR<-0.03449561
@@ -241,7 +243,7 @@ mod <- gen$new(US_0=c(0),
 ```
 
 #Code to generate Supplementary Figure S11
-```{r ggplot distribution des CMI}
+```{r ggplot distribution des CMI S11}
 t <- seq(0,10,0.1)
 y_odin <- mod$run(t)
 out_odin <- as.data.frame(y_odin)
@@ -394,7 +396,7 @@ OptimFiVi <- function(x,y) {
 ```
 
 #Code to generate a function that calculates the value of the antibiotic's effect to reproduce the observations
-```{r optim Dose pour obtenir les variations}
+```{r optim Dose }
 
 OptimDose <- function(x) {
   

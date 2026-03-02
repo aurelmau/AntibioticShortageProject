@@ -16,7 +16,6 @@ library(rmarkdown)
 library(demodelr)
 library(plotly)
 library(ggthemes)
-library(extrafont)
 library(ggpattern)
 library(here)
 

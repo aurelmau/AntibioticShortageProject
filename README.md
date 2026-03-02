@@ -45,7 +45,7 @@ Windows 11 Professionnel
 Users should install the following packages, from an `R` terminal:
 
 ```
-install.packages(c("ggplot2", "readxl", "tidyr", "dplyr", "reshape2", "ggpubr", "socialmixr", "RColorBrewer", "rmarkdown", "plotly", "demodelr", "forcats", "sf", "corrplot", "gridExtra", "gridGraphics","patchwork", "refset",
+install.packages(c("ggplot2", "readxl", "tidyr","pkgbuild", "ggpattern", "triangle", "dplyr", "reshape2", "ggpubr", "socialmixr", "RColorBrewer", "rmarkdown", "plotly", "demodelr", "forcats", "sf", "corrplot", "gridExtra", "gridGraphics","patchwork", "refset",
  "cowplot", "odin","ggh4x", "here", "lhs", "sensitivity", "ggflags", "lemon", "ggthemes", "khroma"))
 ```
 
