@@ -49,7 +49,7 @@ Users should install the following packages, from an `R` terminal:
 ```
 install.packages("remotes")
 
-remotes::install_version("ggplot2", version = "3.5.1")
+remotes::install_version("ggplot2", version = "3.5.2")
  
 install.packages(c("readxl", "tidyr","pkgbuild","pkgload", "ggpattern", "triangle", "dplyr", "reshape2", "extrafont",
 "rmarkdown", "plotly", "demodelr", "forcats", "sf", "corrplot", "gridExtra", "gridGraphics","patchwork", "refset",
@@ -63,6 +63,8 @@ install.packages("sensitivity",
                  dependencies = TRUE,
                  type = "binary",
                  repos = "https://cran.rstudio.com/")
+                 
+remotes::install_version("ggplot2", version = "3.5.2")                 
  
 ```
 
