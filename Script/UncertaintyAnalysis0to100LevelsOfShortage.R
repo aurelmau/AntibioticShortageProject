@@ -7,6 +7,8 @@ library(here)
 library(odin)
 library(triangle)
 
+#Data Generation: 0-100% Shortage Levels
+
 path <- here::here("Script", "DeuxAgeHuitResistanceDeuxAntibiosOdin.R")
 code <- paste(readLines(path, warn = FALSE), collapse = "\n")
 gen <- odin::odin(code)

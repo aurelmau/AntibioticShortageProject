@@ -7,6 +7,8 @@ library(here)
 library(odin)
 library(triangle)
 
+#Data Generation: Uncertainty Bounds
+
 path <- here::here("Script", "DeuxAgeHuitResistanceDeuxAntibiosOdin.R")
 code <- paste(readLines(path, warn = FALSE), collapse = "\n")
 gen <- odin::odin(code)

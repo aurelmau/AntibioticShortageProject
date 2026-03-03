@@ -1,5 +1,5 @@
 ---
-title: "BestScenarioAccordingMainParameters_Figure5"
+title: "MIC Distributions Sensitivity"
 output: html_document
 date: "2024-07-10"
 editor_options: 
