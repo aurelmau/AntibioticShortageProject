@@ -607,27 +607,67 @@ labeller_function <- labeller(
   ), default = label_parsed)
 )
 
+df_squares <- data.frame(
+  ResistanceAmox = c(0.45, 0.45, 0.45, 0.45, 0.45, 0.45, 0.45, 0.45),
+  ResistanceMacro = c(0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25),
+  Rcr = rep(0.55, 8),
+  Outcome = c("PropPNSP", "PropMR", "PropMDR", 
+              "IncidenceInfectionsGraves",
+              "IncidenceInfectionsGravesPNSP", 
+              "IncidenceInfectionsGravesMR",
+              "IncidenceInfectionsGravesMDR", 
+              "IncidenceInfectionsGravesMDS")
+)
+
+
+df_squares$Outcome <- factor(df_squares$Outcome, levels = (desired_order))
 
 p <- ggplot(data = subset(df, Value == MinValue), aes(x = ResistanceAmox, y = ResistanceMacro, color = factor(Scenario))) +
-  geom_point(data = df_filtered, aes(size = "Significant")) +  # Ajouter une taille 5 pour les points du deuxième dataset
-  geom_point(aes(size = "Non-significant")) +  # Ajouter une taille 2 pour les points du premier dataset
-  xlab(expression("Initial proportion of PNSP strains (PNSP"^init*")")) +
-  ylab(expression("Initial proportion of MRSP strains (MRSP"^init*")")) +
-  scale_color_manual(name = "Strategies", values = c("red", "green", "blue", "#FDC257"), labels = c("S1", "S2", "S3", "S4")) +  # Définir les couleurs
+  geom_point(data = df_filtered, aes(size = "Significant")) +
+  geom_point(aes(size = "Non-significant")) +
+  geom_point(
+    data = df_squares,
+    aes(x = ResistanceAmox, y = ResistanceMacro),
+    shape = 0,          # carré vide
+    size = 3,           # taille du carré (ajuster selon rendu)
+    color = "black",
+    stroke = 0.8,       # épaisseur du trait du carré
+    inherit.aes = FALSE
+  ) +
+  xlab(expression(bold("Initial proportion of PNSP strains (PNSP"^init * ")"))) +
+  ylab(expression(bold("Initial proportion of MRSP strains (MRSP"^init * ")"))) +
+  scale_color_manual(name = "Strategies", values = c("red", "green", "blue", "#FDC257"), labels = c("S1", "S2", "S3", "S4")) +
   facet_grid(Rcr ~ Outcome, labeller = labeller_function) +
-  theme_bw() +
-  theme(axis.text = element_text(size = 22), axis.title = element_text(size = 28),
-        legend.text = element_text(size = 26), legend.title = element_text(size = 28),
-        legend.key.height = unit(1, "cm"), legend.key.width = unit(1, "cm"),
-        strip.text.x = element_text(size = 24, face = "bold"),  # Facettes Outcome
-        strip.text.y = element_text(size = 24, face = "bold"),  # Facettes Rcr
-        strip.background = element_rect(fill = "white"),
-        panel.border = element_rect(colour = "black", fill = NA, size = 1.5)) +
-  scale_size_manual(name = "Significance", values = c( "Significant" = 5,"Non-significant" = 2))+  # Ajouter la légende pour la taille des points
-  guides(color = guide_legend(override.aes = list(size = 5) ) )
+  theme_bw(base_size = 8) +
+  theme(
+    axis.text = element_text(size =6),
+    axis.title.x = element_text(size = 8, face = "bold",margin = margin(t = 3)),
+    axis.title.y = element_text(size = 8, face = "bold", margin = margin(r = 3)),
+    axis.line.x = element_line(size = 0.25, colour = "black"),
+    axis.line.y = element_line(size = 0.25, colour = "black"),
+    axis.ticks = element_line(size = 0.1),
+    axis.ticks.length = unit(0.05, "cm"),
+    legend.text = element_text(size = 6),
+    legend.title = element_text(size = 7),
+    legend.key.height = unit(0.3, "cm"),
+    legend.key.width = unit(0.3, "cm"),
+    legend.background = element_rect(fill = "white", colour = "black", linewidth = 0.2),
+    legend.margin = margin(2, 2, 2, 2),
+    strip.text.x = element_text(size = 5, face = "bold"),
+    strip.text.y = element_text(size = 6, face = "bold"),
+    strip.background = element_rect(fill = "white",linewidth = 0.2),
+    panel.border = element_rect(colour = "black", fill = NA, size = 0.3),
+    panel.grid.major = element_line(linewidth = 0.1, colour = "grey90"),
+    panel.grid.minor = element_blank(),
+    panel.spacing.x = unit(0.05, "cm"),  # espace horizontal entre les plots
+    panel.spacing.y = unit(0.05, "cm") ,  # espace vertical entre les plots
+    plot.background = element_blank()
+  ) +
+  scale_size_manual(name = "Significance", values = c("Significant" = 1.2, "Non-significant" = 0.5)) +
+  guides(color = guide_legend(override.aes = list(size = 1.5)))
 
 
-pdf(file = here::here("Figures", "Figure4PNSP_MR_Rcr.pdf"), width = 2200/81, height = 1200/81)
+pdf(file = here::here("Figures", "Figure4PNSP_MR_Rcr.pdf"), width = 18/2.54, height = 10/2.54)
 p
 dev.off()
 

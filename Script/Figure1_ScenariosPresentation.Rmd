@@ -23,7 +23,6 @@ library(lemon)
 
 ```
 
-
 ```{r setup}
 
 #Odin equations 
@@ -40,7 +39,6 @@ DDJAmox=1.5 #ref 1.5 DDD according to OMS for amoxicillin
 DDJMacro=2 #ref 2 DDD according to OMS fot pristinamycin
 
 ```
-
 
 #Part 1 of figure 1
 
@@ -257,7 +255,6 @@ df<-rbind(df_beforeshortage,df_shortage)
 
 ```
 
-
 ```{r ggplot evolution Figure 1}
 
 out_long= df %>% pivot_longer(
@@ -271,43 +268,83 @@ out_long= df %>% pivot_longer(
 labeller_fig1=labeller(Scenario=c("1"="","2"="","3"="","4"=""))
 
 # Ouvrir un périphérique graphique pour sauvegarder le plot en tant qu'image PNG
-p<-ggplot(out_long,aes(x=t,y=count,colour=Antibiotique,linetype=as.factor(Compartment)))+
-  geom_rect(aes(xmin =100, xmax = Inf, ymin = -Inf, ymax = Inf),fill = "#FFE4E1", alpha = 0.04,inherit.aes = FALSE)+
-  #geom_text(data = dplyr::filter(out_long,t==0|t==465),aes(label = round(count, 2)),vjust = -0.5, hjust = 0.5,show.legend = FALSE) +
-  geom_line(linewidth=1.5)+
-  scale_linetype_manual(name = "Outcome",values = c( "Phi" = "solid", "DDJ" = "dotted","Inst" = "dashed"),labels = c("Phi"="Exposed prevalence/1,000 children","DDJ"= "Number of DDD/1,000 children/d","Inst"="Exposed incidence/1,000 children/d")) +
-  scale_color_manual(values=c(Amoxicilline="orange",Macrolide="purple" ),name = "Antibiotic", labels = c("Beta-lactam", "Macrolide"))+
-  xlab("Time (days)")+ggtitle("Antibiotic exposure")+
-  scale_y_continuous(
-    name = "",
-    #sec.axis = sec_axis(~ . / 1, name = "")  # Divise par 10000 pour revenir à l'échelle originale de prop_am
+p <- ggplot(out_long, aes(x = t, y = count, colour = Antibiotique, linetype = as.factor(Compartment))) +
+  geom_rect(aes(xmin = 100, xmax = Inf, ymin = -Inf, ymax = Inf),
+            fill = "#FFE4E1", alpha = 0.04, inherit.aes = FALSE) +
+  geom_line(linewidth = 0.5) +
+  scale_linetype_manual(
+    name = "Outcome",
+    values = c("Phi" = "solid", "DDJ" = "dotted", "Inst" = "dashed"),
+    labels = c("Phi" = "Exposed prevalence/1,000 children",
+               "DDJ" = "Number of DDD/1,000 children/d",
+               "Inst" = "Exposed incidence/1,000 children/d")
   ) +
-  facet_wrap(~Scenario, ncol=1,labeller =labeller_fig1,scales = "free" )+
-  theme_clean()+
-  theme(legend.background = element_rect(fill = "white", colour = "black"),legend.key.width =unit(2, "cm"),
-        legend.title=element_text(size = 22),legend.text=element_text(size = 20),
-        legend.direction = "vertical",legend.box = "horizontal", legend.box.just = "center",legend.position = "bottom",
-        axis.text = element_text(size =20),axis.title = element_text(size = 26),
-        plot.title = element_text(size = 26, face = "bold",hjust = 0.5,margin = margin(b = -15)),
-        panel.border = element_blank() ,plot.background = element_blank())+
-    guides(
+  scale_color_manual(
+    values = c(Amoxicilline = "orange", Macrolide = "purple"),
+    name = "Antibiotic",
+    labels = c("Beta-lactam", "Macrolide")
+  ) +
+  xlab("Time (days)") +
+  ggtitle("Antibiotic exposure") +
+  scale_y_continuous(name = "") +
+  facet_wrap(~Scenario, ncol = 1, labeller = labeller_fig1, scales = "free") +
+  theme_clean() +
+  theme(
+    legend.background = element_rect(fill = "white", colour = "black", linewidth = 0.2),
+    legend.key.width = unit(0.8, "cm"),
+    legend.key.height = unit(0.2, "cm"),
+    legend.title = element_text(size = 7, margin = margin(b = 2)),
+    legend.text = element_text(size = 7),
+    legend.direction = "vertical",
+    legend.box = "horizontal",
+    legend.box.just = "center",
+    legend.position = "bottom",
+    legend.spacing.x = unit(0.1, "cm"),
+    legend.spacing.y = unit(0.05, "cm"),
+    legend.box.spacing = unit(0.05, "cm"),
+    legend.margin = margin(2, 2, 2, 2),
+    
+    axis.text = element_text(size = 8),
+    axis.title = element_text(size = 8, face = "bold"),
+    axis.ticks.length = unit(0.05, "cm"),
+    axis.line.x = element_line(size = 0.25, colour = "black"),
+    axis.line.y = element_line(size = 0.25, colour = "black"),
+    axis.ticks = element_line(size = 0.1),
+    
+    strip.text = element_text(size = 8, face = "bold", hjust = 0.5,
+                              margin = margin(t = 4, b = 4)),
+    strip.placement = "outside",
+    plot.title = element_text(size = 8, face = "bold", hjust = 0.5, margin = margin(b = -5)),
+    plot.background = element_blank(),
+    panel.grid.major = element_line(linewidth = 0.2, colour = "grey80"),
+    panel.grid.minor = element_blank()
+  ) +
+  guides(
     color = guide_legend(order = 1),
     linetype = guide_legend(order = 2)
   )
 
 
-png(file = here::here("Figures", "Figure1a.png"), width = 500, height = 1200)
+# pdf(file = here::here("Figures", "Figure1a.pdf"), width = 4/2.54, height = 12/2.54)
+# p
+# dev.off()
+
+emf(file = here::here("Figures", "Figure1a.emf"), width = 4/2.54, height = 12/2.54)
+p
+dev.off()
+
+emf(file = here::here("Figures", "Figure1alegend.emf"), width = 18/2.54, height = 12/2.54)
 p
 dev.off()
 
 ```
 
-
-
 #Part 2 of figure 2
 
 ```{r ggplot barplot Figure 1 with Rcr=0.58 with error of incertitude bar}
 
+
+library(devEMF)
 dfnew <- read.csv(here::here("Files", "fichierCombine070225_figure1.csv"))
 df<-dfnew
 df<-subset(df, select = -X)
@@ -347,12 +384,12 @@ labeller_fig1=labeller(Scenario=c("1"="S1","2"="S2","3"="S3","4"="S4"), Antibiot
 
 
 p<-ggplot(summary_stats, aes(x = Compartment, y = mean_value, fill = Compartment, alpha = factor(t))) +
-  geom_col(position = position_dodge(), color = "black") +
+  geom_col(position = position_dodge(), color = "black",linewidth = 0.2 ) +
   scale_fill_manual(
     name = "Antibiotic sensitivity level",
-    values = c("S" = "#32CD32",  # Vert pour S
-               "I" = "#FFD700",  # Jaune pour I
-               "R" = "#FF6347"),  # Rouge pour R
+    values = c("S" = "#009E73",  # Vert pour S
+               "I" = "#F0E442",  # Jaune pour I
+               "R" = "#D55E00"),  # Rouge pour R
     labels = c("Susceptible", "Intermediate","Resistant")
   ) +
   scale_alpha_manual(
@@ -361,28 +398,55 @@ p<-ggplot(summary_stats, aes(x = Compartment, y = mean_value, fill = Compartment
     labels = c("Before shortage", "1-year shortage")
   ) +
   coord_cartesian(ylim = c(0, 0.85)) +
-  geom_errorbar(data = dplyr::filter(summary_stats,t==0), aes(ymin=min, ymax=max), position=position_nudge(x=-0.1),width = 0.2)+
-  geom_errorbar(data = dplyr::filter(summary_stats,t==365), aes(ymin=min, ymax=max), position=position_nudge(x=0.25),width = 0.2)+
-  geom_text(aes(label=round(mean_value,2)),vjust=-1,position = position_dodge(0.9),show.legend = FALSE,size=7,face = "bold")+
+  geom_errorbar(data = dplyr::filter(summary_stats,t==0), aes(ymin=min, ymax=max), position=position_nudge(x=-0.1),width = 0.2, linewidth = 0.2)+
+  geom_errorbar(data = dplyr::filter(summary_stats,t==365), aes(ymin=min, ymax=max), position=position_nudge(x=0.25),width = 0.2, linewidth = 0.2)+
+  geom_text(aes(label=round(mean_value,2)),vjust=-0.8,position = position_dodge(0.9),show.legend = FALSE,size=2,face = "bold")+
   xlab("Sensitivity level in colonized")+ylab("Proportion")+
-  facet_rep_grid(Scenario~Antibiotique, labeller = labeller_fig1,scales="free")+
+  facet_rep_grid(Scenario~Antibiotique, labeller = labeller_fig1,scales="free",repeat.tick.labels = FALSE)+
   theme_clean()+
-  theme(legend.background = element_rect(fill = "white", colour = "black"),legend.key.width =unit(1.4, "cm"),
-        legend.title=element_text(size = 22),legend.text=element_text(size = 20),
-        legend.direction = "vertical",legend.box = "horizontal", legend.box.just = "center",legend.position = "bottom",
-        axis.text = element_text(size =20),axis.title = element_text(size = 28),
-        strip.text = element_text(size = 25, face = "bold",hjust = 0.5),strip.placement = "outside",
-        panel.border = element_blank() ,plot.background = element_blank())
+  theme(legend.background = element_rect(fill = "white", colour = "black", linewidth = 0.2),
+        legend.key.width =unit(0.5, "cm"),
+        legend.key.height=unit(0.2, "cm"),
+        legend.title=element_text(size = 7,margin = margin(b = 2)),
+        legend.text=element_text(size = 7),
+        legend.direction = "vertical",
+        legend.box = "horizontal", 
+        legend.box.just = "center",
+        legend.position = "bottom",
+        legend.spacing.x   = unit(0.1, "cm"), 
+        legend.spacing.y   = unit(0.05, "cm"), 
+        legend.box.spacing = unit(0.05, "cm"), 
+        legend.margin  = margin(2, 2, 2, 2),
+        
+        axis.text = element_text(size =8),
+        axis.title = element_text(size = 8,face = "bold"),
+        axis.ticks.length  = unit(0.05, "cm"),
+        axis.line.x = element_line(size = 0.25, colour = "black"),
+        axis.line.y =element_line(size = 0.25, colour = "black"),
+        axis.ticks = element_line(size = 0.1),
+        strip.text = element_text(size = 8, face = "bold", hjust = 0.5,
+                             margin = margin(t = 4, b = 4)),
+        strip.placement = "outside",
+        plot.background = element_blank(),
+        panel.grid.major = element_line(linewidth = 0.2, colour = "grey80"), 
+        panel.grid.minor = element_blank()
+        )
 
 
-png(file = here::here("Figures", "Figure1b.png"), width = 1200, height = 1200)
+# png(file = here::here("Figures", "Figure1b.png"), width = 1200, height = 1200)
+# p
+# dev.off()
+
+# pdf(file = here::here("Figures", "Figure1b.pdf"), width = 12/2.54, height = 12/2.54)
+# p
+# dev.off()
+
+emf(file = here::here("Figures", "Figure1b.emf"), width = 10/2.54, height = 12/2.54)
 p
 dev.off()
 
 
-
 ```
-
 
 ```{r values of the changes observed in Figure 1 with CI }
 
@@ -681,7 +745,7 @@ p<-ggplot(out_long,aes(x=t,y=count,colour=Compartment,linetype = as.factor(Rcr))
   # geom_text(data = dplyr::filter(out_long,t==465),aes(label = round(count, 2)),vjust = -0.5, hjust = 0.7,show.legend = FALSE,size=7,face = "bold") +
   geom_line(linewidth=1.5)+
   scale_linetype_manual(name = "Rcr",values = c( "0.28" = "dashed", "0.58" = "solid"), labels = c("0.28", "0.58")) +
-  scale_color_manual(values=c(R="#FF6347",S="#32CD32",I="#FFD700" ),name = "Antibiotic sensitivity level", labels = c("Susceptible", "Intermediate", "Resistant"))+
+  scale_color_manual(values=c(R="#D55E00",S="#009E73",I="#F0E442" ),name = "Antibiotic sensitivity level", labels = c("Susceptible", "Intermediate", "Resistant"))+
   xlab("Time (days)")+ylab("Proportion")+
   coord_cartesian(ylim = c(0, 0.85)) +
   facet_rep_grid(Scenario~Antibiotique,repeat.tick.labels = TRUE, labeller = labeller_fig1)+
@@ -698,7 +762,5 @@ pdf(file = here::here("Figures", "FigureS1VariationRcr.pdf"), width = 1200/81, h
 p
 dev.off()
 
+
 ```
-
-
-

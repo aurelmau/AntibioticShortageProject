@@ -58,26 +58,67 @@ df_summary
 
 df<-df %>%left_join(df_summary, by = c("Scenario","Reduction", "Outcome"))
 
-p<-ggplot(subset(df))+ #il faut utiliser la valeur Mean
-  geom_line(aes(x=as.numeric(Reduction),y=MedianValue, color=as.factor(Scenario)),linetype = "longdash",linewidth=1)+
-  geom_boxplot(aes(x=as.factor(Reduction),y=Value, fill=as.factor(Scenario)), position = position_dodge(),outlier.shape = NA)+
-  scale_color_manual(name = "Strategies", labels = c("Consumption frequency reduction (S1)","Treatment duration reduction (S2)","Dose/day reduction (S3)","Alternative treatment (S4)"),values=c("red" ,"green", "blue","#FDC257"))+
-  scale_fill_manual(name = "Strategies", labels = c("Consumption frequency reduction (S1)","Treatment duration reduction (S2)","Dose/day reduction (S3)","Alternative treatment (S4)"),values=c("red" ,"green", "blue","#FDC257"))+
-    xlab("Different level of shortage (%)")+
-  #ylab(expression(atop("Proportion", paste(""))))+
-  ylab(expression(atop("Relative variation (%)", paste(""))))+
-  facet_wrap(~Outcome,labeller = labeller(Outcome = c("PropAns" = "Penicillin-non-susceptible \nS. pneumoniae proportion","PropMr"="Macrolide-resistant \nS. pneumoniae proportion", "PropAnsMr"="Multidrug-resistant \nS. pneumoniae proportion","IncidenceInfectionsGraves" = "IPD incidence" )),scales = "free", ncol=2)+
-  scale_x_discrete(labels = c("0","5","10","15","20", "25","30" ,"35","40","45","50","55","60","65","70","75","80","85","90","95","100"))+
-theme_clean()+
-  theme(axis.text = element_text(size = 16),axis.title = element_text(size = 18),
-        legend.title=element_text(size = 16),legend.text=element_text(size = 14),
-        legend.key.height = unit(0.8, "cm"),legend.key.width = unit(0.8, "cm"),
-        strip.text = element_text(size = 18, face = "bold",hjust = 0.5),strip.placement = "outside",
-        panel.border =element_blank(),plot.background = element_blank())
+p <- ggplot(subset(df)) +
+  geom_line(aes(x = as.numeric(Reduction), y = MedianValue, color = as.factor(Scenario)),
+            linetype = "longdash", linewidth = 0.4) +
+  geom_boxplot(aes(x = as.factor(Reduction), y = Value, fill = as.factor(Scenario)),
+               position = position_dodge(), outlier.shape = NA, linewidth = 0.2) +
+  scale_color_manual(
+    name = "Strategies",
+    labels = c("Consumption frequency reduction (S1)",
+               "Treatment duration reduction (S2)",
+               "Dose/day reduction (S3)",
+               "Alternative treatment (S4)"),
+    values = c("red", "green", "blue", "#FDC257")
+  ) +
+  scale_fill_manual(
+    name = "Strategies",
+    labels = c("Consumption frequency reduction (S1)",
+               "Treatment duration reduction (S2)",
+               "Dose/day reduction (S3)",
+               "Alternative treatment (S4)"),
+    values = c("red", "green", "blue", "#FDC257")
+  ) +
+  xlab("Different level of shortage (%)") +
+  ylab("Relative variation (%)") +
+  facet_wrap(~Outcome,
+             labeller = labeller(Outcome = c(
+               "PropAns" = "Penicillin-non-susceptible \nS. pneumoniae proportion",
+               "PropMr" = "Macrolide-resistant \nS. pneumoniae proportion",
+               "PropAnsMr" = "Multidrug-resistant \nS. pneumoniae proportion",
+               "IncidenceInfectionsGraves" = "IPD incidence"
+             )),
+             scales = "free", ncol = 2) +
+  scale_x_discrete(labels = c("0","5","10","15","20","25","30","35","40",
+                               "45","50","55","60","65","70","75","80",
+                               "85","90","95","100")) +
+  theme_clean() +
+  theme(
+    axis.text = element_text(size = 6),
+    axis.title = element_text(size = 8, face = "bold"),
+    axis.title.x = element_text(size = 8, face = "bold",margin = margin(t = 3)),
+    axis.title.y = element_text(size = 8, face = "bold", margin = margin(r = 3)),
+    axis.line.x = element_line(size = 0.25, colour = "black"),
+    axis.line.y = element_line(size = 0.25, colour = "black"),
+    axis.ticks = element_line(size = 0.1),
+    axis.ticks.length = unit(0.05, "cm"),
+    legend.title = element_text(size = 7),
+    legend.text = element_text(size = 6),
+    legend.key.height = unit(0.3, "cm"),
+    legend.key.width = unit(0.3, "cm"),
+    legend.background = element_rect(fill = "white", colour = "black", linewidth = 0.2),
+    legend.margin = margin(2, 2, 2, 2),
+    strip.text = element_text(size = 8, face = "bold", hjust = 0.5,
+                              margin = margin(t = 4, b = 4)),
+    strip.placement = "outside",
+    panel.border = element_blank(),
+    plot.background = element_blank(),
+    panel.grid.major = element_line(linewidth = 0.2, colour = "grey80"),
+    panel.grid.minor = element_blank()
+  )
 
-grid.arrange(p)
-
-pdf(file = here::here("Figures", "Figure2Boxplot0to100.pdf"), width = 1400/81, height = 800/81)
+pdf(file = here::here("Figures", "Figure2Boxplot0to100.pdf"),
+    width = 18/2.54, height = (800/81)/2.54)
 grid.arrange(p)
 dev.off()
 
@@ -196,46 +237,105 @@ df$Value <- as.numeric(df$Value)
 dfI_point<-df
 
 
-pP<-ggplot(dfP,aes(x=as.factor(Scenario),y=Value,fill=factor(Reduction)))+ #il faut utiliser la valeur Mean
-  geom_hline(data = summary_statsP, aes(yintercept = median_value), color = "#008000", size = 1.5) +
-  geom_hline(data = summary_statsP, aes(yintercept = q1_value), color = "#008000", linetype = "dashed") +
-  geom_hline(data = summary_statsP, aes(yintercept = q3_value), color = "#008000", linetype = "dashed") +
-  geom_boxplot(data = dfP %>% filter(Reduction == 11), position = position_dodge(),show.legend = FALSE)+
-  geom_point(data = dfP_point %>% filter(Reduction == 3),aes(x=as.factor(Scenario),y=Value, colour = factor(Lambda)),size=5)+
-  scale_colour_manual(values = c( "#FFD700",  "#FFA500", "#FF4500"),name=expression("Duration of colonization (" * lambda * ")"),labels = c("Min","Mean","Max"))+
-  scale_fill_manual(name = "Réduction (%)", labels = c( "50"), values = c("11"="#FFD700"), guide = "none") +
-  xlab("")+ylab(expression(atop("Proportion", paste(""))))+
-  facet_wrap(~Outcome,labeller = labeller(Outcome = c("PropAns" = "Penicillin-non-susceptible\nS. pneumoniae","PropMr"="Macrolide-resistant\nS. pneumoniae", "PropAnsMr"="Multidrug-resistant\nS. pneumoniae")),scales = "free_y")+
-  scale_x_discrete(labels = c("S1", "S2", "S3","S4"))+
-   theme_clean()+
-  theme(axis.text = element_text(size = 16),axis.title = element_text(size = 18),
-        legend.title=element_text(size = 16),legend.text=element_text(size = 14),
-        legend.key.height = unit(0.8, "cm"),legend.key.width = unit(0.8, "cm"),
-        strip.text = element_text(size = 18, face = "bold",hjust = 0.5),strip.placement = "outside",
-        panel.border =element_blank(),plot.background = element_blank())
+pP <- ggplot(dfP, aes(x = as.factor(Scenario), y = Value, fill = factor(Reduction))) +
+  geom_hline(data = summary_statsP, aes(yintercept = median_value), color = "#008000", size = 0.4) +
+  geom_hline(data = summary_statsP, aes(yintercept = q1_value), color = "#008000", linetype = "dashed", size = 0.2) +
+  geom_hline(data = summary_statsP, aes(yintercept = q3_value), color = "#008000", linetype = "dashed", size = 0.2) +
+  geom_boxplot(data = dfP %>% filter(Reduction == 11), position = position_dodge(), show.legend = FALSE, linewidth = 0.2, outlier.size = 0.5) +
+  geom_point(data = dfP_point %>% filter(Reduction == 3), aes(x = as.factor(Scenario), y = Value, colour = factor(Lambda)), size = 1.5) +
+  scale_colour_manual(
+    values = c("#FFD700", "#FFA500", "#FF4500"),
+    name = expression("Duration of colonization (" * lambda * ")"),
+    labels = c("Min", "Mean", "Max")
+  ) +
+  scale_fill_manual(name = "Réduction (%)", labels = c("50"), values = c("11" = "#FFD700"), guide = "none") +
+  xlab("") +
+  ylab("Proportion") +
+  facet_wrap(~Outcome,
+    labeller = labeller(Outcome = c(
+      "PropAns" = "Penicillin-non-susceptible\nS. pneumoniae",
+      "PropMr" = "Macrolide-resistant\nS. pneumoniae",
+      "PropAnsMr" = "Multidrug-resistant\nS. pneumoniae"
+    )),
+    scales = "free_y"
+  ) +
+  scale_x_discrete(labels = c("S1", "S2", "S3", "S4")) +
+  theme_clean() +
+  theme(
+    axis.text = element_text(size = 7),
+    axis.title = element_text(size = 8, face = "bold"),
+    axis.title.x = element_text(size = 8, face = "bold",margin = margin(t = 3)),
+    axis.title.y = element_text(size = 8, face = "bold", margin = margin(r = 3)),
+    axis.line.x = element_line(size = 0.25, colour = "black"),
+    axis.line.y = element_line(size = 0.25, colour = "black"),
+    axis.ticks = element_line(size = 0.1),
+    axis.ticks.length = unit(0.05, "cm"),
+    legend.title = element_text(size = 7),
+    legend.text = element_text(size = 6),
+    legend.key.height = unit(0.3, "cm"),
+    legend.key.width = unit(0.3, "cm"),
+    legend.background = element_rect(fill = "white", colour = "black", linewidth = 0.2),
+    legend.margin = margin(2, 2, 2, 2),
+    strip.text = element_text(size = 7, face = "bold", hjust = 0.5, margin = margin(t = 4, b = 4)),
+    strip.placement = "outside",
+    panel.border = element_blank(),
+    plot.background = element_blank(),
+    panel.grid.major = element_line(linewidth = 0.2, colour = "grey80"),
+    panel.grid.minor = element_blank()
+  )
 
 
-pI<-ggplot(dfI,aes(x=as.factor(Scenario),y=Value,fill=factor(Reduction)))+
-  geom_hline(data = summary_statsI, aes(yintercept = median_value), color = "#008000", size = 1.5) +
-  geom_hline(data = summary_statsI, aes(yintercept = q1_value), color = "#008000", linetype = "dashed") +
-  geom_hline(data = summary_statsI, aes(yintercept = q3_value), color = "#008000", linetype = "dashed") +
-  geom_boxplot(data = dfI %>% filter(Reduction == 11), position = position_dodge(),show.legend = FALSE)+
-  geom_point(data = dfI_point %>% filter(Reduction == 3),aes(x=as.factor(Scenario),y=Value, colour = factor(Lambda)),size=5)+
-  scale_colour_manual(values = c( "#FFD700",  "#FFA500", "#FF4500"),name="Lambda",labels = c("Min","Mean","Max"))+
-  scale_fill_manual(name = "Réduction (%)", labels = c("50"),values=c("11"="#FFD700"))+
-  xlab("Strategies")+ylab(expression(atop("Annual incidence (per 100,000 children)", paste(""))))+
-  #geom_text(aes(label=round(as.double(Value),2),colour=factor(Reduction)),position = position_dodge(0.9),vjust=-0.5,show.legend = FALSE)+
-  facet_wrap(~Outcome,labeller =  labeller(Outcome = c("IncidenceInfectionsGraves" = "IPD","IncidenceInfectionsGravesAns"="IPD penicillin-non-\nsusceptible", "IncidenceInfectionsGravesMr"="IPD macrolide-\nresistant ","IncidenceInfectionsGravesAnsMr"="IPD multidrug- \nresistant")),scales = "free_y",ncol=4)+scale_x_discrete(labels = c("S1", "S2", "S3","S4"))+
-  theme_clean()+
-  theme(axis.text = element_text(size = 16),axis.title = element_text(size = 18),
-        legend.title=element_text(size = 16),legend.text=element_text(size = 14),
-        legend.key.height = unit(0.8, "cm"),legend.key.width = unit(0.8, "cm"),
-        strip.text = element_text(size = 18, face = "bold",hjust = 0.5),strip.placement = "outside",
-        panel.border =element_blank(),plot.background = element_blank(),legend.position = "none")
+pI <- ggplot(dfI, aes(x = as.factor(Scenario), y = Value, fill = factor(Reduction))) +
+  geom_hline(data = summary_statsI, aes(yintercept = median_value), color = "#008000", size = 0.4) +
+  geom_hline(data = summary_statsI, aes(yintercept = q1_value), color = "#008000", linetype = "dashed", size = 0.2) +
+  geom_hline(data = summary_statsI, aes(yintercept = q3_value), color = "#008000", linetype = "dashed", size = 0.2) +
+  geom_boxplot(data = dfI %>% filter(Reduction == 11), position = position_dodge(), show.legend = FALSE, linewidth = 0.2, outlier.size = 0.5) +
+  geom_point(data = dfI_point %>% filter(Reduction == 3), aes(x = as.factor(Scenario), y = Value, colour = factor(Lambda)), size = 1.5) +
+  scale_colour_manual(
+    values = c("#FFD700", "#FFA500", "#FF4500"),
+    name = "Lambda",
+    labels = c("Min", "Mean", "Max")
+  ) +
+  scale_fill_manual(name = "Réduction (%)", labels = c("50"), values = c("11" = "#FFD700")) +
+  xlab("Strategies") +
+  ylab("Annual incidence \n (per 100,000 children)") +
+  facet_wrap(~Outcome,
+    labeller = labeller(Outcome = c(
+      "IncidenceInfectionsGraves" = "IPD",
+      "IncidenceInfectionsGravesAns" = "IPD penicillin-non-\nsusceptible",
+      "IncidenceInfectionsGravesMr" = "IPD macrolide-\nresistant",
+      "IncidenceInfectionsGravesAnsMr" = "IPD multidrug-\nresistant"
+    )),
+    scales = "free_y", ncol = 4
+  ) +
+  scale_x_discrete(labels = c("S1", "S2", "S3", "S4")) +
+  theme_clean() +
+  theme(
+    axis.text = element_text(size = 7),
+    axis.title = element_text(size = 8, face = "bold"),
+    axis.title.x = element_text(size = 8, face = "bold",margin = margin(t = 3)),
+    axis.title.y = element_text(size = 8, face = "bold", margin = margin(r = 3)),
+    axis.line.x = element_line(size = 0.25, colour = "black"),
+    axis.line.y = element_line(size = 0.25, colour = "black"),
+    axis.ticks = element_line(size = 0.1),
+    axis.ticks.length = unit(0.05, "cm"),
+    legend.position = "none",
+    strip.text = element_text(size = 7, face = "bold", hjust = 0.5, margin = margin(t = 4, b = 4)),
+    strip.placement = "outside",
+    panel.border = element_blank(),
+    plot.background = element_blank(),
+    panel.grid.major = element_line(linewidth = 0.2, colour = "grey80"),
+    panel.grid.minor = element_blank()
+  )
 
 
-pdf(file = here::here("Figures", "Figure3Lambda.pdf"), width = 1400/81, height = 750/81)
-grid.arrange(pP,pI,  layout_matrix = rbind(c(1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,NA),c(2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2)))
+pdf(file = here::here("Figures", "Figure3Lambda.pdf"), width = 18/2.54, height = (800/81)/2.54)
+grid.arrange(pP, pI,
+  layout_matrix = rbind(
+    c(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, NA),
+    c(2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2)
+  )
+)
 dev.off()
 
 ```

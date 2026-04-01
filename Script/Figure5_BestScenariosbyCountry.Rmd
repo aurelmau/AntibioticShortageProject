@@ -534,24 +534,42 @@ colnames(df)[colnames(df) == "Value.x"] <- "Value"
 colnames(df)[colnames(df) == "MinValue.x"] <- "MinValue"
 
 
-gproportion<-ggplot(df, aes(x = as.factor(Scenario), y = Outcome, fill = Variation)) +
+gproportion <- ggplot(df, aes(x = as.factor(Scenario), y = Outcome, fill = Variation)) +
   geom_tile() +
-  geom_text(aes(label = sprintf("%.1f", round(Variation,digits=1))),show.legend = TRUE, size=7) +
-  scale_color_manual(name=" Value",labels=c("lowest value",""), guide=guide_legend()) +
-  geom_tile(data = df %>% filter(Value == MinValue), aes(x = as.factor(Scenario), y = Outcome), color = "darkgrey", linewidth = 1.5, fill = NA) +
-  geom_tile(data = df_filtered, aes(x = as.factor(Scenario), y = Outcome), color = "black", linewidth = 1.5, fill = NA) +
-  scale_fill_gradient2(low = "#075AFF",mid="white", high = "#FF6347",name="Relative \nvariation(%)") +  # Choix des couleurs
-  labs(x = "Strategies", y = "Resistant proportion")+
-  facet_wrap(~Country)+
-  scale_x_discrete(labels = c("S1", "S2", "S3","S4"))+
-  scale_y_discrete(labels = c("PropPNSP" = "PNSP","PropMR"="MRSP", "PropMDR"="MDRSP"))+
-theme_bw()+
-  theme(axis.text = element_text(size = 24),axis.title = element_text(size = 28),
-        legend.text=element_text(size = 22),legend.title=element_text(size = 24),
-        legend.key.height = unit(0.8, "cm"),legend.key.width = unit(0.8, "cm"),
-        strip.text = element_text(size = 28,face="bold"),strip.background = element_rect(fill = "white"),
-        panel.border =element_rect(colour = "black", fill = NA, size = 1.5))
-
+  geom_text(aes(label = sprintf("%.1f", round(Variation, digits = 1))), show.legend = TRUE, size = 2.5) +
+  scale_color_manual(name = " Value", labels = c("lowest value", ""), guide = guide_legend()) +
+  geom_tile(data = df %>% filter(Value == MinValue), aes(x = as.factor(Scenario), y = Outcome),
+            color = "darkgrey", linewidth = 0.4, fill = NA) +
+  geom_tile(data = df_filtered, aes(x = as.factor(Scenario), y = Outcome),
+            color = "black", linewidth = 0.4, fill = NA) +
+  scale_fill_gradient2(low = "#075AFF", mid = "white", high = "#FF6347", name = "Relative \nvariation(%)") +
+  labs(x = "Strategies", y = "Resistant proportion") +
+  facet_wrap(~Country) +
+  scale_x_discrete(labels = c("S1", "S2", "S3", "S4")) +
+  scale_y_discrete(labels = c("PropPNSP" = "PNSP", "PropMR" = "MRSP", "PropMDR" = "MDRSP")) +
+  theme_bw(base_size = 8) +
+  theme(
+    axis.text = element_text(size = 8),
+    axis.title = element_text(size = 10, face = "bold"),
+    axis.line.x = element_line(size = 0.25, colour = "black"),
+    axis.line.y = element_line(size = 0.25, colour = "black"),
+    axis.ticks = element_line(size = 0.1),
+    axis.ticks.length = unit(0.05, "cm"),
+    legend.text = element_text(size = 7.5),
+    legend.title = element_text(size = 8),
+    legend.key.height = unit(0.3, "cm"),
+    legend.key.width = unit(0.3, "cm"),
+    legend.background = element_rect(fill = "white", colour = "black", linewidth = 0.2),
+    legend.margin = margin(2, 2, 2, 2),
+    strip.text = element_text(size = 10, face = "bold"),
+    strip.background = element_rect(fill = "white", colour = "black", linewidth = 0.15),
+    panel.border = element_rect(colour = "black", fill = NA, linewidth = 0.15),
+    panel.spacing.x = unit(0.1, "cm"),
+    panel.spacing.y = unit(0.1, "cm"),
+    panel.grid.major = element_line(linewidth = 0.2, colour = "grey80"),
+    panel.grid.minor = element_blank(),
+    plot.background = element_blank()
+  )
 
 
 ```
@@ -674,23 +692,42 @@ labels_y <- c(
 df=as.data.frame(df)
 df_filtered=as.data.frame(df_filtered)
 
-gIPD<-ggplot(df, aes(x = as.factor(Scenario), y = Outcome, fill = Variation)) +
+gIPD <- ggplot(df, aes(x = as.factor(Scenario), y = Outcome, fill = Variation)) +
   geom_tile() +
-  geom_text(aes(label = sprintf("%.0f", Variation)),show.legend = TRUE, size=7) +
-  scale_color_manual(name=" Value",labels=c("lowest value",""), guide=guide_legend()) +
-  geom_tile(data = df %>% filter(Variation == MinVariation), aes(x = as.factor(Scenario), y = Outcome), color = "darkgrey", linewidth = 1.5, fill = NA) +
-  geom_tile(data = df_filtered, aes(x = as.factor(Scenario), y = Outcome), color = "black", linewidth = 1.5, fill = NA) +
-  scale_fill_gradient2(low = "#075AFF",mid="white", high = "#FF6347",name="Absolute \nvariation") +  # Choix des couleurs
-  labs(x = "Strategies", y = "IPD/1 million children per year ", title = "")+
-  facet_wrap(~Country,ncol=5)+
-  scale_x_discrete(labels = c("S1", "S2", "S3","S4"))+
-  scale_y_discrete(labels = labels_y)+
-theme_bw()+
-  theme(axis.text = element_text(size = 24),axis.title = element_text(size = 28),
-        legend.text=element_text(size = 22),legend.title=element_text(size = 24),
-        legend.key.height = unit(0.8, "cm"),legend.key.width = unit(0.8, "cm"),
-        strip.text = element_text(size = 28,face="bold"),strip.background = element_rect(fill = "white"),
-        panel.border =element_rect(colour = "black", fill = NA, size = 1.5))
+  geom_text(aes(label = sprintf("%.0f", Variation)), show.legend = TRUE, size = 3) +
+  scale_color_manual(name = " Value", labels = c("lowest value", ""), guide = guide_legend()) +
+  geom_tile(data = df %>% filter(Variation == MinVariation), aes(x = as.factor(Scenario), y = Outcome),
+            color = "darkgrey", linewidth = 0.4, fill = NA) +
+  geom_tile(data = df_filtered, aes(x = as.factor(Scenario), y = Outcome),
+            color = "black", linewidth = 0.4, fill = NA) +
+  scale_fill_gradient2(low = "#075AFF", mid = "white", high = "#FF6347", name = "Absolute \nvariation") +
+  labs(x = "Strategies", y = "IPD/1 million children per year", title = "") +
+  facet_wrap(~Country, ncol = 5) +
+  scale_x_discrete(labels = c("S1", "S2", "S3", "S4")) +
+  scale_y_discrete(labels = labels_y) +
+  theme_bw(base_size = 8) +
+ theme(
+    axis.text = element_text(size = 8),
+    axis.title = element_text(size = 10, face = "bold"),
+    axis.line.x = element_line(size = 0.25, colour = "black"),
+    axis.line.y = element_line(size = 0.25, colour = "black"),
+    axis.ticks = element_line(size = 0.1),
+    axis.ticks.length = unit(0.05, "cm"),
+    legend.text = element_text(size = 7.5),
+    legend.title = element_text(size = 8),
+    legend.key.height = unit(0.3, "cm"),
+    legend.key.width = unit(0.3, "cm"),
+    legend.background = element_rect(fill = "white", colour = "black", linewidth = 0.2),
+    legend.margin = margin(2, 2, 2, 2),
+    strip.text = element_text(size = 10, face = "bold"),
+    strip.background = element_rect(fill = "white", colour = "black", linewidth = 0.15),
+    panel.border = element_rect(colour = "black", fill = NA, linewidth = 0.15),
+    panel.spacing.x = unit(0.1, "cm"),
+    panel.spacing.y = unit(0.1, "cm"),
+    panel.grid.major = element_line(linewidth = 0.2, colour = "grey80"),
+    panel.grid.minor = element_blank(),
+    plot.background = element_blank()
+  )
 
 
 ```
@@ -698,9 +735,8 @@ theme_bw()+
 
 ```{r grid arrange}
 
-pdf(file = here::here("Figures", "Figure5HeatMapPaysAllcountries.pdf"), width = 1600/81, height = 2200/81)
-#grid.arrange(gproportion,gIPD,ncol=1)
-plot_grid(gproportion,gIPD,labels=c("a","b"),ncol=1,label_size = 30,rel_heights = c(1, 1))
+pdf(file = here::here("Figures", "Figure5HeatMapPaysAllcountries.pdf"), width = 18/2.54, height = 23/2.54)
+plot_grid(gproportion,gIPD,labels=c("a","b"),ncol=1,label_size = 15,label_x = 0.05,rel_heights = c(1, 1))
 
  # Fermer le périphérique graphique
 dev.off()
